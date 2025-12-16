@@ -8,4 +8,7 @@ export default defineConfig({
   vite: () => ({
     plugins: [tailwindcss()],
   }),
+  webExt: {
+    chromiumArgs: ["--user-data-dir=./.wxt/chrome-data"],
+  },
 });
