@@ -1,0 +1,85 @@
+import {
+  IWorkflow,
+  INodeExecutionData,
+  IExecuteFunctions,
+  IWorkflowNode,
+} from "../types";
+import { Registry } from "../nodes/registry";
+
+export class WorkflowRunner {
+  private workflow: IWorkflow;
+  private executionData: Map<string, INodeExecutionData[]> = new Map();
+
+  constructor(workflow: IWorkflow) {
+    this.workflow = workflow;
+  }
+
+  async run(triggerNodeId?: string) {
+    // 1. Identify start node
+    let startNode: IWorkflowNode | undefined;
+
+    if (triggerNodeId) {
+      startNode = this.workflow.nodes.find((n) => n.id === triggerNodeId);
+    } else {
+      // Find manual trigger
+      // In real app, we look for the specific trigger type
+      startNode = this.workflow.nodes.find((n) => n.type === "manualTrigger");
+    }
+
+    if (!startNode) {
+      throw new Error("No trigger node found");
+    }
+
+    await this.executeNode(startNode, []);
+  }
+
+  private async executeNode(
+    node: IWorkflowNode,
+    inputData: INodeExecutionData[],
+  ) {
+    console.log(`Executing node ${node.id} (${node.type})`);
+
+    // Find node type definition
+    const nodeType = Registry.get(node.type);
+    if (!nodeType) {
+      throw new Error(`Node type ${node.type} not found`);
+    }
+
+    // Prepare execution context
+    const executionFunctions: IExecuteFunctions = {
+      getInputData: () => inputData,
+      getNodeParameter: (paramName: string, fallback?: any) => {
+        // Retrieve from node.data or node.parameters
+        // Vue Flow stores custom data in .data
+        return node.data?.[paramName] ?? fallback;
+      },
+    };
+
+    // Execute
+    let outputData: INodeExecutionData[][] = [[]];
+    if (nodeType.execute) {
+      outputData = await nodeType.execute.call(executionFunctions);
+    } else {
+      // If no execute method (e.g. strict trigger or purely declarative), pass through?
+      // Triggers might just return what they produce.
+      // Assuming ManualTrigger returns something.
+      outputData = [[{ json: {} }]];
+    }
+
+    // Store execution data
+    this.executionData.set(node.id, outputData[0]);
+
+    // Find next nodes
+    const nextNodes = this.findNextNodes(node.id);
+    for (const nextNode of nextNodes) {
+      // Pass output 0 to next node (simple linear flow)
+      await this.executeNode(nextNode, outputData[0]);
+    }
+  }
+
+  private findNextNodes(nodeId: string): IWorkflowNode[] {
+    const edges = this.workflow.edges.filter((e) => e.source === nodeId);
+    const targetIds = edges.map((e) => e.target);
+    return this.workflow.nodes.filter((n) => targetIds.includes(n.id));
+  }
+}
