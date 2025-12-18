@@ -27,7 +27,15 @@ export interface ICredential {
 export interface INodeProperties {
   displayName: string;
   name: string;
-  type: "string" | "number" | "boolean" | "options" | "json" | "code";
+  type:
+    | "string"
+    | "number"
+    | "boolean"
+    | "options"
+    | "json"
+    | "code"
+    | "credential";
+  credentialType?: string; // If type is 'credential', this defines the required credential type (e.g. 'gemini_api')
   default?: any;
   options?: { name: string; value: string }[];
   placeholder?: string;

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { VueFlow, useVueFlow } from "@vue-flow/core";
 import type { Node, Edge, Connection, NodeMouseEvent } from "@vue-flow/core";
+import { useRoute } from "vue-router";
 import { Registry } from "@/lib/nodes/registry";
 import NodeDelegate from "@/components/editor/NodeDelegate.vue";
 import NodeInspector from "@/components/editor/NodeInspector.vue";
@@ -10,26 +11,22 @@ import { IWorkflow } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
 
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
-import CredentialManager from "@/components/editor/CredentialManager.vue";
 import { SecurityService } from "@/lib/services/security-service";
+import { Button } from "@/components/ui/button";
+
+const route = useRoute();
 
 // Initial state
 const nodes = ref<Node[]>([]);
 const edges = ref<Edge[]>([]);
 const selectedNode = ref<Node | null>(null);
 const logs = ref<any[]>([]);
-const savedWorkflows = ref<IWorkflow[]>([]);
 const currentWorkflowId = ref<string | null>(null);
+const currentWorkflowName = ref<string>("Untitled Workflow");
 
 const isMasterKeyModalOpen = ref(false);
-const isCredentialManagerOpen = ref(false);
-
-const openCredentials = () => {
-  isCredentialManagerOpen.value = true;
-};
 
 const onUnlocked = () => {
-  // maybe refresh things if needed
   logs.value.push("Security: Master Key Set");
 };
 
@@ -43,20 +40,38 @@ const {
   findNode,
 } = useVueFlow();
 
-// Load available workflows on mount
+// Load workflow on mount or route change
+const loadInitWorkflow = async () => {
+  const id = route.params.id as string;
+  if (!id || id === "new") {
+    createNewWorkflow();
+    return;
+  }
+
+  const workflow = await WorkflowService.getWorkflow(id);
+  if (workflow) {
+    loadWorkflow(workflow);
+  } else {
+    logs.value.push(`Workflow ${id} not found.`);
+  }
+};
+
 onMounted(async () => {
-  savedWorkflows.value = await WorkflowService.getAllWorkflows();
+  await loadInitWorkflow();
 
   // Try to restore master key
   const restored = await SecurityService.restoreFromSession();
   if (!restored) {
-    // Check if we have credentials that might need the key.
-    // If so, prompt immediately as requested.
-    // Or just prompt always if that's the policy.
-    // Based on request: "user need to provide master key when the derived key is not present when extension start or installed"
     isMasterKeyModalOpen.value = true;
   }
 });
+
+watch(
+  () => route.params.id,
+  async () => {
+    await loadInitWorkflow();
+  },
+);
 
 const getPortType = (
   nodeType: string,
@@ -93,7 +108,6 @@ onConnect((params: Connection) => {
   );
 
   if (sourceType !== targetType) {
-    // Could show toast notification here
     console.warn(
       `Connection rejected: Cannot connect ${sourceType} to ${targetType}`,
     );
@@ -148,7 +162,7 @@ const onDrop = (event: DragEvent) => {
 
 const loadWorkflow = (workflow: IWorkflow) => {
   currentWorkflowId.value = workflow.id;
-  // Map persistent format back to Vue Flow
+  currentWorkflowName.value = workflow.name;
   setNodes(
     workflow.nodes.map((n) => ({
       id: n.id,
@@ -171,9 +185,14 @@ const loadWorkflow = (workflow: IWorkflow) => {
 
 const saveWorkflow = async () => {
   const workflowId = currentWorkflowId.value || crypto.randomUUID();
-  const name = prompt("Workflow Name", "My Workflow") || "Untitled Workflow";
+  // Simple rename for now, ideally in a dialog or title bar
+  let name = currentWorkflowName.value;
+  if (!currentWorkflowId.value) {
+    name =
+      prompt("Workflow Name", currentWorkflowName.value) || "Untitled Workflow";
+    currentWorkflowName.value = name;
+  }
 
-  // Construct IWorkflow
   const workflow: IWorkflow = {
     id: workflowId,
     name: name,
@@ -195,16 +214,15 @@ const saveWorkflow = async () => {
     active: false,
   };
 
-  // Sanitize to remove Vue proxies and non-serializable objects
   const sanitizedWorkflow = JSON.parse(JSON.stringify(workflow));
   await WorkflowService.saveWorkflow(sanitizedWorkflow);
   currentWorkflowId.value = workflowId;
-  savedWorkflows.value = await WorkflowService.getAllWorkflows();
   logs.value.push(`Saved workflow: ${name}`);
 };
 
 const createNewWorkflow = () => {
   currentWorkflowId.value = null;
+  currentWorkflowName.value = "New Workflow";
   setNodes([]);
   setEdges([]);
   logs.value.push("Created new workflow");
@@ -216,7 +234,6 @@ const runWorkflow = async () => {
   console.log("Running workflow...");
   logs.value = [];
 
-  // Construct IWorkflow from Vue Flow state
   const workflow: IWorkflow = {
     id: currentWorkflowId.value || "temp-workflow",
     name: "Current Workflow",
@@ -251,51 +268,18 @@ const runWorkflow = async () => {
 </script>
 
 <template>
-  <div
-    class="flex h-screen w-screen overflow-hidden bg-background text-foreground"
-  >
-    <!-- Sidebar -->
-    <aside class="w-64 border-r bg-card p-4 flex flex-col gap-4">
-      <!-- Actions -->
-      <div class="flex gap-2">
-        <button
-          @click="createNewWorkflow"
-          class="flex-1 text-xs border rounded px-2 py-1 hover:bg-accent"
-        >
-          New
-        </button>
-        <button
-          @click="saveWorkflow"
-          class="flex-1 text-xs border rounded px-2 py-1 hover:bg-accent"
-        >
-          Save
-        </button>
+  <div class="h-full flex flex-col md:flex-row overflow-hidden">
+    <!-- Local Sidebar (Nodes) -->
+    <aside
+      class="w-64 border-r bg-card p-4 flex flex-col gap-4 overflow-y-auto"
+    >
+      <div class="flex items-center justify-between">
+        <h2 class="font-semibold text-lg truncate">
+          {{ currentWorkflowName }}
+        </h2>
       </div>
-
-      <!-- Workflows List (Simple) -->
-      <div class="border-b pb-2">
-        <h2 class="mb-2 text-sm font-semibold">Saved Workflows</h2>
-        <div class="max-h-32 overflow-y-auto space-y-1">
-          <div
-            v-for="wf in savedWorkflows"
-            :key="wf.id"
-            @click="loadWorkflow(wf)"
-            class="cursor-pointer text-xs p-1 rounded hover:bg-accent truncate"
-            :class="{ 'bg-accent': currentWorkflowId === wf.id }"
-          >
-            {{ wf.name }}
-          </div>
-          <div
-            v-if="savedWorkflows.length === 0"
-            class="text-xs text-muted-foreground italic"
-          >
-            No workflows saved.
-          </div>
-        </div>
-      </div>
-
       <div>
-        <h2 class="mb-2 text-lg font-semibold">Nodes</h2>
+        <h2 class="mb-2 text-sm font-semibold">Nodes</h2>
         <div class="space-y-2">
           <div
             v-for="node in Registry.getAll()"
@@ -315,19 +299,17 @@ const runWorkflow = async () => {
         </div>
       </div>
 
-      <div class="pt-4 border-t mt-auto">
-        <button
-          @click="runWorkflow"
-          class="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+      <div class="mt-auto space-y-2">
+        <Button variant="outline" class="w-full" @click="saveWorkflow"
+          >Save</Button
         >
-          Run Workflow
-        </button>
+        <Button class="w-full" @click="runWorkflow">Run Workflow</Button>
       </div>
 
-      <div class="flex-1 overflow-auto border-t pt-2 min-h-[100px]">
+      <div class="border-t pt-2 min-h-[100px]">
         <h3 class="text-xs font-semibold mb-1">Logs</h3>
         <div
-          class="text-xs font-mono text-muted-foreground whitespace-pre-wrap"
+          class="text-xs font-mono text-muted-foreground whitespace-pre-wrap max-h-32 overflow-y-auto"
         >
           <div v-for="(log, i) in logs" :key="i">{{ log }}</div>
         </div>
@@ -335,7 +317,11 @@ const runWorkflow = async () => {
     </aside>
 
     <!-- Canvas -->
-    <main class="flex-1 relative" @dragover="onDragOver" @drop="onDrop">
+    <main
+      class="flex-1 relative bg-background"
+      @dragover="onDragOver"
+      @drop="onDrop"
+    >
       <VueFlow
         v-model:nodes="nodes"
         v-model:edges="edges"
@@ -353,19 +339,9 @@ const runWorkflow = async () => {
       @close="isMasterKeyModalOpen = false"
       @unlocked="onUnlocked"
     />
-    <CredentialManager
-      :is-open="isCredentialManagerOpen"
-      @close="isCredentialManagerOpen = false"
-      @require-auth="isMasterKeyModalOpen = true"
-    />
 
     <!-- Inspector -->
     <aside class="w-80 border-l bg-card p-4 overflow-y-auto">
-      <div class="mb-4 flex justify-end">
-        <button @click="openCredentials" class="text-xs text-primary underline">
-          Manage Credentials
-        </button>
-      </div>
       <NodeInspector
         v-if="selectedNode"
         :node="selectedNode"
@@ -379,7 +355,6 @@ const runWorkflow = async () => {
 </template>
 
 <style>
-/* Ensure basics for vue flow */
 @import "@vue-flow/core/dist/style.css";
 @import "@vue-flow/core/dist/theme-default.css";
 </style>

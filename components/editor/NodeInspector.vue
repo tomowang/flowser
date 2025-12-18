@@ -27,12 +27,15 @@ watch(
     if (!nodeType.value) return;
 
     for (const prop of nodeType.value.description.properties) {
-      if (prop.name === "credentialId") {
+      if (prop.type === "credential") {
         try {
-          // We assume CredentialService is available and working
-          // In a browser extension context, we might need to be careful about async
           const creds = await CredentialService.getCredentials();
-          dynamicOptions.value[prop.name] = creds.map((c) => ({
+          // Filter if credentialType is specified
+          const filtered = prop.credentialType
+            ? creds.filter((c) => c.type === prop.credentialType)
+            : creds;
+
+          dynamicOptions.value[prop.name] = filtered.map((c) => ({
             name: c.name,
             value: c.id,
           }));
@@ -107,6 +110,25 @@ const updateValue = (key: string, value: any) => {
             (e) => updateValue(prop.name, (e.target as HTMLSelectElement).value)
           "
         >
+          <option
+            v-for="opt in prop.options"
+            :key="opt.value"
+            :value="opt.value"
+          >
+            {{ opt.name }}
+          </option>
+        </select>
+
+        <!-- Credential Select -->
+        <select
+          v-else-if="prop.type === 'credential'"
+          class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+          :value="node.data[prop.name] ?? prop.default"
+          @change="
+            (e) => updateValue(prop.name, (e.target as HTMLSelectElement).value)
+          "
+        >
+          <option value="" disabled selected>Select a credential</option>
           <option
             v-for="opt in prop.options"
             :key="opt.value"
