@@ -9,6 +9,10 @@ import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
 import { IWorkflow } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
 
+import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
+import CredentialManager from "@/components/editor/CredentialManager.vue";
+import { SecurityService } from "@/lib/services/security-service";
+
 // Initial state
 const nodes = ref<Node[]>([]);
 const edges = ref<Edge[]>([]);
@@ -16,6 +20,18 @@ const selectedNode = ref<Node | null>(null);
 const logs = ref<any[]>([]);
 const savedWorkflows = ref<IWorkflow[]>([]);
 const currentWorkflowId = ref<string | null>(null);
+
+const isMasterKeyModalOpen = ref(false);
+const isCredentialManagerOpen = ref(false);
+
+const openCredentials = () => {
+  isCredentialManagerOpen.value = true;
+};
+
+const onUnlocked = () => {
+  // maybe refresh things if needed
+  logs.value.push("Security: Master Key Set");
+};
 
 const {
   onConnect,
@@ -30,6 +46,16 @@ const {
 // Load available workflows on mount
 onMounted(async () => {
   savedWorkflows.value = await WorkflowService.getAllWorkflows();
+
+  // Try to restore master key
+  const restored = await SecurityService.restoreFromSession();
+  if (!restored) {
+    // Check if we have credentials that might need the key.
+    // If so, prompt immediately as requested.
+    // Or just prompt always if that's the policy.
+    // Based on request: "user need to provide master key when the derived key is not present when extension start or installed"
+    isMasterKeyModalOpen.value = true;
+  }
 });
 
 const getPortType = (
@@ -321,8 +347,25 @@ const runWorkflow = async () => {
       </VueFlow>
     </main>
 
+    <!-- UI Modals -->
+    <MasterKeyModal
+      :is-open="isMasterKeyModalOpen"
+      @close="isMasterKeyModalOpen = false"
+      @unlocked="onUnlocked"
+    />
+    <CredentialManager
+      :is-open="isCredentialManagerOpen"
+      @close="isCredentialManagerOpen = false"
+      @require-auth="isMasterKeyModalOpen = true"
+    />
+
     <!-- Inspector -->
     <aside class="w-80 border-l bg-card p-4 overflow-y-auto">
+      <div class="mb-4 flex justify-end">
+        <button @click="openCredentials" class="text-xs text-primary underline">
+          Manage Credentials
+        </button>
+      </div>
       <NodeInspector
         v-if="selectedNode"
         :node="selectedNode"

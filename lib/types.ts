@@ -15,6 +15,15 @@ export interface INodeExecutionData {
   };
 }
 
+export interface ICredential {
+  id: string;
+  name: string;
+  type: string;
+  encryptedData: string;
+  iv: string;
+  createdAt: number;
+}
+
 export interface INodeProperties {
   displayName: string;
   name: string;

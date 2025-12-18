@@ -15,6 +15,7 @@ export const AgentNode: INodeType = {
     inputs: [
       { name: "main", type: "main", label: "Input" },
       { name: "tools", type: "tool", label: "Tools" },
+      { name: "model", type: "model", label: "Model" },
     ],
     outputs: [{ name: "main", type: "main", label: "Output" }],
     properties: [
@@ -35,28 +36,50 @@ export const AgentNode: INodeType = {
     ],
   },
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+    // @ts-ignore
     const input = this.getInputData();
     // Simulate Agent logic
     const prompt = this.getNodeParameter("prompt") as string;
     const message = this.getNodeParameter("message") as string;
 
-    // In a real implementation, we would:
-    // 1. Get connected nodes on 'tools' input.
-    // 2. Introspect them to get their tool definitions.
-    // 3. Call an LLM with functions.
+    // Check for connected Model
+    let modelInfo = "No model connected";
+    let credentialInfo = "No credential";
 
-    // For this simulation:
-    // We check if a Calculator tool is connected, and if the message requests math, we "use" it.
+    if (this.getConnectedNodes) {
+      const modelNodes = this.getConnectedNodes("model");
+      if (modelNodes.length > 0) {
+        const modelNode = modelNodes[0];
+        const modelName = modelNode.data.modelName;
+        const credentialId = modelNode.data.credentialId;
+        modelInfo = `Connected Model: ${modelName}`;
 
-    // We need a way to see connected nodes.
-    // Since we don't have that in `IExecuteFunctions` yet, we'll mock it or simply return a static response for now,
-    // and then improve the engine to pass connections.
+        if (credentialId) {
+          // In real execution, we would use the credential to call the API
+          // Here we just verify we can access it (if we were in a secure context)
+          // Note: SecurityService and CredentialService usages would be here.
+          // Since this runs in browser, we can import them directly if we want to test fully.
+          const { CredentialService } = await import(
+            "../services/credential-service"
+          );
+          try {
+            const apiKey =
+              await CredentialService.getDecryptedValue(credentialId);
+            credentialInfo = apiKey
+              ? `Credential loaded (starts with ${apiKey.substring(0, 4)}...)`
+              : "Failed to decrypt";
+          } catch (e: any) {
+            credentialInfo = `Credential Error: ${e.message}`;
+          }
+        }
+      }
+    }
 
     return [
       [
         {
           json: {
-            output: `Agent received: "${message}". Processed with prompt: "${prompt}". (Tool usage mocked)`,
+            output: `Agent received: "${message}". Processed with prompt: "${prompt}".\n${modelInfo}\n${credentialInfo}`,
           },
         },
       ],

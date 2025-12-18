@@ -1,5 +1,11 @@
 import { INodeType } from "../types";
-import { ManualTrigger, HttpRequest, AgentNode, CalculatorTool } from "./index";
+import {
+  ManualTrigger,
+  HttpRequest,
+  AgentNode,
+  CalculatorTool,
+  GeminiModel,
+} from "./index";
 
 class NodeRegistry {
   private nodeTypes: Map<string, INodeType> = new Map();
@@ -24,3 +30,4 @@ Registry.register(ManualTrigger);
 Registry.register(HttpRequest);
 Registry.register(AgentNode);
 Registry.register(CalculatorTool);
+Registry.register(GeminiModel);

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { Registry } from "@/lib/nodes/registry";
-import { INodeProperties } from "@/lib/types";
+import { CredentialService } from "@/lib/services/credential-service";
 
 const props = defineProps<{
   node: any; // The selected node object from Vue Flow
@@ -9,13 +9,56 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:data"]);
 
+const dynamicOptions = ref<Record<string, { name: string; value: string }[]>>(
+  {},
+);
+
 // Get node type definition
 const nodeType = computed(() => {
   if (!props.node) return null;
   return Registry.get(props.node.data.nodeType);
 });
 
-const properties = computed(() => nodeType.value?.description.properties || []);
+// Load dynamic options (like credentials)
+watch(
+  () => props.node?.id,
+  async () => {
+    dynamicOptions.value = {};
+    if (!nodeType.value) return;
+
+    for (const prop of nodeType.value.description.properties) {
+      if (prop.name === "credentialId") {
+        try {
+          // We assume CredentialService is available and working
+          // In a browser extension context, we might need to be careful about async
+          const creds = await CredentialService.getCredentials();
+          dynamicOptions.value[prop.name] = creds.map((c) => ({
+            name: c.name,
+            value: c.id,
+          }));
+        } catch (e) {
+          console.warn("Failed to load credentials for inspector", e);
+        }
+      }
+    }
+  },
+  { immediate: true },
+);
+
+const properties = computed(() => {
+  const staticProps = nodeType.value?.description.properties || [];
+  return staticProps.map((p) => {
+    if (dynamicOptions.value[p.name]) {
+      // Create a new object to avoid mutating the registry definition permanently in a wrong way
+      // though here we are just returning a new mapped array config
+      return {
+        ...p,
+        options: dynamicOptions.value[p.name],
+      };
+    }
+    return p;
+  });
+});
 
 const updateValue = (key: string, value: any) => {
   const newData = { ...props.node.data, [key]: value };
