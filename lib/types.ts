@@ -26,6 +26,12 @@ export interface INodeProperties {
   required?: boolean;
 }
 
+export interface INodePort {
+  name: string;
+  type: string; // 'main' | 'tool' | ...
+  label?: string;
+}
+
 export interface INodeTypeDescription {
   displayName: string;
   name: string;
@@ -37,8 +43,8 @@ export interface INodeTypeDescription {
     name: string;
     color?: string;
   };
-  inputs: string[]; // e.g. ['main']
-  outputs: string[]; // e.g. ['main']
+  inputs: (string | INodePort)[]; // Support legacy string[] for backwards compat during migration or strict INodePort[]
+  outputs: (string | INodePort)[];
   properties: INodeProperties[];
 }
 
@@ -46,6 +52,7 @@ export interface IExecuteFunctions {
   // Methods available to nodes during execution
   getInputData(): INodeExecutionData[];
   getNodeParameter(paramName: string, fallback?: any): any;
+  getConnectedNodes?(inputName: string): any[];
 }
 
 export interface INodeType {

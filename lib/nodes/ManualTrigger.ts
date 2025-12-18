@@ -13,7 +13,7 @@ export const ManualTrigger: INodeType = {
       color: "#ff6d5a",
     },
     inputs: [],
-    outputs: ["main"],
+    outputs: [{ name: "main", type: "main", label: "Main" }],
     properties: [],
   },
   async execute() {

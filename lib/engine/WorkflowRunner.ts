@@ -53,16 +53,36 @@ export class WorkflowRunner {
         // Vue Flow stores custom data in .data
         return node.data?.[paramName] ?? fallback;
       },
+      getConnectedNodes: (inputName: string) => {
+        // Find edges connected to this node's targetHandle == inputName
+        const edges = this.workflow.edges.filter(
+          (e) => e.target === node.id && e.targetHandle === inputName,
+        );
+        const sourceIds = edges.map((e) => e.source);
+        // Return the actual node objects with their type definitions to be useful
+        return this.workflow.nodes
+          .filter((n) => sourceIds.includes(n.id))
+          .map((n) => ({
+            id: n.id,
+            type: n.type,
+            // We could attach the nodeType definition here if needed
+            data: n.data, // access params
+          }));
+      },
     };
 
     // Execute
     let outputData: INodeExecutionData[][] = [[]];
+
+    // Check if this is a Tool node. If so, and we reached here via main flow traversal,
+    // we might want to skip execution OR allow it if it has 'main' input.
+    // However, our findNextNodes logic filters edges.
+
     if (nodeType.execute) {
-      outputData = await nodeType.execute.call(executionFunctions);
+      // Need to extend IExecuteFunctions interface in types.ts to make TS happy
+      // casting for now or update types.ts
+      outputData = await nodeType.execute.call(executionFunctions as any);
     } else {
-      // If no execute method (e.g. strict trigger or purely declarative), pass through?
-      // Triggers might just return what they produce.
-      // Assuming ManualTrigger returns something.
       outputData = [[{ json: {} }]];
     }
 
@@ -78,7 +98,12 @@ export class WorkflowRunner {
   }
 
   private findNextNodes(nodeId: string): IWorkflowNode[] {
-    const edges = this.workflow.edges.filter((e) => e.source === nodeId);
+    // Only follow edges that originate from a 'main' output or are standard flow edges.
+    // We assume 'main' is the default flow.
+    const edges = this.workflow.edges.filter(
+      (e) =>
+        e.source === nodeId && (e.sourceHandle === "main" || !e.sourceHandle),
+    );
     const targetIds = edges.map((e) => e.target);
     return this.workflow.nodes.filter((n) => targetIds.includes(n.id));
   }

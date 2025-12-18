@@ -1,5 +1,5 @@
 import { INodeType } from "../types";
-import { ManualTrigger, HttpRequest } from "./index";
+import { ManualTrigger, HttpRequest, AgentNode, CalculatorTool } from "./index";
 
 class NodeRegistry {
   private nodeTypes: Map<string, INodeType> = new Map();
@@ -22,3 +22,5 @@ export const Registry = new NodeRegistry();
 // Register standard nodes (somewhere appropriate, maybe here for now)
 Registry.register(ManualTrigger);
 Registry.register(HttpRequest);
+Registry.register(AgentNode);
+Registry.register(CalculatorTool);

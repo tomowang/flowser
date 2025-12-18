@@ -12,8 +12,8 @@ export const HttpRequest: INodeType = {
       name: "HTTP Request",
       color: "#22bbda",
     },
-    inputs: ["main"],
-    outputs: ["main"],
+    inputs: [{ name: "main", type: "main", label: "Main" }],
+    outputs: [{ name: "main", type: "main", label: "Main" }],
     properties: [
       {
         displayName: "URL",
