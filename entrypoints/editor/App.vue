@@ -17,15 +17,63 @@ const logs = ref<any[]>([]);
 const savedWorkflows = ref<IWorkflow[]>([]);
 const currentWorkflowId = ref<string | null>(null);
 
-const { onConnect, addEdges, onNodeClick, onPaneClick, setNodes, setEdges } =
-  useVueFlow();
+const {
+  onConnect,
+  addEdges,
+  onNodeClick,
+  onPaneClick,
+  setNodes,
+  setEdges,
+  findNode,
+} = useVueFlow();
 
 // Load available workflows on mount
 onMounted(async () => {
   savedWorkflows.value = await WorkflowService.getAllWorkflows();
 });
 
+const getPortType = (
+  nodeType: string,
+  portName: string,
+  kind: "inputs" | "outputs",
+): string => {
+  const def = Registry.get(nodeType);
+  if (!def) return "main";
+
+  const ports = def.description[kind];
+  const port = ports.find((p) => p.name === portName);
+
+  if (!port) return "";
+  return port.type;
+};
+
 onConnect((params: Connection) => {
+  if (!params.source || !params.target) return;
+
+  const sourceNode = findNode(params.source);
+  const targetNode = findNode(params.target);
+
+  if (!sourceNode || !targetNode) return;
+
+  const sourceType = getPortType(
+    sourceNode.data.nodeType,
+    params.sourceHandle || "",
+    "outputs",
+  );
+  const targetType = getPortType(
+    targetNode.data.nodeType,
+    params.targetHandle || "",
+    "inputs",
+  );
+
+  if (sourceType !== targetType) {
+    // Could show toast notification here
+    console.warn(
+      `Connection rejected: Cannot connect ${sourceType} to ${targetType}`,
+    );
+    return;
+  }
+
   addEdges([params]);
 });
 

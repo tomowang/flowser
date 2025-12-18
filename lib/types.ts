@@ -43,8 +43,8 @@ export interface INodeTypeDescription {
     name: string;
     color?: string;
   };
-  inputs: (string | INodePort)[]; // Support legacy string[] for backwards compat during migration or strict INodePort[]
-  outputs: (string | INodePort)[];
+  inputs: INodePort[];
+  outputs: INodePort[];
   properties: INodeProperties[];
 }
 

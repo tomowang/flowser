@@ -12,18 +12,8 @@ const nodeType = computed(() => {
   return Registry.get(props.data.nodeType);
 });
 
-const getPorts = (ports: (string | INodePort)[] | undefined) => {
-  if (!ports) return [];
-  return ports.map((p) => {
-    if (typeof p === "string") {
-      return { name: p, type: "main", label: p };
-    }
-    return p;
-  });
-};
-
-const inputs = computed(() => getPorts(nodeType.value?.description.inputs));
-const outputs = computed(() => getPorts(nodeType.value?.description.outputs));
+const inputs = computed(() => nodeType.value?.description.inputs || []);
+const outputs = computed(() => nodeType.value?.description.outputs || []);
 
 const getHandleStyle = (type: string) => {
   if (type === "tool") {
