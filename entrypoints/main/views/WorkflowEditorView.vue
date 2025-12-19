@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import { VueFlow, useVueFlow } from "@vue-flow/core";
+import { Background } from "@vue-flow/background";
+import { Controls } from "@vue-flow/controls";
+import { MiniMap } from "@vue-flow/minimap";
 import type { Node, Edge, Connection, NodeMouseEvent } from "@vue-flow/core";
 import { useRoute } from "vue-router";
 import { Registry } from "@/lib/nodes/registry";
 import NodeDelegate from "@/components/editor/NodeDelegate.vue";
+import CustomEdge from "@/components/editor/CustomEdge.vue";
 import NodeInspector from "@/components/editor/NodeInspector.vue";
 import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
 import { IWorkflow } from "@/lib/types";
@@ -13,6 +17,12 @@ import { WorkflowService } from "@/lib/services/workflow-service";
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
 import { SecurityService } from "@/lib/services/security-service";
 import { Button } from "@/components/ui/button";
+import { Search, Plus, Play, Save } from "lucide-vue-next"; // Icons
+
+import "@vue-flow/core/dist/style.css";
+import "@vue-flow/core/dist/theme-default.css";
+import "@vue-flow/controls/dist/style.css";
+import "@vue-flow/minimap/dist/style.css";
 
 const route = useRoute();
 
@@ -23,6 +33,7 @@ const selectedNode = ref<Node | null>(null);
 const logs = ref<any[]>([]);
 const currentWorkflowId = ref<string | null>(null);
 const currentWorkflowName = ref<string>("Untitled Workflow");
+const searchQuery = ref("");
 
 const isMasterKeyModalOpen = ref(false);
 
@@ -114,7 +125,7 @@ onConnect((params: Connection) => {
     return;
   }
 
-  addEdges([params]);
+  addEdges([{ ...params, type: "custom" }]); // Use custom edge
 });
 
 onNodeClick((event: NodeMouseEvent) => {
@@ -178,6 +189,7 @@ const loadWorkflow = (workflow: IWorkflow) => {
       target: e.target,
       sourceHandle: e.sourceHandle,
       targetHandle: e.targetHandle,
+      type: "custom", // Force custom type
     })),
   );
   logs.value.push(`Loaded workflow: ${workflow.name}`);
@@ -185,7 +197,6 @@ const loadWorkflow = (workflow: IWorkflow) => {
 
 const saveWorkflow = async () => {
   const workflowId = currentWorkflowId.value || crypto.randomUUID();
-  // Simple rename for now, ideally in a dialog or title bar
   let name = currentWorkflowName.value;
   if (!currentWorkflowId.value) {
     name =
@@ -268,57 +279,24 @@ const runWorkflow = async () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col md:flex-row overflow-hidden">
-    <!-- Local Sidebar (Nodes) -->
-    <aside
-      class="w-64 border-r bg-card p-4 flex flex-col gap-4 overflow-y-auto"
+  <div class="h-full w-full relative">
+    <!-- Header / Toolbar (Top) -->
+    <div
+      class="absolute top-4 left-4 z-10 flex items-center gap-2 bg-card p-2 rounded-md shadow border"
     >
-      <div class="flex items-center justify-between">
-        <h2 class="font-semibold text-lg truncate">
-          {{ currentWorkflowName }}
-        </h2>
-      </div>
-      <div>
-        <h2 class="mb-2 text-sm font-semibold">Nodes</h2>
-        <div class="space-y-2">
-          <div
-            v-for="node in Registry.getAll()"
-            :key="node.description.name"
-            class="cursor-grab rounded border bg-popover p-2 hover:bg-accent text-sm shadow-sm"
-            draggable="true"
-            @dragstart="
-              (event) =>
-                event.dataTransfer?.setData(
-                  'application/vueflow',
-                  node.description.name,
-                )
-            "
-          >
-            {{ node.description.displayName }}
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-auto space-y-2">
-        <Button variant="outline" class="w-full" @click="saveWorkflow"
-          >Save</Button
-        >
-        <Button class="w-full" @click="runWorkflow">Run Workflow</Button>
-      </div>
-
-      <div class="border-t pt-2 min-h-[100px]">
-        <h3 class="text-xs font-semibold mb-1">Logs</h3>
-        <div
-          class="text-xs font-mono text-muted-foreground whitespace-pre-wrap max-h-32 overflow-y-auto"
-        >
-          <div v-for="(log, i) in logs" :key="i">{{ log }}</div>
-        </div>
-      </div>
-    </aside>
+      <h2 class="font-semibold px-2">{{ currentWorkflowName }}</h2>
+      <div class="h-4 w-[1px] bg-border mx-2"></div>
+      <Button size="sm" variant="outline" @click="saveWorkflow">
+        <Save class="w-4 h-4 mr-1" /> Save
+      </Button>
+      <Button size="sm" @click="runWorkflow">
+        <Play class="w-4 h-4 mr-1" /> Execute
+      </Button>
+    </div>
 
     <!-- Canvas -->
     <main
-      class="flex-1 relative bg-background"
+      class="h-full w-full bg-background"
       @dragover="onDragOver"
       @drop="onDrop"
     >
@@ -326,12 +304,96 @@ const runWorkflow = async () => {
         v-model:nodes="nodes"
         v-model:edges="edges"
         class="h-full w-full"
+        :default-zoom="1"
+        :min-zoom="0.2"
+        :max-zoom="4"
       >
         <template #node-custom="props">
-          <NodeDelegate :data="props.data" />
+          <NodeDelegate :id="props.id" :data="props.data" />
         </template>
+
+        <template #edge-custom="props">
+          <CustomEdge v-bind="props" />
+        </template>
+
+        <Background pattern-color="#aaa" :gap="16" />
+        <Controls position="bottom left" />
+        <MiniMap position="buttom left" />
       </VueFlow>
     </main>
+
+    <!-- Floating Node Panel (Right) -->
+    <aside
+      class="absolute top-20 right-4 z-10 w-64 bg-card border rounded-lg shadow-lg flex flex-col max-h-[calc(100vh-6rem)]"
+    >
+      <div class="p-4 border-b">
+        <h3 class="font-semibold mb-2">Build Workflow</h3>
+        <div class="relative">
+          <Search
+            class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+          />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search nodes..."
+            class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pl-9 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-2">
+        <div
+          v-for="node in Registry.getAll()"
+          :key="node.description.name"
+          class="cursor-grab flex items-center gap-3 rounded-md border bg-popover p-3 hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm"
+          draggable="true"
+          @dragstart="
+            (event) =>
+              event.dataTransfer?.setData(
+                'application/vueflow',
+                node.description.name,
+              )
+          "
+        >
+          <div
+            class="flex h-8 w-8 items-center justify-center rounded bg-muted"
+          >
+            <!-- Icon support if available -->
+            <Plus class="h-4 w-4" />
+          </div>
+          <div class="flex flex-col text-left">
+            <span class="text-sm font-medium">{{
+              node.description.displayName
+            }}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Node Inspector (Bottom Drawer or Floating? - Using existing Sidebar logic properly styled or Floating Left maybe? 
+         Plan said Right Panel for Nodes. Inspector could overlay or be part of it. 
+         Let's keep it simply absolute for now, or just leave it for now if not specified.
+         Actually currently it was a sidebar. Let's make it a Floating Panel on the Left for now to balance it? Or just Bottom?
+         Let's put it Bottom Right, above minimap if selected? 
+         Actually common pattern is Right Sidebar replaces Node List when selected.
+    -->
+    <aside
+      v-if="selectedNode"
+      class="absolute top-20 right-4 z-20 w-80 bg-card border rounded-lg shadow-xl flex flex-col h-[calc(100vh-6rem)]"
+    >
+      <div class="flex items-center justify-between p-4 border-b bg-muted/20">
+        <h3 class="font-semibold">Properties</h3>
+        <Button variant="ghost" size="icon" @click="selectedNode = null"
+          >X</Button
+        >
+      </div>
+      <div class="p-4 overflow-y-auto flex-1">
+        <NodeInspector
+          :node="selectedNode"
+          @update:data="(newData) => (selectedNode!.data = newData)"
+        />
+      </div>
+    </aside>
 
     <!-- UI Modals -->
     <MasterKeyModal
@@ -340,21 +402,47 @@ const runWorkflow = async () => {
       @unlocked="onUnlocked"
     />
 
-    <!-- Inspector -->
-    <aside class="w-80 border-l bg-card p-4 overflow-y-auto">
-      <NodeInspector
-        v-if="selectedNode"
-        :node="selectedNode"
-        @update:data="(newData) => (selectedNode!.data = newData)"
-      />
-      <div v-else class="text-muted-foreground text-sm">
-        Select a node to edit properties.
+    <!-- Execution Logs (Floating Bottom Center) -->
+    <div
+      v-if="logs.length > 0"
+      class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 w-96 max-h-48 bg-black/80 text-white rounded-md p-4 overflow-y-auto text-xs font-mono shadow-lg backdrop-blur-sm pointer-events-auto"
+    >
+      <div
+        class="flex justify-between items-center mb-2 sticky top-0 bg-black/80 p-1"
+      >
+        <span class="font-bold">Execution Logs</span>
+        <button @click="logs = []" class="hover:text-red-400">Clear</button>
       </div>
-    </aside>
+      <div
+        v-for="(log, i) in logs"
+        :key="i"
+        class="border-b border-white/10 last:border-0 py-1"
+      >
+        {{ log }}
+      </div>
+    </div>
   </div>
 </template>
 
 <style>
-@import "@vue-flow/core/dist/style.css";
-@import "@vue-flow/core/dist/theme-default.css";
+/* Adjustments for controls position if needed */
+.vue-flow__controls {
+  display: flex;
+  flex-direction: row;
+}
+
+.vue-flow__controls-button {
+  border: none;
+  border-right: 1px solid #eee;
+}
+
+.vue-flow__controls-button:last-child {
+  border-right: none;
+}
+
+/* Place minimap above controls */
+.vue-flow__minimap {
+  bottom: 40px !important; /* Force override of .vue-flow__panel.bottom */
+  transform: none; /* Reset potential defaults */
+}
 </style>
