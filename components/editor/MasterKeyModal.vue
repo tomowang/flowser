@@ -26,8 +26,15 @@ const unlock = async () => {
     error.value = "";
 
     // Derive key
-    // Derive key
     const key = await SecurityService.deriveKey(password.value);
+
+    // Validate key
+    const isValid = await SecurityService.validateKey(key);
+    if (!isValid) {
+      error.value = "Invalid Master Password";
+      return;
+    }
+
     await SecurityService.saveToSession(key);
 
     emit("unlocked");

@@ -1,3 +1,5 @@
+import { dbPromise } from "../db";
+
 export class SecurityService {
   private static masterKey: CryptoKey | null = null;
 
@@ -98,6 +100,49 @@ export class SecurityService {
 
     const decoder = new TextDecoder();
     return decoder.decode(decryptedContent);
+  }
+
+  /**
+   * Decrypts data using a specific key.
+   */
+  static async decryptWithKey(
+    encryptedData: string,
+    ivStr: string,
+    key: CryptoKey,
+  ): Promise<string> {
+    const iv = this.base64ToBuffer(ivStr);
+    const data = this.base64ToBuffer(encryptedData);
+
+    const decryptedContent = await crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv: iv as any,
+      },
+      key,
+      data as any,
+    );
+
+    const decoder = new TextDecoder();
+    return decoder.decode(decryptedContent);
+  }
+
+  /**
+   * Validates the master key by attempting to decrypt the first available credential.
+   * Returns true if no credentials exist or if decryption succeeds.
+   */
+  static async validateKey(key: CryptoKey): Promise<boolean> {
+    const db = await dbPromise;
+    const all = await db.getAll("credentials");
+    if (all.length === 0) return true;
+
+    // Use the first one to validate
+    const cred = all[0];
+    try {
+      await this.decryptWithKey(cred.encryptedData, cred.iv, key);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   // --- Helpers ---
