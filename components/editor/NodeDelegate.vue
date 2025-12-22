@@ -71,35 +71,30 @@ const deleteNode = (e: Event) => {
     </div>
 
     <!-- Main Inputs (Left) -->
-    <div
+    <Handle
       v-for="port in mainInputs"
       :key="port.name"
-      class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1.5 z-10 w-3 h-3"
-    >
-      <Handle
-        type="target"
-        :position="Position.Left"
-        :id="port.name"
-        class="!w-3 !h-3 !left-0 !top-0 !bg-muted-foreground hover:!bg-primary transition-colors border-2 border-background"
-        :style="getHandleStyle(port.type)"
-      />
-      <!-- Tooltip for main input if needed, or just rely on structure -->
-    </div>
+      type="target"
+      :position="Position.Left"
+      :id="port.name"
+      class="transition-colors !w-3 !h-3"
+      :style="{
+        ...getHandleStyle(port.type),
+      }"
+    />
 
     <!-- Main Outputs (Right) -->
-    <div
+    <Handle
       v-for="port in mainOutputs"
       :key="port.name"
-      class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1.5 z-10 w-3 h-3"
-    >
-      <Handle
-        type="source"
-        :position="Position.Right"
-        :id="port.name"
-        class="!w-3 !h-3 !left-0 !top-0 !bg-muted-foreground hover:!bg-primary transition-colors border-2 border-background"
-        :style="getHandleStyle(port.type)"
-      />
-    </div>
+      type="source"
+      :position="Position.Right"
+      :id="port.name"
+      class="transition-colors !w-3 !h-3"
+      :style="{
+        ...getHandleStyle(port.type),
+      }"
+    />
 
     <!-- Bottom Inputs (Tool/Model/Memory) -->
     <div
