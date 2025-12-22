@@ -317,8 +317,8 @@ const runWorkflow = async () => {
         </template>
 
         <Background pattern-color="#aaa" :gap="16" />
-        <Controls position="bottom left" />
-        <MiniMap position="buttom left" />
+        <Controls position="bottom-left" />
+        <MiniMap position="bottom-left" />
       </VueFlow>
     </main>
 
