@@ -11,8 +11,9 @@ import NodeDelegate from "@/components/editor/NodeDelegate.vue";
 import CustomEdge from "@/components/editor/CustomEdge.vue";
 import NodeInspector from "@/components/editor/NodeInspector.vue";
 import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
-import { IWorkflow } from "@/lib/types";
+import { IWorkflow, IWorkflowExecutionResult } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
+import ExecutionPanel from "@/components/editor/execution/ExecutionPanel.vue";
 
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
 import { SecurityService } from "@/lib/services/security-service";
@@ -30,7 +31,8 @@ const route = useRoute();
 const nodes = ref<Node[]>([]);
 const edges = ref<Edge[]>([]);
 const selectedNode = ref<Node | null>(null);
-const logs = ref<any[]>([]);
+const logs = ref<any[]>([]); // Keep for basic logs if needed, but mainly use executionResult
+const executionResult = ref<IWorkflowExecutionResult | null>(null);
 const currentWorkflowId = ref<string | null>(null);
 const currentWorkflowName = ref<string>("Untitled Workflow");
 const searchQuery = ref("");
@@ -239,11 +241,11 @@ const createNewWorkflow = () => {
   logs.value.push("Created new workflow");
 };
 
-// --- Execution Logic ---
-
+// Let's redefine runWorkflow
 const runWorkflow = async () => {
   console.log("Running workflow...");
   logs.value = [];
+  executionResult.value = null;
 
   const workflow: IWorkflow = {
     id: currentWorkflowId.value || "temp-workflow",
@@ -269,8 +271,9 @@ const runWorkflow = async () => {
   const runner = new WorkflowRunner(workflow);
 
   try {
-    await runner.run();
-    logs.value.push("Execution finished successfully.");
+    const result = await runner.run();
+    executionResult.value = result;
+    logs.value.push("Execution finished.");
   } catch (e: any) {
     console.error(e);
     logs.value.push(`Error: ${e.message}`);
@@ -279,7 +282,7 @@ const runWorkflow = async () => {
 </script>
 
 <template>
-  <div class="h-full w-full relative">
+  <div class="h-full w-full relative flex flex-col">
     <!-- Header / Toolbar (Top) -->
     <div
       class="absolute top-4 left-4 z-10 flex items-center gap-2 bg-card p-2 rounded-md shadow border"
@@ -296,7 +299,7 @@ const runWorkflow = async () => {
 
     <!-- Canvas -->
     <main
-      class="h-full w-full bg-background"
+      class="flex-1 w-full bg-background relative"
       @dragover="onDragOver"
       @drop="onDrop"
     >
@@ -325,7 +328,9 @@ const runWorkflow = async () => {
     <!-- Floating Node Panel (Right) -->
     <aside
       class="absolute top-20 right-4 z-10 w-64 bg-card border rounded-lg shadow-lg flex flex-col max-h-[calc(100vh-6rem)]"
+      v-if="!selectedNode"
     >
+      <!-- ... (Content of node panel) ... -->
       <div class="p-4 border-b">
         <h3 class="font-semibold mb-2">Build Workflow</h3>
         <div class="relative">
@@ -370,13 +375,7 @@ const runWorkflow = async () => {
       </div>
     </aside>
 
-    <!-- Node Inspector (Bottom Drawer or Floating? - Using existing Sidebar logic properly styled or Floating Left maybe? 
-         Plan said Right Panel for Nodes. Inspector could overlay or be part of it. 
-         Let's keep it simply absolute for now, or just leave it for now if not specified.
-         Actually currently it was a sidebar. Let's make it a Floating Panel on the Left for now to balance it? Or just Bottom?
-         Let's put it Bottom Right, above minimap if selected? 
-         Actually common pattern is Right Sidebar replaces Node List when selected.
-    -->
+    <!-- Node Inspector -->
     <aside
       v-if="selectedNode"
       class="absolute top-20 right-4 z-20 w-80 bg-card border rounded-lg shadow-xl flex flex-col h-[calc(100vh-6rem)]"
@@ -402,24 +401,12 @@ const runWorkflow = async () => {
       @unlocked="onUnlocked"
     />
 
-    <!-- Execution Logs (Floating Bottom Center) -->
-    <div
-      v-if="logs.length > 0"
-      class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 w-96 max-h-48 bg-black/80 text-white rounded-md p-4 overflow-y-auto text-xs font-mono shadow-lg backdrop-blur-sm pointer-events-auto"
-    >
-      <div
-        class="flex justify-between items-center mb-2 sticky top-0 bg-black/80 p-1"
-      >
-        <span class="font-bold">Execution Logs</span>
-        <button @click="logs = []" class="hover:text-red-400">Clear</button>
-      </div>
-      <div
-        v-for="(log, i) in logs"
-        :key="i"
-        class="border-b border-white/10 last:border-0 py-1"
-      >
-        {{ log }}
-      </div>
+    <!-- Execution Panel (Bottom) -->
+    <div v-if="executionResult" class="h-64 z-30 w-full bg-background border-t">
+      <ExecutionPanel
+        :execution-result="executionResult"
+        @close="executionResult = null"
+      />
     </div>
   </div>
 </template>

@@ -15,6 +15,25 @@ export interface INodeExecutionData {
   };
 }
 
+export interface IExecutionNodeResult {
+  nodeId: string;
+  nodeName: string;
+  startTime: number;
+  endTime: number;
+  status: "success" | "error";
+  errorMessage?: string;
+  inputData: INodeExecutionData[];
+  outputData: INodeExecutionData[];
+}
+
+export interface IWorkflowExecutionResult {
+  workflowId: string;
+  startTime: number;
+  endTime: number;
+  status: "success" | "error";
+  nodeExecutionResults: IExecutionNodeResult[];
+}
+
 export interface ICredential {
   id: string;
   name: string;

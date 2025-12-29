@@ -3,18 +3,24 @@ import {
   INodeExecutionData,
   IExecuteFunctions,
   IWorkflowNode,
+  IWorkflowExecutionResult,
+  IExecutionNodeResult,
 } from "../types";
 import { Registry } from "../nodes/registry";
 
 export class WorkflowRunner {
   private workflow: IWorkflow;
   private executionData: Map<string, INodeExecutionData[]> = new Map();
+  private nodeExecutionResults: IExecutionNodeResult[] = [];
 
   constructor(workflow: IWorkflow) {
     this.workflow = workflow;
   }
 
-  async run(triggerNodeId?: string) {
+  async run(triggerNodeId?: string): Promise<IWorkflowExecutionResult> {
+    const startTime = Date.now();
+    this.nodeExecutionResults = [];
+
     // 1. Identify start node
     let startNode: IWorkflowNode | undefined;
 
@@ -30,7 +36,24 @@ export class WorkflowRunner {
       throw new Error("No trigger node found");
     }
 
-    await this.executeNode(startNode, []);
+    try {
+      await this.executeNode(startNode, []);
+      return {
+        workflowId: this.workflow.id,
+        startTime,
+        endTime: Date.now(),
+        status: "success",
+        nodeExecutionResults: this.nodeExecutionResults,
+      };
+    } catch (e: any) {
+      return {
+        workflowId: this.workflow.id,
+        startTime,
+        endTime: Date.now(),
+        status: "error",
+        nodeExecutionResults: this.nodeExecutionResults,
+      };
+    }
   }
 
   private async executeNode(
@@ -38,6 +61,7 @@ export class WorkflowRunner {
     inputData: INodeExecutionData[],
   ) {
     console.log(`Executing node ${node.id} (${node.type})`);
+    const startTime = Date.now();
 
     // Find node type definition
     const nodeType = Registry.get(node.type);
@@ -73,17 +97,31 @@ export class WorkflowRunner {
 
     // Execute
     let outputData: INodeExecutionData[][] = [[]];
+    let executeError: any = null;
 
-    // Check if this is a Tool node. If so, and we reached here via main flow traversal,
-    // we might want to skip execution OR allow it if it has 'main' input.
-    // However, our findNextNodes logic filters edges.
-
-    if (nodeType.execute) {
-      // Need to extend IExecuteFunctions interface in types.ts to make TS happy
-      // casting for now or update types.ts
-      outputData = await nodeType.execute.call(executionFunctions as any);
-    } else {
-      outputData = [[{ json: {} }]];
+    try {
+      if (nodeType.execute) {
+        // Need to extend IExecuteFunctions interface in types.ts to make TS happy
+        // casting for now or update types.ts
+        outputData = await nodeType.execute.call(executionFunctions as any);
+      } else {
+        outputData = [[{ json: {} }]];
+      }
+    } catch (e) {
+      executeError = e;
+      throw e;
+    } finally {
+      const endTime = Date.now();
+      this.nodeExecutionResults.push({
+        nodeId: node.id,
+        nodeName: node.data?.label || nodeType.description.displayName,
+        startTime,
+        endTime,
+        status: executeError ? "error" : "success",
+        errorMessage: executeError?.message,
+        inputData,
+        outputData: outputData[0],
+      });
     }
 
     // Store execution data
