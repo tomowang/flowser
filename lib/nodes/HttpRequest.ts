@@ -1,4 +1,6 @@
+import { browser } from "#imports";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../types";
+import { MessageType } from "../messages";
 
 export const HttpRequest: INodeType = {
   description: {
@@ -63,15 +65,23 @@ export const HttpRequest: INodeType = {
     }
 
     try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
+      const response = await browser.runtime.sendMessage({
+        type: MessageType.HTTP_EXECUTE_REQUEST,
+        payload: {
+          url,
+          method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body,
         },
-        body: body ? JSON.stringify(body) : undefined,
       });
 
-      const data = await response.json();
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+
+      const data = response.data;
 
       // Return 1 item handling the response
       // In real n8n, this iterates over items. For simplicity, we assume 1-to-1 or just single execution for now if items isn't array mapped.

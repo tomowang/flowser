@@ -11,4 +11,7 @@ export default defineConfig({
   webExt: {
     chromiumArgs: ["--user-data-dir=./.wxt/chrome-data"],
   },
+  manifest: {
+    host_permissions: ["<all_urls>"],
+  },
 });
