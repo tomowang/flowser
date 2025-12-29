@@ -27,7 +27,9 @@ export interface IExecutionNodeResult {
 }
 
 export interface IWorkflowExecutionResult {
+  id: string;
   workflowId: string;
+  workflowName?: string;
   startTime: number;
   endTime: number;
   status: "success" | "error";

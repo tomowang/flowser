@@ -39,7 +39,9 @@ export class WorkflowRunner {
     try {
       await this.executeNode(startNode, []);
       return {
+        id: crypto.randomUUID(),
         workflowId: this.workflow.id,
+        workflowName: this.workflow.name,
         startTime,
         endTime: Date.now(),
         status: "success",
@@ -47,7 +49,9 @@ export class WorkflowRunner {
       };
     } catch (e: any) {
       return {
+        id: crypto.randomUUID(),
         workflowId: this.workflow.id,
+        workflowName: this.workflow.name,
         startTime,
         endTime: Date.now(),
         status: "error",

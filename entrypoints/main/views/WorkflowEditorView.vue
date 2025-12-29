@@ -13,6 +13,7 @@ import NodeInspector from "@/components/editor/NodeInspector.vue";
 import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
 import { IWorkflow, IWorkflowExecutionResult } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
+import { ExecutionService } from "@/lib/services/execution-service";
 import ExecutionPanel from "@/components/editor/execution/ExecutionPanel.vue";
 
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
@@ -249,7 +250,7 @@ const runWorkflow = async () => {
 
   const workflow: IWorkflow = {
     id: currentWorkflowId.value || "temp-workflow",
-    name: "Current Workflow",
+    name: currentWorkflowName.value,
     nodes: nodes.value.map((n) => ({
       id: n.id,
       type: n.data.nodeType,
@@ -273,6 +274,7 @@ const runWorkflow = async () => {
   try {
     const result = await runner.run();
     executionResult.value = result;
+    await ExecutionService.saveExecution(result);
     logs.value.push("Execution finished.");
   } catch (e: any) {
     console.error(e);
