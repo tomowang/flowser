@@ -47,10 +47,7 @@ export const HttpRequest: INodeType = {
       },
     ],
   },
-  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-    const items = this.getInputData();
-    const returnData: INodeExecutionData[] = [];
-
+  async run(this: IExecuteFunctions): Promise<INodeExecutionData> {
     const url = this.getNodeParameter("url") as string;
     const method = this.getNodeParameter("method") as string;
     const bodyStr = this.getNodeParameter("body") as string;
@@ -81,23 +78,15 @@ export const HttpRequest: INodeType = {
         throw new Error(response.error);
       }
 
-      const data = response.data;
-
-      // Return 1 item handling the response
-      // In real n8n, this iterates over items. For simplicity, we assume 1-to-1 or just single execution for now if items isn't array mapped.
-      // But the signature inputs Map<string, any>.
-
-      returnData.push({
-        json: data,
-      });
+      return {
+        json: response.data,
+      };
     } catch (error: any) {
-      returnData.push({
+      return {
         json: {
           error: error.message,
         },
-      });
+      };
     }
-
-    return [returnData];
   },
 };

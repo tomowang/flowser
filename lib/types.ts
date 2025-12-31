@@ -90,12 +90,14 @@ export interface IExecuteFunctions {
   // Methods available to nodes during execution
   getInputData(): INodeExecutionData[];
   getNodeParameter(paramName: string, fallback?: any): any;
+  getNodeParameter(paramName: string, itemIndex: number, fallback?: any): any;
   getConnectedNodes?(inputName: string): any[];
 }
 
 export interface INodeType {
   description: INodeTypeDescription;
   execute?(this: IExecuteFunctions): Promise<INodeExecutionData[][]>;
+  run?(this: IExecuteFunctions): Promise<INodeExecutionData>;
 }
 
 // Workflow persistence model

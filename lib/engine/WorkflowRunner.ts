@@ -74,12 +74,32 @@ export class WorkflowRunner {
     }
 
     // Prepare execution context
+    let itemIndex = 0;
     const executionFunctions: IExecuteFunctions = {
       getInputData: () => inputData,
-      getNodeParameter: (paramName: string, fallback?: any) => {
+      getNodeParameter: (paramName: string, ...args: any[]) => {
+        // Handle optional itemIndex argument
+        // getNodeParameter(name, index, fallback)
+        // getNodeParameter(name, fallback)
+        let index = itemIndex;
+        let fallback: any = undefined;
+
+        if (typeof args[0] === "number") {
+          index = args[0];
+          fallback = args[1];
+        } else {
+          fallback = args[0];
+        }
+
         // Retrieve from node.data or node.parameters
         // Vue Flow stores custom data in .data
-        return node.data?.[paramName] ?? fallback;
+        const value = node.data?.[paramName] ?? fallback;
+        if (typeof value === "string" && value.startsWith("=")) {
+          // Expression evaluation would go here, using 'index' to get context
+          // For now, return raw value or implement basic expression handling if needed
+          return value;
+        }
+        return value;
       },
       getConnectedNodes: (inputName: string) => {
         // Find edges connected to this node's targetHandle == inputName
@@ -104,10 +124,39 @@ export class WorkflowRunner {
     let executeError: any = null;
 
     try {
-      if (nodeType.execute) {
+      if (nodeType.run) {
+        // Item-based execution
+        outputData = [[]];
+        for (let i = 0; i < inputData.length; i++) {
+          itemIndex = i;
+          try {
+            const result = await nodeType.run.call(executionFunctions);
+            if (result) {
+              outputData[0].push(result);
+            }
+          } catch (e: any) {
+            // In n8n, we might continue or fail based on settings.
+            // For now, let's treat single item failure as global failure or maybe log it?
+            // Let's rethrow for now to fail the node.
+            throw e;
+          }
+        }
+        if (inputData.length === 0) {
+          // If no input, maybe run once?
+          // Usually run nodes need input. If trigger, input is empty array?
+          // If manual trigger gave us empty array, loop doesn't run.
+          // But manual trigger usually gives 1 item.
+          itemIndex = 0;
+          try {
+            // Try running once if no input items (e.g. for nodes that generate data from nothing but are not triggers?)
+            // But strictly, run() implies processing an item.
+            // If we have 0 items, we produce 0 items usually.
+          } catch (e) {}
+        }
+      } else if (nodeType.execute) {
         // Need to extend IExecuteFunctions interface in types.ts to make TS happy
         // casting for now or update types.ts
-        outputData = await nodeType.execute.call(executionFunctions as any);
+        outputData = await nodeType.execute.call(executionFunctions);
       } else {
         outputData = [[{ json: {} }]];
       }
