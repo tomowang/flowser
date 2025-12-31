@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { IWorkflowExecutionResult, IExecutionNodeResult } from "@/lib/types";
 import { ref, computed } from "vue";
-import { X, Trash2 } from "lucide-vue-next";
+import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
 import ExecutionNodeList from "./ExecutionNodeList.vue";
 import ExecutionNodeDetail from "./ExecutionNodeDetail.vue";
 
 const props = defineProps<{
   executionResult: IWorkflowExecutionResult;
+  isCollapsed?: boolean;
 }>();
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "toggle-collapse"]);
 
 const selectedNodeId = ref<string | undefined>(undefined);
 
@@ -55,7 +56,8 @@ const onNodeSelect = (nodeId: string) => {
   <div class="flex flex-col h-full w-full bg-background border-t shadow-xl">
     <!-- Header -->
     <div
-      class="flex items-center justify-between px-4 h-10 border-b bg-card shrink-0"
+      class="flex items-center justify-between px-4 h-10 border-b bg-card shrink-0 cursor-pointer"
+      @click="emit('toggle-collapse')"
     >
       <div class="flex items-center gap-2">
         <span class="font-semibold text-sm">Execution Results</span>
@@ -75,7 +77,14 @@ const onNodeSelect = (nodeId: string) => {
       </div>
       <div class="flex items-center gap-2">
         <button
-          @click="emit('close')"
+          @click.stop="emit('toggle-collapse')"
+          class="text-muted-foreground hover:text-foreground transition-colors p-1"
+        >
+          <ChevronUp v-if="isCollapsed" class="h-4 w-4" />
+          <ChevronDown v-else class="h-4 w-4" />
+        </button>
+        <button
+          @click.stop="emit('close')"
           class="text-muted-foreground hover:text-foreground transition-colors p-1"
         >
           <X class="h-4 w-4" />
@@ -84,7 +93,7 @@ const onNodeSelect = (nodeId: string) => {
     </div>
 
     <!-- Body -->
-    <div class="flex flex-1 overflow-hidden">
+    <div v-show="!isCollapsed" class="flex flex-1 overflow-hidden">
       <!-- Left Panel: Node List -->
       <div class="w-64 shrink-0">
         <ExecutionNodeList

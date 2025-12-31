@@ -40,6 +40,11 @@ const searchQuery = ref("");
 
 const isMasterKeyModalOpen = ref(false);
 
+// Panel state
+const executionPanelHeight = ref(300);
+const isExecutionPanelCollapsed = ref(false);
+const isResizing = ref(false);
+
 const onUnlocked = () => {
   logs.value.push("Security: Master Key Set");
 };
@@ -78,6 +83,17 @@ onMounted(async () => {
   if (!restored) {
     isMasterKeyModalOpen.value = true;
   }
+
+  // Add global mouse up listener for resizing
+  window.addEventListener("mouseup", stopResize);
+  window.addEventListener("mousemove", onResize);
+});
+
+// Clean up listeners
+import { onUnmounted } from "vue";
+onUnmounted(() => {
+  window.removeEventListener("mouseup", stopResize);
+  window.removeEventListener("mousemove", onResize);
 });
 
 watch(
@@ -247,6 +263,8 @@ const runWorkflow = async () => {
   console.log("Running workflow...");
   logs.value = [];
   executionResult.value = null;
+  // Ensure panel is open when running
+  isExecutionPanelCollapsed.value = false;
 
   const workflow: IWorkflow = {
     id: currentWorkflowId.value || "temp-workflow",
@@ -280,6 +298,28 @@ const runWorkflow = async () => {
     console.error(e);
     logs.value.push(`Error: ${e.message}`);
   }
+};
+
+// Resize logic
+const startResize = () => {
+  isResizing.value = true;
+};
+
+const stopResize = () => {
+  isResizing.value = false;
+};
+
+const onResize = (e: MouseEvent) => {
+  if (!isResizing.value) return;
+  const newHeight = window.innerHeight - e.clientY;
+  // Min height 40 (header) + buffer, max height constraint if needed
+  if (newHeight > 40 && newHeight < window.innerHeight - 100) {
+    executionPanelHeight.value = newHeight;
+  }
+};
+
+const toggleExecutionPanel = () => {
+  isExecutionPanelCollapsed.value = !isExecutionPanelCollapsed.value;
 };
 </script>
 
@@ -404,10 +444,27 @@ const runWorkflow = async () => {
     />
 
     <!-- Execution Panel (Bottom) -->
-    <div v-if="executionResult" class="h-64 z-30 w-full bg-background border-t">
+    <div
+      v-if="executionResult"
+      class="z-30 w-full bg-background border-t absolute bottom-0 flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+      :style="{
+        height: isExecutionPanelCollapsed
+          ? 'auto'
+          : `${executionPanelHeight}px`,
+      }"
+    >
+      <!-- Resize Handle -->
+      <div
+        class="h-1 cursor-ns-resize bg-border hover:bg-primary transition-colors w-full"
+        @mousedown.prevent="startResize"
+        v-if="!isExecutionPanelCollapsed"
+      ></div>
+
       <ExecutionPanel
         :execution-result="executionResult"
+        :is-collapsed="isExecutionPanelCollapsed"
         @close="executionResult = null"
+        @toggle-collapse="toggleExecutionPanel"
       />
     </div>
   </div>
