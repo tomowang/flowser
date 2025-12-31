@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   Table,
   TableBody,
@@ -66,6 +67,8 @@ const availableCredentialTypes = computed(() => {
   return Array.from(unique.values());
 });
 
+const { t } = useI18n();
+
 const formData = ref({
   name: "",
   type: "gemini_api",
@@ -121,7 +124,7 @@ const saveCredential = async () => {
 };
 
 const deleteCredential = async (id: string) => {
-  if (confirm("Are you sure you want to delete this credential?")) {
+  if (confirm(t("credentials.deleteConfirm"))) {
     await CredentialService.deleteCredential(id);
     await loadCredentials();
   }
@@ -131,38 +134,43 @@ const deleteCredential = async (id: string) => {
 <template>
   <div class="p-6">
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold tracking-tight">Credentials</h1>
+      <h1 class="text-2xl font-bold tracking-tight">
+        {{ t("credentials.title") }}
+      </h1>
       <Dialog v-model:open="isAddDialogOpen">
         <DialogTrigger as-child>
           <Button>
             <Plus class="mr-2 h-4 w-4" />
-            Add Credential
+            {{ t("credentials.addCredential") }}
           </Button>
         </DialogTrigger>
         <DialogContent class="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Add Credential</DialogTitle>
+            <DialogTitle>{{ t("credentials.addCredentialTitle") }}</DialogTitle>
             <DialogDescription>
-              Add a new API key or secret. Data is encrypted using your Master
-              Key.
+              {{ t("credentials.addCredentialDescription") }}
             </DialogDescription>
           </DialogHeader>
           <div class="grid gap-4 py-4">
             <div class="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" class="text-right"> Name </Label>
+              <Label htmlFor="name" class="text-right">{{
+                t("common.name")
+              }}</Label>
               <Input
                 id="name"
                 v-model="formData.name"
                 class="col-span-3"
-                placeholder="My Gemini Key"
+                :placeholder="t('credentials.namePlaceholder')"
               />
             </div>
             <div class="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" class="text-right"> Type </Label>
+              <Label htmlFor="type" class="text-right">{{
+                t("common.type")
+              }}</Label>
               <div class="col-span-3">
                 <Select v-model="formData.type">
                   <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue :placeholder="t('credentials.selectType')" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem
@@ -177,18 +185,22 @@ const deleteCredential = async (id: string) => {
               </div>
             </div>
             <div class="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="value" class="text-right"> Value </Label>
+              <Label htmlFor="value" class="text-right">{{
+                t("common.value")
+              }}</Label>
               <Input
                 id="value"
                 v-model="formData.value"
                 type="password"
                 class="col-span-3"
-                placeholder="sk-..."
+                :placeholder="t('credentials.valuePlaceholder')"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" @click="saveCredential">Save changes</Button>
+            <Button type="submit" @click="saveCredential">{{
+              t("common.saveChanges")
+            }}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -198,10 +210,10 @@ const deleteCredential = async (id: string) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead class="text-right">Actions</TableHead>
+            <TableHead>{{ t("common.name") }}</TableHead>
+            <TableHead>{{ t("common.type") }}</TableHead>
+            <TableHead>{{ t("credentials.createdAt") }}</TableHead>
+            <TableHead class="text-right">{{ t("common.actions") }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -223,7 +235,7 @@ const deleteCredential = async (id: string) => {
           </TableRow>
           <TableRow v-if="credentials.length === 0">
             <TableCell colspan="4" class="h-24 text-center">
-              No credentials found.
+              {{ t("credentials.noCredentialsFound") }}
             </TableCell>
           </TableRow>
         </TableBody>

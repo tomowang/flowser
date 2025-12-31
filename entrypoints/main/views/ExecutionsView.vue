@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { ExecutionService } from "@/lib/services/execution-service";
 import { IWorkflowExecutionResult } from "@/lib/types";
 import {
@@ -15,6 +16,7 @@ import ExecutionPanel from "@/components/editor/execution/ExecutionPanel.vue";
 import { Button } from "@/components/ui/button";
 import { Trash2, Eye, RefreshCcw } from "lucide-vue-next";
 
+const { t } = useI18n();
 const executions = ref<IWorkflowExecutionResult[]>([]);
 const selectedExecution = ref<IWorkflowExecutionResult | null>(null);
 const isSheetOpen = ref(false);
@@ -24,7 +26,7 @@ const loadExecutions = async () => {
 };
 
 const deleteExecution = async (id: string) => {
-  if (confirm("Are you sure you want to delete this log?")) {
+  if (confirm(t("executions.deleteConfirm"))) {
     await ExecutionService.deleteExecution(id);
     await loadExecutions();
   }
@@ -51,10 +53,10 @@ onMounted(() => {
 <template>
   <div class="h-full flex flex-col p-6 space-y-4 overflow-hidden">
     <div class="flex items-center justify-between shrink-0">
-      <h1 class="text-2xl font-bold">Executions</h1>
+      <h1 class="text-2xl font-bold">{{ t("executions.title") }}</h1>
       <Button variant="outline" size="sm" @click="loadExecutions">
         <RefreshCcw class="w-4 h-4 mr-2" />
-        Refresh
+        {{ t("common.refresh") }}
       </Button>
     </div>
 
@@ -62,11 +64,11 @@ onMounted(() => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Status</TableHead>
-            <TableHead>Workflow</TableHead>
-            <TableHead>Start Time</TableHead>
-            <TableHead>Duration</TableHead>
-            <TableHead class="text-right">Actions</TableHead>
+            <TableHead>{{ t("executions.status") }}</TableHead>
+            <TableHead>{{ t("executions.workflow") }}</TableHead>
+            <TableHead>{{ t("executions.startTime") }}</TableHead>
+            <TableHead>{{ t("executions.duration") }}</TableHead>
+            <TableHead class="text-right">{{ t("common.actions") }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -95,7 +97,7 @@ onMounted(() => {
                   variant="ghost"
                   size="icon"
                   @click="viewExecution(exec)"
-                  title="View Details"
+                  :title="t('executions.viewDetails')"
                 >
                   <Eye class="h-4 w-4" />
                 </Button>
@@ -104,7 +106,7 @@ onMounted(() => {
                   size="icon"
                   class="text-muted-foreground hover:text-destructive"
                   @click="deleteExecution(exec.id)"
-                  title="Delete"
+                  :title="t('executions.deleteLog')"
                 >
                   <Trash2 class="h-4 w-4" />
                 </Button>
@@ -116,7 +118,7 @@ onMounted(() => {
               colspan="5"
               class="text-center h-24 text-muted-foreground"
             >
-              No workflow executions found.
+              {{ t("executions.noExecutionsFound") }}
             </TableCell>
           </TableRow>
         </TableBody>

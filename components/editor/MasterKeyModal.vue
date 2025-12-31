@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { SecurityService } from "@/lib/services/security-service";
 
 const props = defineProps<{
@@ -11,13 +12,14 @@ const emit = defineEmits<{
   (e: "unlocked"): void;
 }>();
 
+const { t } = useI18n();
 const password = ref("");
 const error = ref("");
 const isLoading = ref(false);
 
 const unlock = async () => {
   if (!password.value) {
-    error.value = "Password is required";
+    error.value = t("masterKey.passwordRequired");
     return;
   }
 
@@ -31,7 +33,7 @@ const unlock = async () => {
     // Validate key
     const isValid = await SecurityService.validateKey(key);
     if (!isValid) {
-      error.value = "Invalid Master Password";
+      error.value = t("masterKey.invalidPassword");
       return;
     }
 
@@ -41,7 +43,7 @@ const unlock = async () => {
     emit("close");
     password.value = ""; // clear
   } catch (e: any) {
-    error.value = "Failed to derive key: " + e.message;
+    error.value = t("masterKey.failedToDeriveKey") + " " + e.message;
   } finally {
     isLoading.value = false;
   }
@@ -54,9 +56,9 @@ const unlock = async () => {
     class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
   >
     <div class="w-full max-w-sm rounded-lg border bg-card p-6 shadow-lg">
-      <h2 class="text-lg font-semibold mb-2">Security Check</h2>
+      <h2 class="text-lg font-semibold mb-2">{{ t("masterKey.title") }}</h2>
       <p class="text-sm text-muted-foreground mb-4">
-        Enter your Master Password to access secure credentials.
+        {{ t("masterKey.description") }}
       </p>
 
       <div class="space-y-4">
@@ -64,7 +66,7 @@ const unlock = async () => {
           <input
             v-model="password"
             type="password"
-            placeholder="Master Password"
+            :placeholder="t('masterKey.passwordPlaceholder')"
             class="w-full rounded-md border bg-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             @keyup.enter="unlock"
           />
@@ -79,14 +81,14 @@ const unlock = async () => {
             @click="$emit('close')"
             class="rounded px-3 py-1.5 text-xs font-semibold hover:bg-accent"
           >
-            Cancel
+            {{ t("common.cancel") }}
           </button>
           <button
             @click="unlock"
             :disabled="isLoading"
             class="rounded bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {{ isLoading ? "Unlocking..." : "Unlock" }}
+            {{ isLoading ? t("masterKey.unlocking") : t("masterKey.unlock") }}
           </button>
         </div>
       </div>

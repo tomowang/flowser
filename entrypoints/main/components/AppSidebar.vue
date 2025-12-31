@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import {
   Sidebar,
   SidebarContent,
@@ -20,24 +21,27 @@ import {
   GalleryVerticalEnd,
 } from "lucide-vue-next";
 import { RouterLink, useRoute } from "vue-router";
+import { computed } from "vue";
 
-const items = [
+const { t } = useI18n();
+
+const items = computed(() => [
   {
-    title: "Workflows",
+    title: t("sidebar.workflows"),
     url: "/workflows",
     icon: Workflow,
   },
   {
-    title: "Credentials",
+    title: t("sidebar.credentials"),
     url: "/credentials",
     icon: Key,
   },
   {
-    title: "Executions",
+    title: t("sidebar.executions"),
     url: "/executions",
     icon: History,
   },
-];
+]);
 </script>
 
 <template>
@@ -63,7 +67,7 @@ const items = [
     </SidebarHeader>
     <SidebarContent>
       <SidebarGroup>
-        <SidebarGroupLabel>Platform</SidebarGroupLabel>
+        <SidebarGroupLabel>{{ t("sidebar.platform") }}</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
@@ -90,7 +94,7 @@ const items = [
               active-class="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
             >
               <Settings />
-              <span>Settings</span>
+              <span>{{ t("sidebar.settings") }}</span>
             </RouterLink>
           </SidebarMenuButton>
         </SidebarMenuItem>

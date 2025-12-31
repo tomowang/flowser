@@ -1,0 +1,87 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "actions": "操作",
+    "refresh": "刷新",
+    "name": "名称",
+    "type": "类型",
+    "value": "值",
+    "saveChanges": "保存更改"
+  },
+  "sidebar": {
+    "platform": "平台",
+    "workflows": "工作流",
+    "credentials": "凭证",
+    "executions": "执行记录",
+    "settings": "设置"
+  },
+  "settings": {
+    "title": "设置",
+    "description": "应用程序设置。",
+    "language": "语言",
+    "languageDescription": "选择您偏好的显示语言。"
+  },
+  "workflows": {
+    "title": "工作流",
+    "newWorkflow": "新建工作流",
+    "lastUpdated": "最后更新：",
+    "nodes": "个节点",
+    "active": "活跃",
+    "inactive": "未激活",
+    "noWorkflowsFound": "未找到工作流。创建一个开始吧。"
+  },
+  "credentials": {
+    "title": "凭证",
+    "addCredential": "添加凭证",
+    "addCredentialTitle": "添加凭证",
+    "addCredentialDescription": "添加新的 API 密钥或秘密。数据将使用您的主密钥加密。",
+    "namePlaceholder": "我的 Gemini 密钥",
+    "selectType": "选择类型",
+    "valuePlaceholder": "sk-...",
+    "createdAt": "创建时间",
+    "noCredentialsFound": "未找到凭证。",
+    "deleteConfirm": "您确定要删除此凭证吗？"
+  },
+  "executions": {
+    "title": "执行记录",
+    "status": "状态",
+    "workflow": "工作流",
+    "startTime": "开始时间",
+    "duration": "持续时间",
+    "viewDetails": "查看详情",
+    "deleteLog": "删除",
+    "deleteConfirm": "您确定要删除此日志吗？",
+    "noExecutionsFound": "未找到工作流执行记录。",
+    "success": "成功",
+    "error": "错误"
+  },
+  "masterKey": {
+    "title": "安全检查",
+    "description": "输入您的主密码以访问安全凭证。",
+    "passwordPlaceholder": "主密码",
+    "passwordRequired": "密码为必填项",
+    "invalidPassword": "主密码无效",
+    "failedToDeriveKey": "密钥派生失败：",
+    "unlock": "解锁",
+    "unlocking": "解锁中..."
+  },
+  "workflowEditor": {
+    "execute": "执行",
+    "buildWorkflow": "构建工作流",
+    "searchNodes": "搜索节点...",
+    "properties": "属性",
+    "workflowNamePrompt": "工作流名称",
+    "untitledWorkflow": "未命名工作流",
+    "newWorkflow": "新建工作流",
+    "loadedWorkflow": "已加载工作流：",
+    "savedWorkflow": "已保存工作流：",
+    "createdNewWorkflow": "已创建新工作流",
+    "executionFinished": "执行完成。",
+    "workflowNotFound": "未找到工作流 {id}。",
+    "securityMasterKeySet": "安全：主密钥已设置"
+  }
+}

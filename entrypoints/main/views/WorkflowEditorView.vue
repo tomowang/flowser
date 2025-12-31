@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { VueFlow, useVueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
@@ -26,6 +27,7 @@ import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
 import "@vue-flow/minimap/dist/style.css";
 
+const { t } = useI18n();
 const route = useRoute();
 
 // Initial state
@@ -35,7 +37,7 @@ const selectedNode = ref<Node | null>(null);
 const logs = ref<any[]>([]); // Keep for basic logs if needed, but mainly use executionResult
 const executionResult = ref<IWorkflowExecutionResult | null>(null);
 const currentWorkflowId = ref<string | null>(null);
-const currentWorkflowName = ref<string>("Untitled Workflow");
+const currentWorkflowName = ref<string>(t("workflowEditor.untitledWorkflow"));
 const searchQuery = ref("");
 
 const isMasterKeyModalOpen = ref(false);
@@ -46,7 +48,7 @@ const isExecutionPanelCollapsed = ref(false);
 const isResizing = ref(false);
 
 const onUnlocked = () => {
-  logs.value.push("Security: Master Key Set");
+  logs.value.push(t("workflowEditor.securityMasterKeySet"));
 };
 
 const {
@@ -71,7 +73,7 @@ const loadInitWorkflow = async () => {
   if (workflow) {
     loadWorkflow(workflow);
   } else {
-    logs.value.push(`Workflow ${id} not found.`);
+    logs.value.push(t("workflowEditor.workflowNotFound", { id }));
   }
 };
 
@@ -211,7 +213,7 @@ const loadWorkflow = (workflow: IWorkflow) => {
       type: "custom", // Force custom type
     })),
   );
-  logs.value.push(`Loaded workflow: ${workflow.name}`);
+  logs.value.push(t("workflowEditor.loadedWorkflow") + " " + workflow.name);
 };
 
 const saveWorkflow = async () => {
@@ -219,7 +221,10 @@ const saveWorkflow = async () => {
   let name = currentWorkflowName.value;
   if (!currentWorkflowId.value) {
     name =
-      prompt("Workflow Name", currentWorkflowName.value) || "Untitled Workflow";
+      prompt(
+        t("workflowEditor.workflowNamePrompt"),
+        currentWorkflowName.value,
+      ) || t("workflowEditor.untitledWorkflow");
     currentWorkflowName.value = name;
   }
 
@@ -247,15 +252,15 @@ const saveWorkflow = async () => {
   const sanitizedWorkflow = JSON.parse(JSON.stringify(workflow));
   await WorkflowService.saveWorkflow(sanitizedWorkflow);
   currentWorkflowId.value = workflowId;
-  logs.value.push(`Saved workflow: ${name}`);
+  logs.value.push(t("workflowEditor.savedWorkflow") + " " + name);
 };
 
 const createNewWorkflow = () => {
   currentWorkflowId.value = null;
-  currentWorkflowName.value = "New Workflow";
+  currentWorkflowName.value = t("workflowEditor.newWorkflow");
   setNodes([]);
   setEdges([]);
-  logs.value.push("Created new workflow");
+  logs.value.push(t("workflowEditor.createdNewWorkflow"));
 };
 
 // Let's redefine runWorkflow
@@ -293,7 +298,7 @@ const runWorkflow = async () => {
     const result = await runner.run();
     executionResult.value = result;
     await ExecutionService.saveExecution(result);
-    logs.value.push("Execution finished.");
+    logs.value.push(t("workflowEditor.executionFinished"));
   } catch (e: any) {
     console.error(e);
     logs.value.push(`Error: ${e.message}`);
@@ -332,10 +337,10 @@ const toggleExecutionPanel = () => {
       <h2 class="font-semibold px-2">{{ currentWorkflowName }}</h2>
       <div class="h-4 w-[1px] bg-border mx-2"></div>
       <Button size="sm" variant="outline" @click="saveWorkflow">
-        <Save class="w-4 h-4 mr-1" /> Save
+        <Save class="w-4 h-4 mr-1" /> {{ t("common.save") }}
       </Button>
       <Button size="sm" @click="runWorkflow">
-        <Play class="w-4 h-4 mr-1" /> Execute
+        <Play class="w-4 h-4 mr-1" /> {{ t("workflowEditor.execute") }}
       </Button>
     </div>
 
@@ -374,7 +379,9 @@ const toggleExecutionPanel = () => {
     >
       <!-- ... (Content of node panel) ... -->
       <div class="p-4 border-b">
-        <h3 class="font-semibold mb-2">Build Workflow</h3>
+        <h3 class="font-semibold mb-2">
+          {{ t("workflowEditor.buildWorkflow") }}
+        </h3>
         <div class="relative">
           <Search
             class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
@@ -382,7 +389,7 @@ const toggleExecutionPanel = () => {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search nodes..."
+            :placeholder="t('workflowEditor.searchNodes')"
             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pl-9 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
@@ -423,7 +430,7 @@ const toggleExecutionPanel = () => {
       class="absolute top-20 right-4 z-20 w-80 bg-card border rounded-lg shadow-xl flex flex-col h-[calc(100vh-6rem)]"
     >
       <div class="flex items-center justify-between p-4 border-b bg-muted/20">
-        <h3 class="font-semibold">Properties</h3>
+        <h3 class="font-semibold">{{ t("workflowEditor.properties") }}</h3>
         <Button variant="ghost" size="icon" @click="selectedNode = null"
           >X</Button
         >

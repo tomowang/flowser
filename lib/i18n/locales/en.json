@@ -1,0 +1,87 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "actions": "Actions",
+    "refresh": "Refresh",
+    "name": "Name",
+    "type": "Type",
+    "value": "Value",
+    "saveChanges": "Save changes"
+  },
+  "sidebar": {
+    "platform": "Platform",
+    "workflows": "Workflows",
+    "credentials": "Credentials",
+    "executions": "Executions",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Application settings.",
+    "language": "Language",
+    "languageDescription": "Select your preferred display language."
+  },
+  "workflows": {
+    "title": "Workflows",
+    "newWorkflow": "New Workflow",
+    "lastUpdated": "Last updated:",
+    "nodes": "nodes",
+    "active": "Active",
+    "inactive": "Inactive",
+    "noWorkflowsFound": "No workflows found. Create one to get started."
+  },
+  "credentials": {
+    "title": "Credentials",
+    "addCredential": "Add Credential",
+    "addCredentialTitle": "Add Credential",
+    "addCredentialDescription": "Add a new API key or secret. Data is encrypted using your Master Key.",
+    "namePlaceholder": "My Gemini Key",
+    "selectType": "Select type",
+    "valuePlaceholder": "sk-...",
+    "createdAt": "Created At",
+    "noCredentialsFound": "No credentials found.",
+    "deleteConfirm": "Are you sure you want to delete this credential?"
+  },
+  "executions": {
+    "title": "Executions",
+    "status": "Status",
+    "workflow": "Workflow",
+    "startTime": "Start Time",
+    "duration": "Duration",
+    "viewDetails": "View Details",
+    "deleteLog": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this log?",
+    "noExecutionsFound": "No workflow executions found.",
+    "success": "Success",
+    "error": "Error"
+  },
+  "masterKey": {
+    "title": "Security Check",
+    "description": "Enter your Master Password to access secure credentials.",
+    "passwordPlaceholder": "Master Password",
+    "passwordRequired": "Password is required",
+    "invalidPassword": "Invalid Master Password",
+    "failedToDeriveKey": "Failed to derive key:",
+    "unlock": "Unlock",
+    "unlocking": "Unlocking..."
+  },
+  "workflowEditor": {
+    "execute": "Execute",
+    "buildWorkflow": "Build Workflow",
+    "searchNodes": "Search nodes...",
+    "properties": "Properties",
+    "workflowNamePrompt": "Workflow Name",
+    "untitledWorkflow": "Untitled Workflow",
+    "newWorkflow": "New Workflow",
+    "loadedWorkflow": "Loaded workflow:",
+    "savedWorkflow": "Saved workflow:",
+    "createdNewWorkflow": "Created new workflow",
+    "executionFinished": "Execution finished.",
+    "workflowNotFound": "Workflow {id} not found.",
+    "securityMasterKeySet": "Security: Master Key Set"
+  }
+}
