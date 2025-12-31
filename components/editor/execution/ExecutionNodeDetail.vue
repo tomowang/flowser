@@ -1,87 +1,104 @@
 <script setup lang="ts">
 import { IExecutionNodeResult } from "@/lib/types";
-import { ref, computed } from "vue";
+import { computed } from "vue";
+import VueJsonPretty from "vue-json-pretty";
+import "vue-json-pretty/lib/styles.css";
 
 const props = defineProps<{
   nodeResult: IExecutionNodeResult | null;
 }>();
-
-const activeTab = ref<"input" | "output">("output");
-
-const displayData = computed(() => {
-  if (!props.nodeResult) return [];
-  if (activeTab.value === "input") {
-    return props.nodeResult.inputData;
-  }
-  return props.nodeResult.outputData;
-});
-
-const formatJson = (data: any) => {
-  try {
-    return JSON.stringify(data, null, 2);
-  } catch (e) {
-    return String(data);
-  }
-};
 </script>
 
 <template>
-  <div class="flex flex-col h-full bg-background" v-if="nodeResult">
-    <!-- Header / Tabs -->
-    <div class="flex items-center border-b px-4 h-10 bg-muted/20">
-      <button
-        class="text-xs font-medium px-3 py-1 mr-2 rounded-md transition-colors"
-        :class="
-          activeTab === 'input'
-            ? 'bg-background shadow-sm text-foreground'
-            : 'text-muted-foreground hover:text-foreground'
-        "
-        @click="activeTab = 'input'"
+  <div class="flex h-full bg-background" v-if="nodeResult">
+    <!-- Input Column -->
+    <div class="flex-1 flex flex-col border-r h-full overflow-hidden">
+      <div
+        class="flex items-center justify-between px-4 h-10 bg-muted/20 border-b shrink-0"
       >
-        Input
-        <span class="ml-1 text-[10px] opacity-70">{{
-          nodeResult.inputData.length
-        }}</span>
-      </button>
-      <button
-        class="text-xs font-medium px-3 py-1 rounded-md transition-colors"
-        :class="
-          activeTab === 'output'
-            ? 'bg-background shadow-sm text-foreground'
-            : 'text-muted-foreground hover:text-foreground'
-        "
-        @click="activeTab = 'output'"
-      >
-        Output
-        <span class="ml-1 text-[10px] opacity-70">{{
-          nodeResult.outputData.length
-        }}</span>
-      </button>
+        <span class="text-xs font-semibold uppercase text-muted-foreground">
+          Input
+        </span>
+        <span
+          class="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted/50"
+        >
+          {{ nodeResult.inputData.length }} items
+        </span>
+      </div>
+      <div class="flex-1 overflow-auto p-4 custom-scrollbar">
+        <template v-if="nodeResult.inputData.length > 0">
+          <div
+            v-for="(item, index) in nodeResult.inputData"
+            :key="index"
+            class="mb-4 last:mb-0 border rounded-md bg-card shadow-sm"
+          >
+            <div
+              class="px-3 py-1.5 border-b bg-muted/10 text-[10px] font-mono text-muted-foreground"
+            >
+              Item {{ index + 1 }}
+            </div>
+            <div class="p-2 text-xs">
+              <VueJsonPretty
+                :data="item.json"
+                :deep="1"
+                :show-length="true"
+                :show-line="true"
+                :show-double-quotes="false"
+              />
+            </div>
+          </div>
+        </template>
+        <div
+          v-else
+          class="h-full flex items-center justify-center text-xs text-muted-foreground italic"
+        >
+          No input data
+        </div>
+      </div>
     </div>
 
-    <!-- Content -->
-    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+    <!-- Output Column -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
       <div
-        v-if="displayData.length === 0"
-        class="text-xs text-muted-foreground"
+        class="flex items-center justify-between px-4 h-10 bg-muted/20 border-b shrink-0"
       >
-        No data available using configured settings.
-      </div>
-
-      <div
-        v-for="(item, index) in displayData"
-        :key="index"
-        class="border rounded-md bg-card"
-      >
-        <div
-          class="bg-muted/30 px-3 py-1 border-b text-[10px] font-mono text-muted-foreground flex justify-between"
+        <span class="text-xs font-semibold uppercase text-muted-foreground">
+          Output
+        </span>
+        <span
+          class="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted/50"
         >
-          <span>Item {{ index + 1 }}</span>
-        </div>
-        <div class="p-2 overflow-x-auto">
-          <pre class="text-xs font-mono text-foreground">{{
-            formatJson(item.json)
-          }}</pre>
+          {{ nodeResult.outputData.length }} items
+        </span>
+      </div>
+      <div class="flex-1 overflow-auto p-4 custom-scrollbar">
+        <template v-if="nodeResult.outputData.length > 0">
+          <div
+            v-for="(item, index) in nodeResult.outputData"
+            :key="index"
+            class="mb-4 last:mb-0 border rounded-md bg-card shadow-sm"
+          >
+            <div
+              class="px-3 py-1.5 border-b bg-muted/10 text-[10px] font-mono text-muted-foreground"
+            >
+              Item {{ index + 1 }}
+            </div>
+            <div class="p-2 text-xs">
+              <VueJsonPretty
+                :data="item.json"
+                :deep="1"
+                :show-length="true"
+                :show-line="true"
+                :show-double-quotes="false"
+              />
+            </div>
+          </div>
+        </template>
+        <div
+          v-else
+          class="h-full flex items-center justify-center text-xs text-muted-foreground italic"
+        >
+          No output data
         </div>
       </div>
     </div>
@@ -93,3 +110,26 @@ const formatJson = (data: any) => {
     Select a node to view details
   </div>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* Customize VueJsonPretty styles if needed */
+:deep(.vjs-tree) {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+</style>
