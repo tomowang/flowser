@@ -1,10 +1,11 @@
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../types";
+import { Calculator } from "lucide-vue-next";
 
 export const CalculatorTool: INodeType = {
   description: {
     displayName: "Calculator",
     name: "calculatorTool",
-    icon: "fa:calculator",
+    icon: Calculator,
     group: ["tool"],
     version: 1,
     description: "A simple calculator tool for Agents",

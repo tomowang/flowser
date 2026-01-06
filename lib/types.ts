@@ -73,7 +73,7 @@ export interface INodePort {
 export interface INodeTypeDescription {
   displayName: string;
   name: string;
-  icon: string; // Icon name e.g. 'f7:bolt' or svg string
+  icon: any; // Icon name e.g. 'f7:bolt' or svg string or Component
   group: string[];
   version: number;
   description: string;

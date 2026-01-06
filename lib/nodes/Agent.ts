@@ -1,10 +1,11 @@
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../types";
+import { Bot } from "lucide-vue-next";
 
 export const AgentNode: INodeType = {
   description: {
     displayName: "AI Agent",
     name: "agent",
-    icon: "fa:user-secret",
+    icon: Bot,
     group: ["agent"],
     version: 1,
     description: "An AI Agent that can use tools",

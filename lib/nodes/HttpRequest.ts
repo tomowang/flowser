@@ -1,12 +1,13 @@
 import { browser } from "#imports";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../types";
 import { MessageType } from "../messages";
+import { Globe } from "lucide-vue-next";
 
 export const HttpRequest: INodeType = {
   description: {
     displayName: "HTTP Request",
     name: "httpRequest",
-    icon: "fa:globe",
+    icon: Globe,
     group: ["development"],
     version: 1,
     description: "Makes an HTTP request",

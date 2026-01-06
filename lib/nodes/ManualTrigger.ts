@@ -1,10 +1,11 @@
 import { INodeType, INodeExecutionData } from "../types";
+import { MousePointerClick } from "lucide-vue-next";
 
 export const ManualTrigger: INodeType = {
   description: {
     displayName: "Manual Trigger",
     name: "manualTrigger",
-    icon: "fa:hand-pointer-o",
+    icon: MousePointerClick,
     group: ["trigger"],
     version: 1,
     description: "Triggers the workflow manually",

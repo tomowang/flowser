@@ -1,11 +1,12 @@
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../types";
 import { CredentialService } from "../services/credential-service";
+import { Sparkles } from "lucide-vue-next";
 
 export const GeminiModel: INodeType = {
   description: {
     displayName: "Gemini Chat Model",
     name: "geminiModel",
-    icon: "fa:google",
+    icon: Sparkles,
     group: ["model"],
     version: 1,
     description: "Google Gemini LLM Model",

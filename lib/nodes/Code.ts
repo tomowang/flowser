@@ -6,12 +6,13 @@ import {
 import ReleaseSync from "@jitl/quickjs-wasmfile-release-sync";
 import wasmUrl from "@jitl/quickjs-wasmfile-release-sync/wasm?url";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../types";
+import { Code2 } from "lucide-vue-next";
 
 export const Code: INodeType = {
   description: {
     displayName: "Code",
     name: "code",
-    icon: "lucide:code-2",
+    icon: Code2,
     group: ["development"],
     version: 1,
     description: "Executes custom JavaScript code",

@@ -413,7 +413,7 @@ const toggleExecutionPanel = () => {
             class="flex h-8 w-8 items-center justify-center rounded bg-muted"
           >
             <!-- Icon support if available -->
-            <Plus class="h-4 w-4" />
+            <component :is="node.description.icon || Plus" class="h-4 w-4" />
           </div>
           <div class="flex flex-col text-left">
             <span class="text-sm font-medium">{{
