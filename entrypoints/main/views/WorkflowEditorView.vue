@@ -463,7 +463,7 @@ const toggleExecutionPanel = () => {
     >
       <!-- Resize Handle -->
       <div
-        class="h-1 cursor-ns-resize bg-border hover:bg-secondary transition-colors w-full"
+        class="h-1 shrink-0 cursor-ns-resize bg-border hover:bg-secondary transition-colors w-full"
         @mousedown.prevent="startResize"
         v-if="!isExecutionPanelCollapsed"
       ></div>
@@ -471,6 +471,7 @@ const toggleExecutionPanel = () => {
       <ExecutionPanel
         :execution-result="executionResult"
         :is-collapsed="isExecutionPanelCollapsed"
+        class="flex-1 min-h-0"
         @close="executionResult = null"
         @toggle-collapse="toggleExecutionPanel"
       />

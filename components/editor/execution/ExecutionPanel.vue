@@ -53,7 +53,7 @@ const onNodeSelect = (nodeId: string) => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full w-full bg-background border-t shadow-xl">
+  <div class="flex flex-col w-full bg-background border-t shadow-xl">
     <!-- Header -->
     <div
       class="flex items-center justify-between px-4 h-10 border-b bg-card shrink-0 cursor-pointer"

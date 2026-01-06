@@ -134,6 +134,7 @@ onMounted(() => {
           <ExecutionPanel
             v-if="selectedExecution && isSheetOpen"
             :execution-result="selectedExecution"
+            class="h-full"
             @close="isSheetOpen = false"
           />
         </div>
