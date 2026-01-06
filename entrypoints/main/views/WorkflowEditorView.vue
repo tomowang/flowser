@@ -10,7 +10,8 @@ import { useRoute } from "vue-router";
 import { Registry } from "@/lib/nodes/registry";
 import NodeDelegate from "@/components/editor/NodeDelegate.vue";
 import CustomEdge from "@/components/editor/CustomEdge.vue";
-import NodeInspector from "@/components/editor/NodeInspector.vue";
+// Remove NodeInspector import
+import NodePropertiesModal from "@/components/editor/NodePropertiesModal.vue";
 import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
 import { IWorkflow, IWorkflowExecutionResult } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
@@ -55,6 +56,7 @@ const {
   onConnect,
   addEdges,
   onNodeClick,
+  onNodeDoubleClick,
   onPaneClick,
   setNodes,
   setEdges,
@@ -150,7 +152,15 @@ onConnect((params: Connection) => {
 });
 
 onNodeClick((event: NodeMouseEvent) => {
+  // Just select for visual feedback, but don't open modal
   selectedNode.value = event.node;
+});
+
+const isPropertiesModalOpen = ref(false);
+
+onNodeDoubleClick((event: NodeMouseEvent) => {
+  selectedNode.value = event.node;
+  isPropertiesModalOpen.value = true;
 });
 
 onPaneClick(() => {
@@ -424,24 +434,15 @@ const toggleExecutionPanel = () => {
       </div>
     </aside>
 
-    <!-- Node Inspector -->
-    <aside
+    <!-- Node Properties Modal -->
+    <NodePropertiesModal
       v-if="selectedNode"
-      class="absolute top-20 right-4 z-20 w-80 bg-card border rounded-lg shadow-xl flex flex-col h-[calc(100vh-6rem)]"
-    >
-      <div class="flex items-center justify-between p-4 border-b bg-muted/20">
-        <h3 class="font-semibold">{{ t("workflowEditor.properties") }}</h3>
-        <Button variant="ghost" size="icon" @click="selectedNode = null"
-          >X</Button
-        >
-      </div>
-      <div class="p-4 overflow-y-auto flex-1">
-        <NodeInspector
-          :node="selectedNode"
-          @update:data="(newData) => (selectedNode!.data = newData)"
-        />
-      </div>
-    </aside>
+      :is-open="isPropertiesModalOpen"
+      :node="selectedNode"
+      :execution-result="executionResult"
+      @close="isPropertiesModalOpen = false"
+      @update:data="(newData) => (selectedNode!.data = newData)"
+    />
 
     <!-- UI Modals -->
     <MasterKeyModal
