@@ -6,6 +6,7 @@ import {
   CalculatorTool,
   GeminiModel,
   Code,
+  TabQuery,
 } from "./index";
 
 Registry.register(ManualTrigger);
@@ -14,3 +15,4 @@ Registry.register(AgentNode);
 Registry.register(CalculatorTool);
 Registry.register(GeminiModel);
 Registry.register(Code);
+Registry.register(TabQuery);
