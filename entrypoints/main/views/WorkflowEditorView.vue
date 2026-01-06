@@ -454,7 +454,7 @@ const toggleExecutionPanel = () => {
     <!-- Execution Panel (Bottom) -->
     <div
       v-if="executionResult"
-      class="z-30 w-full bg-background border-t absolute bottom-0 flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+      class="z-30 w-full bg-background border-t flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
       :style="{
         height: isExecutionPanelCollapsed
           ? 'auto'
@@ -463,7 +463,7 @@ const toggleExecutionPanel = () => {
     >
       <!-- Resize Handle -->
       <div
-        class="h-1 cursor-ns-resize bg-border hover:bg-primary transition-colors w-full"
+        class="h-1 cursor-ns-resize bg-border hover:bg-secondary transition-colors w-full"
         @mousedown.prevent="startResize"
         v-if="!isExecutionPanelCollapsed"
       ></div>
