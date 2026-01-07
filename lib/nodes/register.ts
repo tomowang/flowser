@@ -7,6 +7,7 @@ import {
   GeminiModel,
   Code,
   TabQuery,
+  TabClose,
 } from "./index";
 
 Registry.register(ManualTrigger);
@@ -16,3 +17,4 @@ Registry.register(CalculatorTool);
 Registry.register(GeminiModel);
 Registry.register(Code);
 Registry.register(TabQuery);
+Registry.register(TabClose);

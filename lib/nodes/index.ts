@@ -5,3 +5,4 @@ export * from "./CalculatorTool";
 export * from "./GeminiModel";
 export * from "./Code";
 export * from "./TabQuery";
+export * from "./TabClose";
