@@ -11,7 +11,6 @@ export const AgentNode: INodeType = {
     description: "An AI Agent that can use tools",
     defaults: {
       name: "AI Agent",
-      color: "#673ab7", // Deep Purple
     },
     inputs: [
       { name: "main", type: "main", label: "Input" },

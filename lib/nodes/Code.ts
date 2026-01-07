@@ -12,7 +12,6 @@ export const Code: INodeType = {
     description: "Executes custom JavaScript code",
     defaults: {
       name: "Code",
-      color: "#FFAB00",
     },
     inputs: [{ name: "main", type: "main", label: "Main" }],
     outputs: [{ name: "main", type: "main", label: "Main" }],

@@ -79,7 +79,6 @@ export interface INodeTypeDescription {
   description: string;
   defaults: {
     name: string;
-    color?: string;
   };
   inputs: INodePort[];
   outputs: INodePort[];

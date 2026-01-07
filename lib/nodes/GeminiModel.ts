@@ -12,7 +12,6 @@ export const GeminiModel: INodeType = {
     description: "Google Gemini LLM Model",
     defaults: {
       name: "Gemini Model",
-      color: "#4285f4",
     },
     inputs: [],
     outputs: [{ name: "model", type: "model", label: "Model" }],

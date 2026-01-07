@@ -12,7 +12,6 @@ export const TabClose: INodeType = {
     description: "Close a specific tab",
     defaults: {
       name: "Tab Close",
-      color: "#ff6f00",
     },
     inputs: [{ name: "main", type: "main", label: "Main" }],
     outputs: [{ name: "main", type: "main", label: "Main" }],

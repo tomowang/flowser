@@ -11,7 +11,6 @@ export const CalculatorTool: INodeType = {
     description: "A simple calculator tool for Agents",
     defaults: {
       name: "Calculator",
-      color: "#ff9800", // Orange
     },
     inputs: [],
     outputs: [{ name: "tool", type: "tool", label: "Tool" }],

@@ -13,7 +13,6 @@ export const HttpRequest: INodeType = {
     description: "Makes an HTTP request",
     defaults: {
       name: "HTTP Request",
-      color: "#22bbda",
     },
     inputs: [{ name: "main", type: "main", label: "Main" }],
     outputs: [{ name: "main", type: "main", label: "Main" }],

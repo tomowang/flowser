@@ -12,7 +12,6 @@ export const TabQuery: INodeType = {
     description: "Query browser tabs",
     defaults: {
       name: "Tab Query",
-      color: "#ff6f00",
     },
     inputs: [{ name: "main", type: "main", label: "Main" }],
     outputs: [{ name: "main", type: "main", label: "Main" }],

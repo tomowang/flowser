@@ -11,7 +11,6 @@ export const ManualTrigger: INodeType = {
     description: "Triggers the workflow manually",
     defaults: {
       name: "Manual Trigger",
-      color: "#ff6d5a",
     },
     inputs: [],
     outputs: [{ name: "main", type: "main", label: "Main" }],
