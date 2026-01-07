@@ -7,11 +7,15 @@ import {
   IExecutionNodeResult,
 } from "../types";
 import { Registry } from "../nodes/registry";
+import { getQuickJS } from "../services/quickjs";
+import { QuickJSContext, QuickJSRuntime } from "quickjs-emscripten";
 
 export class WorkflowRunner {
   private workflow: IWorkflow;
   private executionData: Map<string, INodeExecutionData[]> = new Map();
   private nodeExecutionResults: IExecutionNodeResult[] = [];
+  private runtime: QuickJSRuntime | undefined;
+  private context: QuickJSContext | undefined;
 
   constructor(workflow: IWorkflow) {
     this.workflow = workflow;
@@ -20,6 +24,12 @@ export class WorkflowRunner {
   async run(triggerNodeId?: string): Promise<IWorkflowExecutionResult> {
     const startTime = Date.now();
     this.nodeExecutionResults = [];
+
+    // Initialize QuickJS
+    const quickJS = await getQuickJS();
+    this.runtime = quickJS.newRuntime();
+    this.context = this.runtime.newContext();
+    this.setupGlobalContext();
 
     // 1. Identify start node
     let startNode: IWorkflowNode | undefined;
@@ -57,6 +67,11 @@ export class WorkflowRunner {
         status: "error",
         nodeExecutionResults: this.nodeExecutionResults,
       };
+    } finally {
+      this.context?.dispose();
+      this.runtime?.dispose();
+      this.context = undefined;
+      this.runtime = undefined;
     }
   }
 
@@ -94,10 +109,14 @@ export class WorkflowRunner {
         // Retrieve from node.data or node.parameters
         // Vue Flow stores custom data in .data
         const value = node.data?.[paramName] ?? fallback;
-        if (typeof value === "string" && value.startsWith("=")) {
-          // Expression evaluation would go here, using 'index' to get context
-          // For now, return raw value or implement basic expression handling if needed
-          return value;
+        if (typeof value === "string") {
+          if (value.includes("{{")) {
+            return this.evaluateStringWithExpressions(
+              value,
+              itemIndex,
+              inputData,
+            );
+          }
         }
         return value;
       },
@@ -197,5 +216,166 @@ export class WorkflowRunner {
     );
     const targetIds = edges.map((e) => e.target);
     return this.workflow.nodes.filter((n) => targetIds.includes(n.id));
+  }
+
+  private setupGlobalContext() {
+    if (!this.context) return;
+
+    // Define $() function to lookup other nodes
+    const nodeFunc = this.context.newFunction("$", (nodeNameHandle) => {
+      const nodeName = this.context!.getString(nodeNameHandle);
+
+      // Find node by name (label)
+      const targetNode = this.workflow.nodes.find(
+        (n) => (n.data?.label || n.id) === nodeName,
+      );
+      if (!targetNode) return this.context!.undefined;
+
+      const data = this.executionData.get(targetNode.id) || [];
+      const obj = this.context!.newObject();
+
+      // .all()
+      const allFunc = this.context!.newFunction("all", () => {
+        const jsonHandle = this.context!.newString(JSON.stringify(data));
+        const parseHandle = this.context!.getProp(this.context!.global, "JSON");
+        const parseFunc = this.context!.getProp(parseHandle, "parse");
+        const result = this.context!.callFunction(
+          parseFunc,
+          parseHandle,
+          jsonHandle,
+        );
+        jsonHandle.dispose();
+        parseHandle.dispose();
+        parseFunc.dispose();
+
+        if (result.error) {
+          result.error.dispose();
+          return this.context!.undefined;
+        }
+        return result.value;
+      });
+      this.context!.setProp(obj, "all", allFunc);
+      allFunc.dispose();
+
+      // Allow accessing index via global variable
+      const indexHandle = this.context!.getProp(
+        this.context!.global,
+        "$itemIndex",
+      );
+      const index = this.context!.getNumber(indexHandle);
+      indexHandle.dispose();
+
+      const itemData = data[index] || data[0];
+      if (itemData) {
+        const itemJson = JSON.stringify(itemData);
+        const itemResult = this.context!.evalCode(`JSON.parse('${itemJson}')`);
+        if (itemResult.error) {
+          itemResult.error.dispose();
+        } else {
+          this.context!.setProp(obj, "item", itemResult.value);
+          itemResult.value.dispose();
+        }
+      }
+
+      return obj;
+    });
+
+    this.context.setProp(this.context.global, "$", nodeFunc);
+    nodeFunc.dispose();
+  }
+
+  private evaluateStringWithExpressions(
+    text: string,
+    itemIndex: number,
+    inputData: INodeExecutionData[],
+  ): any {
+    const rootRegex = /^\s*{{\s*([\s\S]+?)\s*}}\s*$/;
+    const match = text.match(rootRegex);
+    if (match) {
+      return this.evaluateExpression(match[1], itemIndex, inputData);
+    }
+
+    return text.replace(/{{\s*([\s\S]+?)\s*}}/g, (_, expr) => {
+      const result = this.evaluateExpression(expr, itemIndex, inputData);
+      if (typeof result === "object") return JSON.stringify(result);
+      return String(result);
+    });
+  }
+
+  private evaluateExpression(
+    expression: string,
+    itemIndex: number,
+    inputData: INodeExecutionData[],
+  ): any {
+    if (!this.context) return expression;
+
+    try {
+      const indexHandle = this.context.newNumber(itemIndex);
+      this.context.setProp(this.context.global, "$itemIndex", indexHandle);
+      indexHandle.dispose();
+
+      const inputObj = this.context.newObject();
+
+      // $input.all()
+      const allFunc = this.context.newFunction("all", () => {
+        const json = JSON.stringify(inputData);
+        const result = this.context!.evalCode(`JSON.parse('${json}')`);
+        if (result.error) {
+          result.error.dispose();
+          return this.context!.undefined;
+        }
+        return result.value;
+      });
+      this.context.setProp(inputObj, "all", allFunc);
+      allFunc.dispose();
+
+      // $input.item
+      if (inputData[itemIndex]) {
+        const itemJson = JSON.stringify(inputData[itemIndex]);
+        const itemResult = this.context.evalCode(`JSON.parse('${itemJson}')`);
+        if (itemResult.error) {
+          itemResult.error.dispose();
+        } else {
+          this.context.setProp(inputObj, "item", itemResult.value);
+          itemResult.value.dispose();
+
+          // $json
+          const jsonPart = inputData[itemIndex].json;
+          const jsonPartString = JSON.stringify(jsonPart);
+          const jsonPartResult = this.context.evalCode(
+            `JSON.parse('${jsonPartString}')`,
+          );
+          if (jsonPartResult.error) {
+            jsonPartResult.error.dispose();
+          } else {
+            this.context.setProp(
+              this.context.global,
+              "$json",
+              jsonPartResult.value,
+            );
+            jsonPartResult.value.dispose();
+          }
+        }
+      }
+
+      this.context.setProp(this.context.global, "$input", inputObj);
+      inputObj.dispose();
+
+      // Eval
+      const resultHandle = this.context.evalCode(expression);
+      if (resultHandle.error) {
+        const error = this.context.dump(resultHandle.error);
+        resultHandle.error.dispose();
+        console.warn(`Expression evaluation failed: ${expression}`, error);
+        return expression;
+      }
+
+      const result = this.context.dump(resultHandle.value);
+      resultHandle.value.dispose();
+      return result;
+    } catch (e) {
+      console.error("Expression evaluation error", e);
+      return expression;
+    }
   }
 }

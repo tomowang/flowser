@@ -1,10 +1,4 @@
-import {
-  newQuickJSWASMModule,
-  QuickJSContext,
-  QuickJSSyncVariant,
-} from "quickjs-emscripten";
-import ReleaseSync from "@jitl/quickjs-wasmfile-release-sync";
-import wasmUrl from "@jitl/quickjs-wasmfile-release-sync/wasm?url";
+import { getQuickJS } from "../services/quickjs";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../types";
 import { Code2 } from "lucide-vue-next";
 
@@ -45,26 +39,7 @@ export const Code: INodeType = {
 
     let quickJS;
     try {
-      // Create a custom variant that handles WASM loading for Vite
-      const CustomVariant: QuickJSSyncVariant = {
-        ...ReleaseSync,
-        importModuleLoader: async () => {
-          const moduleLoader = await ReleaseSync.importModuleLoader();
-          const defaultFactory =
-            "default" in moduleLoader ? moduleLoader.default : moduleLoader;
-          return async (options: any = {}) => {
-            const wasmBinary = await fetch(wasmUrl).then((r) =>
-              r.arrayBuffer(),
-            );
-            return (defaultFactory as any)({
-              ...options,
-              wasmBinary,
-            });
-          };
-        },
-      };
-
-      quickJS = await newQuickJSWASMModule(CustomVariant);
+      quickJS = await getQuickJS();
     } catch (e) {
       console.error("Failed to load QuickJS", e);
       throw new Error("Failed to initialize javascript sandbox environment");
