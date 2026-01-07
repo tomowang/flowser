@@ -9,6 +9,7 @@ import {
 import { Registry } from "../nodes/registry";
 import { getQuickJS } from "../services/quickjs";
 import { QuickJSContext, QuickJSRuntime } from "quickjs-emscripten";
+import { toast } from "vue-sonner";
 
 export class WorkflowRunner {
   private workflow: IWorkflow;
@@ -367,14 +368,20 @@ export class WorkflowRunner {
         const error = this.context.dump(resultHandle.error);
         resultHandle.error.dispose();
         console.warn(`Expression evaluation failed: ${expression}`, error);
+        toast.warning(`Expression evaluation failed: ${expression}`, {
+          description: error?.message || String(error),
+        });
         return expression;
       }
 
       const result = this.context.dump(resultHandle.value);
       resultHandle.value.dispose();
       return result;
-    } catch (e) {
+    } catch (e: any) {
       console.error("Expression evaluation error", e);
+      toast.error("Expression evaluation error", {
+        description: e.message || String(e),
+      });
       return expression;
     }
   }

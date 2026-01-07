@@ -4,6 +4,7 @@ import router from "./router";
 import { i18n } from "@/lib/i18n";
 import "@/assets/style.css";
 import "../../lib/nodes/register";
+import "vue-sonner/style.css";
 
 const app = createApp(App);
 app.use(router);

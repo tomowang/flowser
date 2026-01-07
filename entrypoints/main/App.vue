@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import AppSidebar from "./components/AppSidebar.vue";
 import { RouterView } from "vue-router";
+import { Toaster } from "@/components/ui/sonner";
 </script>
 
 <template>
@@ -26,4 +27,10 @@ import { RouterView } from "vue-router";
       </div>
     </SidebarInset>
   </SidebarProvider>
+  <Toaster
+    position="top-center"
+    richColors
+    closeButton
+    closeButtonPosition="top-right"
+  />
 </template>
