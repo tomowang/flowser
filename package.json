@@ -1,8 +1,8 @@
 {
-  "name": "wxt-vue-starter",
-  "description": "manifest.json description",
+  "name": "flowser",
+  "description": "Flowser - A browser extension for automating web workflows with AI",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "wxt",

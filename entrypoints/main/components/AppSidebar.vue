@@ -23,6 +23,8 @@ import {
 import { RouterLink, useRoute } from "vue-router";
 import { computed } from "vue";
 
+import logo from "@/assets/logo.svg";
+
 const { t } = useI18n();
 
 const items = computed(() => [
@@ -51,10 +53,8 @@ const items = computed(() => [
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" as-child>
             <a href="#">
-              <div
-                class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
-              >
-                <GalleryVerticalEnd class="size-4" />
+              <div class="aspect-square size-8 rounded-lg">
+                <img :src="logo" />
               </div>
               <div class="flex flex-col gap-0.5 leading-none">
                 <span class="font-semibold">Flowser</span>
