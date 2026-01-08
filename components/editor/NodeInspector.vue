@@ -2,6 +2,9 @@
 import { computed, ref, watch } from "vue";
 import { Registry } from "@/lib/nodes/registry";
 import { CredentialService } from "@/lib/services/credential-service";
+import { Codemirror } from "vue-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { json } from "@codemirror/lang-json";
 
 const props = defineProps<{
   node: any; // The selected node object from Vue Flow
@@ -138,16 +141,17 @@ const updateValue = (key: string, value: any) => {
           </option>
         </select>
 
-        <!-- JSON/Textarea -->
-        <textarea
+        <!-- JSON/Code Editor -->
+        <Codemirror
           v-else-if="prop.type === 'json' || prop.type === 'code'"
-          class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          :value="node.data[prop.name] ?? prop.default"
-          @input="
-            (e) =>
-              updateValue(prop.name, (e.target as HTMLTextAreaElement).value)
-          "
-        ></textarea>
+          :model-value="node.data[prop.name] ?? prop.default"
+          :style="{ height: '300px' }"
+          :autofocus="false"
+          :indent-with-tab="true"
+          :tab-size="2"
+          :extensions="[prop.type === 'json' ? json() : javascript()]"
+          @update:model-value="(val) => updateValue(prop.name, val)"
+        />
 
         <!-- Boolean/Switch (Basic checkbox for now) -->
         <div
