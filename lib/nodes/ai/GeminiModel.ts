@@ -1,5 +1,5 @@
-import { INodeType, IExecuteFunctions, INodeExecutionData, SupplyData } from "../types";
-import { CredentialService } from "../services/credential-service";
+import { INodeType, IExecuteFunctions, INodeExecutionData, SupplyData } from "../../types";
+import { CredentialService } from "../../services/credential-service";
 import { Sparkles } from "lucide-vue-next";
 
 export const GeminiModel: INodeType = {
@@ -56,7 +56,7 @@ export const GeminiModel: INodeType = {
     // but here we are in a browser extension context? 
     // The user rules and usage implies this runs in the extension structure (WXT).
     // We previously saw CredentialService import in Agent.ts comments.
-    const { CredentialService } = await import("../services/credential-service");
+    const { CredentialService } = await import("../../services/credential-service");
     
     const apiKey = await CredentialService.getDecryptedValue(credentialId);
     if (!apiKey) {

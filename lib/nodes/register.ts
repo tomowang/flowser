@@ -5,6 +5,9 @@ import {
   AgentNode,
   CalculatorTool,
   GeminiModel,
+  OpenAIModel,
+  ClaudeModel,
+  DeepSeekModel,
   Code,
   TabQuery,
   TabClose,
@@ -15,6 +18,9 @@ Registry.register(HttpRequest);
 Registry.register(AgentNode);
 Registry.register(CalculatorTool);
 Registry.register(GeminiModel);
+Registry.register(OpenAIModel);
+Registry.register(ClaudeModel);
+Registry.register(DeepSeekModel);
 Registry.register(Code);
 Registry.register(TabQuery);
 Registry.register(TabClose);

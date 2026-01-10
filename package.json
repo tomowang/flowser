@@ -15,7 +15,9 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.9",
     "@ai-sdk/google": "^3.0.6",
+    "@ai-sdk/openai": "^3.0.7",
     "@codemirror/lang-javascript": "^6.2.4",
     "@codemirror/lang-json": "^6.0.2",
     "@google/generative-ai": "^0.24.1",
