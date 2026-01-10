@@ -184,6 +184,10 @@ export class WorkflowRunner {
         outputData = [[{ json: {} }]];
       }
     } catch (e) {
+      console.error("Node execution error", e);
+      toast.error("Node execution error", {
+        description: (e as any).message || String(e),
+      });
       executeError = e;
       throw e;
     } finally {
