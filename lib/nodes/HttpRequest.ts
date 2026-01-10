@@ -47,46 +47,52 @@ export const HttpRequest: INodeType = {
       },
     ],
   },
-  async run(this: IExecuteFunctions): Promise<INodeExecutionData> {
-    const url = this.getNodeParameter("url") as string;
-    const method = this.getNodeParameter("method") as string;
-    const bodyStr = this.getNodeParameter("body") as string;
+  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+    const items = this.getInputData();
+    const returnData: INodeExecutionData[] = [];
 
-    let body: any = undefined;
-    if (method !== "GET" && method !== "HEAD") {
-      try {
-        body = bodyStr ? JSON.parse(bodyStr) : undefined;
-      } catch (e) {
-        console.warn("Invalid JSON body", bodyStr);
-      }
+    for (let i = 0; i < items.length; i++) {
+        const url = this.getNodeParameter("url", i) as string;
+        const method = this.getNodeParameter("method", i) as string;
+        const bodyStr = this.getNodeParameter("body", i) as string;
+
+        let body: any = undefined;
+        if (method !== "GET" && method !== "HEAD") {
+            try {
+                body = bodyStr ? JSON.parse(bodyStr) : undefined;
+            } catch (e) {
+                console.warn("Invalid JSON body", bodyStr);
+            }
+        }
+
+        try {
+            const response = await browser.runtime.sendMessage({
+                type: MessageType.HTTP_EXECUTE_REQUEST,
+                payload: {
+                    url,
+                    method,
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body,
+                },
+            });
+
+            if (!response.success) {
+                throw new Error(response.error);
+            }
+
+            returnData.push({
+                json: response.data,
+            });
+        } catch (error: any) {
+            returnData.push({
+                json: {
+                    error: error.message,
+                },
+            });
+        }
     }
-
-    try {
-      const response = await browser.runtime.sendMessage({
-        type: MessageType.HTTP_EXECUTE_REQUEST,
-        payload: {
-          url,
-          method,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body,
-        },
-      });
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      return {
-        json: response.data,
-      };
-    } catch (error: any) {
-      return {
-        json: {
-          error: error.message,
-        },
-      };
-    }
+    return [returnData];
   },
 };

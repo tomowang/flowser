@@ -27,35 +27,39 @@ export const TabClose: INodeType = {
       },
     ],
   },
-  async run(this: IExecuteFunctions): Promise<INodeExecutionData> {
-    const tabIdInput = this.getNodeParameter("tabId");
-    const tabId = Number(tabIdInput);
+  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+    const items = this.getInputData();
+    const returnData: INodeExecutionData[] = [];
 
-    if (tabId && !isNaN(tabId)) {
-      try {
-        await browser.tabs.remove(tabId);
-      } catch (error) {
-        console.warn(`Failed to close tab ${tabId}`, error);
-        // We might want to throw or just return error in json
-        if (error instanceof Error) {
-          throw new Error(`Failed to close tab ${tabId}: ${error.message}`);
+    for (let i = 0; i < items.length; i++) {
+        const tabIdInput = this.getNodeParameter("tabId", i);
+        const tabId = Number(tabIdInput);
+
+        if (tabId && !isNaN(tabId)) {
+            try {
+                await browser.tabs.remove(tabId);
+                returnData.push({
+                    json: {
+                        closed: true,
+                        tabId,
+                    },
+                });
+            } catch (error) {
+                console.warn(`Failed to close tab ${tabId}`, error);
+                if (error instanceof Error) {
+                    throw new Error(`Failed to close tab ${tabId}: ${error.message}`);
+                }
+                throw new Error(`Failed to close tab ${tabId}`);
+            }
+        } else {
+            returnData.push({
+                json: {
+                    closed: false,
+                    tabIdInput,
+                },
+            });
         }
-        throw new Error(`Failed to close tab ${tabId}`);
-      }
-
-      return {
-        json: {
-          closed: true,
-          tabId,
-        },
-      };
-    } else {
-      return {
-        json: {
-          closed: false,
-          tabIdInput,
-        },
-      };
     }
+    return [returnData];
   },
 };

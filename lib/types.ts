@@ -114,7 +114,6 @@ export interface SupplyData {
 export interface INodeType {
   description: INodeTypeDescription;
   execute?(this: IExecuteFunctions): Promise<INodeExecutionData[][]>;
-  run?(this: IExecuteFunctions): Promise<INodeExecutionData>;
   supplyData?(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData>;
 }
 
