@@ -8,6 +8,13 @@ import { json } from "@codemirror/lang-json";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-vue-next";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const props = defineProps<{
   node: any; // The selected node object from Vue Flow
@@ -128,22 +135,24 @@ const updateValue = (key: string, value: any) => {
         />
 
         <!-- Options Select -->
-        <select
+        <Select
           v-else-if="prop.type === 'options'"
-          class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
-          :value="node.data[prop.name] ?? prop.default"
-          @change="
-            (e) => updateValue(prop.name, (e.target as HTMLSelectElement).value)
-          "
+          :model-value="node.data[prop.name] ?? prop.default"
+          @update:model-value="(val) => updateValue(prop.name, val)"
         >
-          <option
-            v-for="opt in prop.options"
-            :key="opt.value"
-            :value="opt.value"
-          >
-            {{ opt.name }}
-          </option>
-        </select>
+          <SelectTrigger>
+            <SelectValue :placeholder="prop.placeholder" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="opt in prop.options"
+              :key="opt.value"
+              :value="opt.value"
+            >
+              {{ opt.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
 
         <!-- Credential Select -->
 
@@ -151,23 +160,23 @@ const updateValue = (key: string, value: any) => {
           v-else-if="prop.type === 'credential'"
           class="flex gap-2"
         >
-          <select
-            class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
-            :value="node.data[prop.name] ?? prop.default"
-            @change="
-              (e) =>
-                updateValue(prop.name, (e.target as HTMLSelectElement).value)
-            "
+          <Select
+            :model-value="node.data[prop.name] ?? prop.default"
+            @update:model-value="(val) => updateValue(prop.name, val)"
           >
-            <option value="" disabled selected>Select a credential</option>
-            <option
-              v-for="opt in prop.options"
-              :key="opt.value"
-              :value="opt.value"
-            >
-              {{ opt.name }}
-            </option>
-          </select>
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="Select a credential" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="opt in prop.options"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.name }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
           <Button
             variant="outline"
             size="icon"
