@@ -186,6 +186,13 @@ const onDrop = (event: DragEvent) => {
     y: event.clientY - 50,
   };
 
+  const defaultParams: Record<string, any> = {};
+  for (const prop of nodeType.description.properties) {
+    if (prop.default !== undefined) {
+      defaultParams[prop.name] = prop.default;
+    }
+  }
+
   const newNode: Node = {
     id: `${type}-${Date.now()}`,
     type: "custom",
@@ -194,6 +201,7 @@ const onDrop = (event: DragEvent) => {
       label: nodeType.description.displayName,
       nodeType: type,
       ...nodeType.description.defaults,
+      ...defaultParams,
     },
   };
 
