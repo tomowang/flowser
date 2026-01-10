@@ -130,12 +130,15 @@ export class WorkflowRunner {
         // Return the actual node objects with their type definitions to be useful
         return this.workflow.nodes
           .filter((n) => sourceIds.includes(n.id))
-          .map((n) => ({
-            id: n.id,
-            type: n.type,
-            // We could attach the nodeType definition here if needed
-            data: n.data, // access params
-          }));
+          .map((n) => {
+            const nodeType = Registry.get(n.type);
+            return {
+              id: n.id,
+              type: n.type,
+              nodeType, // Attach the full node type definition (with execute, supplyData etc)
+              data: n.data, // access params
+            };
+          });
       },
     };
 

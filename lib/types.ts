@@ -93,10 +93,29 @@ export interface IExecuteFunctions {
   getConnectedNodes?(inputName: string): any[];
 }
 
+export interface ISupplyDataFunctions extends IExecuteFunctions {
+  // Methods available to nodes during supplyData execution
+}
+
+// Output interface for supplyData
+export type CloseFunction = () => Promise<void>;
+
+export interface NodeExecutionHint {
+  message: string;
+}
+
+export interface SupplyData {
+  metadata?: IDataObject;
+  response: unknown;
+  closeFunction?: CloseFunction;
+  hints?: NodeExecutionHint[];
+}
+
 export interface INodeType {
   description: INodeTypeDescription;
   execute?(this: IExecuteFunctions): Promise<INodeExecutionData[][]>;
   run?(this: IExecuteFunctions): Promise<INodeExecutionData>;
+  supplyData?(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData>;
 }
 
 // Workflow persistence model
