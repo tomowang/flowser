@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Play, Save } from "lucide-vue-next"; // Icons
 import { Spinner } from "@/components/ui/spinner";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -48,9 +49,8 @@ const isExecuting = ref(false);
 const isMasterKeyModalOpen = ref(false);
 
 // Panel state
-const executionPanelHeight = ref(300);
 const isExecutionPanelCollapsed = ref(false);
-const isResizing = ref(false);
+const bottomPanelRef = ref<InstanceType<typeof ResizablePanel> | null>(null);
 
 const onUnlocked = () => {
   logs.value.push(t("workflowEditor.securityMasterKeySet"));
@@ -91,18 +91,9 @@ onMounted(async () => {
   if (!restored) {
     isMasterKeyModalOpen.value = true;
   }
-
-  // Add global mouse up listener for resizing
-  window.addEventListener("mouseup", stopResize);
-  window.addEventListener("mousemove", onResize);
 });
 
-// Clean up listeners
-import { onUnmounted } from "vue";
-onUnmounted(() => {
-  window.removeEventListener("mouseup", stopResize);
-  window.removeEventListener("mousemove", onResize);
-});
+
 
 watch(
   () => route.params.id,
@@ -334,26 +325,15 @@ const runWorkflow = async () => {
   }
 };
 
-// Resize logic
-const startResize = () => {
-  isResizing.value = true;
-};
-
-const stopResize = () => {
-  isResizing.value = false;
-};
-
-const onResize = (e: MouseEvent) => {
-  if (!isResizing.value) return;
-  const newHeight = window.innerHeight - e.clientY;
-  // Min height 40 (header) + buffer, max height constraint if needed
-  if (newHeight > 40 && newHeight < window.innerHeight - 100) {
-    executionPanelHeight.value = newHeight;
-  }
-};
-
 const toggleExecutionPanel = () => {
-  isExecutionPanelCollapsed.value = !isExecutionPanelCollapsed.value;
+  const panel = bottomPanelRef.value;
+  if (panel) {
+    if (isExecutionPanelCollapsed.value) {
+      panel.expand();
+    } else {
+      panel.collapse();
+    }
+  }
 };
 </script>
 
@@ -380,85 +360,113 @@ const toggleExecutionPanel = () => {
       </Button>
     </div>
 
-    <!-- Canvas -->
-    <main
-      class="flex-1 w-full bg-background relative"
-      @dragover="onDragOver"
-      @drop="onDrop"
-    >
-      <VueFlow
-        v-model:nodes="nodes"
-        v-model:edges="edges"
-        class="h-full w-full"
-        :default-zoom="1"
-        :min-zoom="0.2"
-        :max-zoom="4"
-      >
-        <template #node-custom="props">
-          <NodeDelegate :id="props.id" :data="props.data" />
-        </template>
 
-        <template #edge-custom="props">
-          <CustomEdge v-bind="props" />
-        </template>
-
-        <Background pattern-color="#aaa" :gap="16" />
-        <Controls position="bottom-left" />
-        <MiniMap position="bottom-left" />
-      </VueFlow>
-    </main>
-
-    <!-- Floating Node Panel (Right) -->
-    <aside
-      class="absolute top-20 right-4 z-10 w-64 bg-card border rounded-lg shadow-lg flex flex-col max-h-[calc(100vh-6rem)]"
-      v-if="!selectedNode"
-    >
-      <!-- ... (Content of node panel) ... -->
-      <div class="p-4 border-b">
-        <h3 class="font-semibold mb-2">
-          {{ t("workflowEditor.buildWorkflow") }}
-        </h3>
-        <div class="relative">
-          <Search
-            class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
-          />
-          <input
-            v-model="searchQuery"
-            type="text"
-            :placeholder="t('workflowEditor.searchNodes')"
-            class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pl-9 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-4 space-y-2">
-        <div
-          v-for="node in Registry.getAll()"
-          :key="node.description.name"
-          class="cursor-grab flex items-center gap-3 rounded-md border bg-popover p-3 hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm"
-          draggable="true"
-          @dragstart="
-            (event) =>
-              event.dataTransfer?.setData(
-                'application/vueflow',
-                node.description.name,
-              )
-          "
+    <ResizablePanelGroup direction="vertical" class="flex-1 w-full h-full relative">
+      <ResizablePanel :default-size="75" :min-size="25" class="relative">
+        <!-- Canvas -->
+        <main
+          class="h-full w-full bg-background relative"
+          @dragover="onDragOver"
+          @drop="onDrop"
         >
-          <div
-            class="flex h-8 w-8 items-center justify-center rounded bg-muted"
+          <VueFlow
+            v-model:nodes="nodes"
+            v-model:edges="edges"
+            class="h-full w-full"
+            :default-zoom="1"
+            :min-zoom="0.2"
+            :max-zoom="4"
           >
-            <!-- Icon support if available -->
-            <component :is="node.description.icon || Plus" class="h-4 w-4" />
+            <template #node-custom="props">
+              <NodeDelegate :id="props.id" :data="props.data" />
+            </template>
+
+            <template #edge-custom="props">
+              <CustomEdge v-bind="props" />
+            </template>
+
+            <Background pattern-color="#aaa" :gap="16" />
+            <Controls position="bottom-left" />
+            <MiniMap position="bottom-left" />
+          </VueFlow>
+        </main>
+
+        <!-- Floating Node Panel (Right) -->
+        <aside
+          class="absolute top-20 right-4 z-10 w-64 bg-card border rounded-lg shadow-lg flex flex-col max-h-[calc(100%-8rem)]"
+          v-if="!selectedNode"
+        >
+          <!-- ... (Content of node panel) ... -->
+          <div class="p-4 border-b">
+            <h3 class="font-semibold mb-2">
+              {{ t("workflowEditor.buildWorkflow") }}
+            </h3>
+            <div class="relative">
+              <Search
+                class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+              />
+              <input
+                v-model="searchQuery"
+                type="text"
+                :placeholder="t('workflowEditor.searchNodes')"
+                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pl-9 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
           </div>
-          <div class="flex flex-col text-left">
-            <span class="text-sm font-medium">{{
-              node.description.displayName
-            }}</span>
+
+          <div class="flex-1 overflow-y-auto p-4 space-y-2">
+            <div
+              v-for="node in Registry.getAll()"
+              :key="node.description.name"
+              class="cursor-grab flex items-center gap-3 rounded-md border bg-popover p-3 hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm"
+              draggable="true"
+              @dragstart="
+                (event) =>
+                  event.dataTransfer?.setData(
+                    'application/vueflow',
+                    node.description.name,
+                  )
+              "
+            >
+              <div
+                class="flex h-8 w-8 items-center justify-center rounded bg-muted"
+              >
+                <!-- Icon support if available -->
+                <component :is="node.description.icon || Plus" class="h-4 w-4" />
+              </div>
+              <div class="flex flex-col text-left">
+                <span class="text-sm font-medium">{{
+                  node.description.displayName
+                }}</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </aside>
+        </aside>
+      </ResizablePanel>
+
+      <ResizableHandle v-show="executionResult" with-handle />
+
+      <ResizablePanel
+        v-show="executionResult"
+        ref="bottomPanelRef"
+        :default-size="25"
+        :max-size="75"
+        :collapsible="true"
+        @expand="isExecutionPanelCollapsed = false"
+        @collapse="isExecutionPanelCollapsed = true"
+        class="bg-background border-t flex flex-col min-h-10"
+      >
+        <ExecutionPanel
+          v-if="executionResult"
+          :execution-result="executionResult"
+          :is-collapsed="isExecutionPanelCollapsed"
+          class="flex-1 min-h-0"
+          @close="executionResult = null"
+          @toggle-collapse="toggleExecutionPanel"
+        />
+      </ResizablePanel>
+    </ResizablePanelGroup>
+
 
     <!-- Node Properties Modal -->
     <NodePropertiesModal
@@ -476,32 +484,6 @@ const toggleExecutionPanel = () => {
       @close="isMasterKeyModalOpen = false"
       @unlocked="onUnlocked"
     />
-
-    <!-- Execution Panel (Bottom) -->
-    <div
-      v-if="executionResult"
-      class="z-30 w-full bg-background border-t flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
-      :style="{
-        height: isExecutionPanelCollapsed
-          ? 'auto'
-          : `${executionPanelHeight}px`,
-      }"
-    >
-      <!-- Resize Handle -->
-      <div
-        class="h-1 shrink-0 cursor-ns-resize bg-border hover:bg-secondary transition-colors w-full"
-        @mousedown.prevent="startResize"
-        v-if="!isExecutionPanelCollapsed"
-      ></div>
-
-      <ExecutionPanel
-        :execution-result="executionResult"
-        :is-collapsed="isExecutionPanelCollapsed"
-        class="flex-1 min-h-0"
-        @close="executionResult = null"
-        @toggle-collapse="toggleExecutionPanel"
-      />
-    </div>
   </div>
 </template>
 
