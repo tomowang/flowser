@@ -21,6 +21,7 @@ import ExecutionPanel from "@/components/editor/execution/ExecutionPanel.vue";
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
 import { SecurityService } from "@/lib/services/security-service";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Search, Plus, Play, Save } from "lucide-vue-next"; // Icons
 
 import "@vue-flow/core/dist/style.css";
@@ -238,12 +239,10 @@ const saveWorkflow = async () => {
   const workflowId = currentWorkflowId.value || crypto.randomUUID();
   let name = currentWorkflowName.value;
   if (!currentWorkflowId.value) {
-    name =
-      prompt(
-        t("workflowEditor.workflowNamePrompt"),
-        currentWorkflowName.value,
-      ) || t("workflowEditor.untitledWorkflow");
-    currentWorkflowName.value = name;
+    if(!name || name.trim() === "") {
+        name = t("workflowEditor.untitledWorkflow");
+        currentWorkflowName.value = name;
+    }
   }
 
   const workflow: IWorkflow = {
@@ -352,7 +351,10 @@ const toggleExecutionPanel = () => {
     <div
       class="absolute top-4 left-4 z-10 flex items-center gap-2 bg-card p-2 rounded-md shadow border"
     >
-      <h2 class="font-semibold px-2">{{ currentWorkflowName }}</h2>
+      <Input
+        v-model="currentWorkflowName"
+        class="h-8 font-semibold px-2 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[200px]"
+      />
       <div class="h-4 w-[1px] bg-border mx-2"></div>
       <Button size="sm" variant="outline" @click="saveWorkflow">
         <Save class="w-4 h-4 mr-1" /> {{ t("common.save") }}
