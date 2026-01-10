@@ -5,6 +5,9 @@ import { CredentialService } from "@/lib/services/credential-service";
 import { Codemirror } from "vue-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-vue-next";
+import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
 
 const props = defineProps<{
   node: any; // The selected node object from Vue Flow
@@ -22,34 +25,54 @@ const nodeType = computed(() => {
   return Registry.get(props.node.data.nodeType);
 });
 
+const isCreateCredentialOpen = ref(false);
+const credentialTypeForCreation = ref<string>("");
+const currentCredentialPropName = ref<string>("");
+
+const loadCredentials = async () => {
+  dynamicOptions.value = {};
+  if (!nodeType.value) return;
+
+  for (const prop of nodeType.value.description.properties) {
+    if (prop.type === "credential") {
+      try {
+        const creds = await CredentialService.getCredentials();
+        const filtered = prop.credentialType
+          ? creds.filter((c) => c.type === prop.credentialType)
+          : creds;
+
+        dynamicOptions.value[prop.name] = filtered.map((c) => ({
+          name: c.name,
+          value: c.id,
+        }));
+      } catch (e) {
+        console.warn("Failed to load credentials for inspector", e);
+      }
+    }
+  }
+};
+
 // Load dynamic options (like credentials)
 watch(
   () => props.node?.id,
-  async () => {
-    dynamicOptions.value = {};
-    if (!nodeType.value) return;
-
-    for (const prop of nodeType.value.description.properties) {
-      if (prop.type === "credential") {
-        try {
-          const creds = await CredentialService.getCredentials();
-          // Filter if credentialType is specified
-          const filtered = prop.credentialType
-            ? creds.filter((c) => c.type === prop.credentialType)
-            : creds;
-
-          dynamicOptions.value[prop.name] = filtered.map((c) => ({
-            name: c.name,
-            value: c.id,
-          }));
-        } catch (e) {
-          console.warn("Failed to load credentials for inspector", e);
-        }
-      }
-    }
+  () => {
+    loadCredentials();
   },
   { immediate: true },
 );
+
+const openCreateCredentialModal = (type: string, propName: string) => {
+  credentialTypeForCreation.value = type;
+  currentCredentialPropName.value = propName;
+  isCreateCredentialOpen.value = true;
+};
+
+const onCredentialCreated = async (newId: string) => {
+  await loadCredentials();
+  if (currentCredentialPropName.value) {
+    updateValue(currentCredentialPropName.value, newId);
+  }
+};
 
 const properties = computed(() => {
   const staticProps = nodeType.value?.description.properties || [];
@@ -123,23 +146,38 @@ const updateValue = (key: string, value: any) => {
         </select>
 
         <!-- Credential Select -->
-        <select
+
+        <div
           v-else-if="prop.type === 'credential'"
-          class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
-          :value="node.data[prop.name] ?? prop.default"
-          @change="
-            (e) => updateValue(prop.name, (e.target as HTMLSelectElement).value)
-          "
+          class="flex gap-2"
         >
-          <option value="" disabled selected>Select a credential</option>
-          <option
-            v-for="opt in prop.options"
-            :key="opt.value"
-            :value="opt.value"
+          <select
+            class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+            :value="node.data[prop.name] ?? prop.default"
+            @change="
+              (e) =>
+                updateValue(prop.name, (e.target as HTMLSelectElement).value)
+            "
           >
-            {{ opt.name }}
-          </option>
-        </select>
+            <option value="" disabled selected>Select a credential</option>
+            <option
+              v-for="opt in prop.options"
+              :key="opt.value"
+              :value="opt.value"
+            >
+              {{ opt.name }}
+            </option>
+          </select>
+          <Button
+            variant="outline"
+            size="icon"
+            class="shrink-0"
+            @click="openCreateCredentialModal(prop.credentialType || '', prop.name)"
+            title="Create new credential"
+          >
+            <Plus class="h-4 w-4" />
+          </Button>
+        </div>
 
         <!-- JSON/Code Editor -->
         <Codemirror
@@ -173,4 +211,11 @@ const updateValue = (key: string, value: any) => {
   <div v-else class="text-muted-foreground text-sm">
     Select a node to edit properties.
   </div>
+
+
+  <CreateCredentialModal
+    v-model:open="isCreateCredentialOpen"
+    :default-type="credentialTypeForCreation"
+    @created="onCredentialCreated"
+  />
 </template>
