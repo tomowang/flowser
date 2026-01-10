@@ -23,6 +23,7 @@ import { SecurityService } from "@/lib/services/security-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Play, Save } from "lucide-vue-next"; // Icons
+import { Spinner } from "@/components/ui/spinner";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -41,6 +42,8 @@ const executionResult = ref<IWorkflowExecutionResult | null>(null);
 const currentWorkflowId = ref<string | null>(null);
 const currentWorkflowName = ref<string>(t("workflowEditor.untitledWorkflow"));
 const searchQuery = ref("");
+const isSaving = ref(false);
+const isExecuting = ref(false);
 
 const isMasterKeyModalOpen = ref(false);
 
@@ -267,9 +270,15 @@ const saveWorkflow = async () => {
   };
 
   const sanitizedWorkflow = JSON.parse(JSON.stringify(workflow));
-  await WorkflowService.saveWorkflow(sanitizedWorkflow);
-  currentWorkflowId.value = workflowId;
-  logs.value.push(t("workflowEditor.savedWorkflow") + " " + name);
+
+  isSaving.value = true;
+  try {
+    await WorkflowService.saveWorkflow(sanitizedWorkflow);
+    currentWorkflowId.value = workflowId;
+    logs.value.push(t("workflowEditor.savedWorkflow") + " " + name);
+  } finally {
+    isSaving.value = false;
+  }
 };
 
 const createNewWorkflow = () => {
@@ -311,6 +320,7 @@ const runWorkflow = async () => {
 
   const runner = new WorkflowRunner(workflow);
 
+  isExecuting.value = true;
   try {
     const result = await runner.run();
     executionResult.value = result;
@@ -319,6 +329,8 @@ const runWorkflow = async () => {
   } catch (e: any) {
     console.error(e);
     logs.value.push(`Error: ${e.message}`);
+  } finally {
+    isExecuting.value = false;
   }
 };
 
@@ -356,11 +368,15 @@ const toggleExecutionPanel = () => {
         class="h-8 font-semibold px-2 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[200px]"
       />
       <div class="h-4 w-[1px] bg-border mx-2"></div>
-      <Button size="sm" variant="outline" @click="saveWorkflow">
-        <Save class="w-4 h-4 mr-1" /> {{ t("common.save") }}
+      <Button size="sm" variant="outline" @click="saveWorkflow" :disabled="isSaving" class="cursor-pointer">
+        <Spinner v-if="isSaving" class="w-4 h-4 mr-1" />
+        <Save v-else class="w-4 h-4 mr-1" />
+        {{ t("common.save") }}
       </Button>
-      <Button size="sm" @click="runWorkflow">
-        <Play class="w-4 h-4 mr-1" /> {{ t("workflowEditor.execute") }}
+      <Button size="sm" @click="runWorkflow" :disabled="isExecuting" class="cursor-pointer">
+        <Spinner v-if="isExecuting" class="w-4 h-4 mr-1" />
+        <Play v-else class="w-4 h-4 mr-1" />
+        {{ t("workflowEditor.execute") }}
       </Button>
     </div>
 
