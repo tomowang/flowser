@@ -10,3 +10,4 @@ export * from "./Code";
 export * from "./TabQuery";
 export * from "./TabClose";
 export * from "./TabCreated";
+export * from "./ClickElement";
