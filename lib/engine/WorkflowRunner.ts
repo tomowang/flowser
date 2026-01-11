@@ -22,7 +22,10 @@ export class WorkflowRunner {
     this.workflow = workflow;
   }
 
-  async run(triggerNodeId?: string): Promise<IWorkflowExecutionResult> {
+  async run(
+    triggerNodeId?: string,
+    triggerData?: INodeExecutionData[],
+  ): Promise<IWorkflowExecutionResult> {
     const startTime = Date.now();
     this.nodeExecutionResults = [];
 
@@ -48,7 +51,7 @@ export class WorkflowRunner {
     }
 
     try {
-      await this.executeNode(startNode, []);
+      await this.executeNode(startNode, triggerData || []);
       return {
         id: crypto.randomUUID(),
         workflowId: this.workflow.id,

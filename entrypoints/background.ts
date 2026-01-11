@@ -4,6 +4,10 @@ import {
   type RuntimeMessage,
   type ExecuteHttpRequestPayload,
 } from "../lib/messages";
+import "../lib/nodes/register";
+import { dbPromise } from "../lib/db";
+import { WorkflowRunner } from "../lib/engine/WorkflowRunner";
+import { ExecutionService } from "../lib/services/execution-service";
 
 export default defineBackground(() => {
   console.log("Hello background!", { id: browser.runtime.id });
@@ -29,4 +33,23 @@ export default defineBackground(() => {
       }
     },
   );
+
+  browser.tabs.onCreated.addListener(async (tab) => {
+    console.log("Tab created", tab);
+
+    const db = await dbPromise;
+    const workflows = await db.getAll("workflows");
+
+    for (const workflow of workflows) {
+      // @ts-ignore
+      const triggerNode = workflow.nodes.find((n) => n.type === "tabCreated");
+      if (triggerNode) {
+        console.log("Executing workflow", workflow.name);
+        const runner = new WorkflowRunner(workflow);
+        const triggerData = [{ json: tab as any }];
+        const result = await runner.run(triggerNode.id, triggerData);
+        await ExecutionService.saveExecution(result);
+      }
+    }
+  });
 });

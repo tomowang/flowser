@@ -11,6 +11,7 @@ import {
   Code,
   TabQuery,
   TabClose,
+  TabCreated,
 } from "./index";
 
 Registry.register(ManualTrigger);
@@ -24,3 +25,4 @@ Registry.register(DeepSeekModel);
 Registry.register(Code);
 Registry.register(TabQuery);
 Registry.register(TabClose);
+Registry.register(TabCreated);

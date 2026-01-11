@@ -9,3 +9,4 @@ export * from "./ai/DeepSeekModel";
 export * from "./Code";
 export * from "./TabQuery";
 export * from "./TabClose";
+export * from "./TabCreated";
