@@ -24,8 +24,8 @@ const ManualTriggerNode: INodeType = {
         outputs: [{ name: "main", type: "main" }],
         properties: [],
     },
-    async run() {
-        return { json: { manual: true } };
+    async execute() {
+        return [[{ json: { manual: true } }]];
     }
 };
 Registry.register(ManualTriggerNode);
@@ -69,19 +69,19 @@ const mockContext = {
     newObject: () => ({ dispose: () => {} }),
     getProp: () => ({ dispose: () => {} }),
     setProp: () => {},
-    callFunction: () => ({ 
-        dispose: () => {}, 
-        value: { dispose: () => {} }, 
-        error: undefined 
+    callFunction: () => ({
+        dispose: () => {},
+        value: { dispose: () => {} },
+        error: undefined
     }),
     newString: () => ({ dispose: () => {} }),
     getNumber: () => 0,
     newNumber: () => ({ dispose: () => {} }),
-    evalCode: () => ({ 
-        value: { dispose: () => {} }, 
+    evalCode: () => ({
+        value: { dispose: () => {} },
         error: undefined,
         dispose: () => {} // handle handle dispose
-    }), 
+    }),
     dump: (val: any) => val,
     dispose: () => {},
     global: {},
@@ -115,7 +115,7 @@ describe("Agent Node Execution", () => {
                     id: "model-1",
                     type: "geminiModel",
                     position: { x: 0, y: 100 },
-                    data: { 
+                    data: {
                         label: "Gemini",
                         credentialId: "cred-123",
                         modelName: "gemini-pro"
@@ -125,7 +125,7 @@ describe("Agent Node Execution", () => {
                     id: "agent-1",
                     type: "agent",
                     position: { x: 200, y: 100 },
-                    data: { 
+                    data: {
                         label: "Agent",
                         prompt: "You are a bot",
                         message: "Hello world"
@@ -157,14 +157,14 @@ describe("Agent Node Execution", () => {
         const result = await runner.run("trigger-1");
 
         expect(result.status).toBe("success");
-        
+
         const agentResult = result.nodeExecutionResults.find(n => n.nodeId === "agent-1");
         expect(agentResult).toBeDefined();
         expect(agentResult?.status).toBe("success");
-        
+
         const output = agentResult?.outputData[0]?.json?.output;
         expect(output).toBe("Mock response for prompt: Hello world");
-        
+
         const tokenUsage = agentResult?.outputData[0]?.json?.tokenUsage;
         expect(tokenUsage).toEqual({ totalTokens: 10 });
     });
