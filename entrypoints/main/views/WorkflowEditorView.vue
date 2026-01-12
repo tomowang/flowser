@@ -49,6 +49,7 @@ const logs = ref<any[]>([]); // Keep for basic logs if needed, but mainly use ex
 const executionResult = ref<IWorkflowExecutionResult | null>(null);
 const currentWorkflowId = ref<string | null>(null);
 const currentWorkflowName = ref<string>(t("workflowEditor.untitledWorkflow"));
+const originalWorkflowName = ref<string>("");
 const searchQuery = ref("");
 const isSaving = ref(false);
 const isExecuting = ref(false);
@@ -214,6 +215,7 @@ const onDrop = (event: DragEvent) => {
 const loadWorkflow = (workflow: IWorkflow) => {
   currentWorkflowId.value = workflow.id;
   currentWorkflowName.value = workflow.name;
+  originalWorkflowName.value = workflow.name;
   setNodes(
     workflow.nodes.map((n) => ({
       id: n.id,
@@ -289,6 +291,7 @@ const saveWorkflow = async () => {
   try {
     await WorkflowService.saveWorkflow(sanitizedWorkflow);
     currentWorkflowId.value = workflowId;
+    originalWorkflowName.value = name;
     logs.value.push(t("workflowEditor.savedWorkflow") + " " + name);
     toast.success(t("workflowEditor.savedWorkflow") + " " + name);
   } finally {
@@ -296,9 +299,16 @@ const saveWorkflow = async () => {
   }
 };
 
+const onNameBlur = () => {
+  if (currentWorkflowName.value !== originalWorkflowName.value) {
+    saveWorkflow();
+  }
+};
+
 const createNewWorkflow = () => {
   currentWorkflowId.value = null;
   currentWorkflowName.value = t("workflowEditor.newWorkflow");
+  originalWorkflowName.value = currentWorkflowName.value;
   setNodes([]);
   setEdges([]);
   isWorkflowActive.value = false;
@@ -388,7 +398,7 @@ const toggleExecutionPanel = () => {
     >
       <Input
         v-model="currentWorkflowName"
-        @blur="saveWorkflow"
+        @blur="onNameBlur"
         class="h-8 font-semibold px-2 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[200px]"
       />
       <div class="h-4 w-px bg-border mx-2"></div>
