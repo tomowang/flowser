@@ -10,6 +10,7 @@ import { useRoute } from "vue-router";
 import { Registry } from "@/lib/nodes/registry";
 import NodeDelegate from "@/components/editor/NodeDelegate.vue";
 import CustomEdge from "@/components/editor/CustomEdge.vue";
+import { toast } from "vue-sonner";
 // Remove NodeInspector import
 import NodePropertiesModal from "@/components/editor/NodePropertiesModal.vue";
 import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
@@ -24,7 +25,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Play, Save } from "lucide-vue-next"; // Icons
 import { Spinner } from "@/components/ui/spinner";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -92,8 +97,6 @@ onMounted(async () => {
     isMasterKeyModalOpen.value = true;
   }
 });
-
-
 
 watch(
   () => route.params.id,
@@ -233,9 +236,9 @@ const saveWorkflow = async () => {
   const workflowId = currentWorkflowId.value || crypto.randomUUID();
   let name = currentWorkflowName.value;
   if (!currentWorkflowId.value) {
-    if(!name || name.trim() === "") {
-        name = t("workflowEditor.untitledWorkflow");
-        currentWorkflowName.value = name;
+    if (!name || name.trim() === "") {
+      name = t("workflowEditor.untitledWorkflow");
+      currentWorkflowName.value = name;
     }
   }
 
@@ -267,6 +270,7 @@ const saveWorkflow = async () => {
     await WorkflowService.saveWorkflow(sanitizedWorkflow);
     currentWorkflowId.value = workflowId;
     logs.value.push(t("workflowEditor.savedWorkflow") + " " + name);
+    toast.success(t("workflowEditor.savedWorkflow") + " " + name);
   } finally {
     isSaving.value = false;
   }
@@ -345,23 +349,37 @@ const toggleExecutionPanel = () => {
     >
       <Input
         v-model="currentWorkflowName"
+        @blur="saveWorkflow"
         class="h-8 font-semibold px-2 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[200px]"
       />
       <div class="h-4 w-[1px] bg-border mx-2"></div>
-      <Button size="sm" variant="outline" @click="saveWorkflow" :disabled="isSaving" class="cursor-pointer">
+      <Button
+        size="sm"
+        variant="outline"
+        @click="saveWorkflow"
+        :disabled="isSaving"
+        class="cursor-pointer"
+      >
         <Spinner v-if="isSaving" class="w-4 h-4 mr-1" />
         <Save v-else class="w-4 h-4 mr-1" />
         {{ t("common.save") }}
       </Button>
-      <Button size="sm" @click="runWorkflow" :disabled="isExecuting" class="cursor-pointer">
+      <Button
+        size="sm"
+        @click="runWorkflow"
+        :disabled="isExecuting"
+        class="cursor-pointer"
+      >
         <Spinner v-if="isExecuting" class="w-4 h-4 mr-1" />
         <Play v-else class="w-4 h-4 mr-1" />
         {{ t("workflowEditor.execute") }}
       </Button>
     </div>
 
-
-    <ResizablePanelGroup direction="vertical" class="flex-1 w-full h-full relative">
+    <ResizablePanelGroup
+      direction="vertical"
+      class="flex-1 w-full h-full relative"
+    >
       <ResizablePanel :default-size="75" :min-size="25" class="relative">
         <!-- Canvas -->
         <main
@@ -432,7 +450,10 @@ const toggleExecutionPanel = () => {
                 class="flex h-8 w-8 items-center justify-center rounded bg-muted"
               >
                 <!-- Icon support if available -->
-                <component :is="node.description.icon || Plus" class="h-4 w-4" />
+                <component
+                  :is="node.description.icon || Plus"
+                  class="h-4 w-4"
+                />
               </div>
               <div class="flex flex-col text-left">
                 <span class="text-sm font-medium">{{
@@ -466,7 +487,6 @@ const toggleExecutionPanel = () => {
         />
       </ResizablePanel>
     </ResizablePanelGroup>
-
 
     <!-- Node Properties Modal -->
     <NodePropertiesModal
