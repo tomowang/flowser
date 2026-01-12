@@ -144,12 +144,17 @@ const getCredentialValue = (credType: string): string => {
               <SelectValue placeholder="Select a credential" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                v-for="opt in credentialOptions[cred.name] || []"
-                :key="opt.value"
-                :value="opt.value"
-              >
-                {{ opt.name }}
+              <template v-if="credentialOptions[cred.name]?.length">
+                <SelectItem
+                  v-for="opt in credentialOptions[cred.name]"
+                  :key="opt.value"
+                  :value="opt.value"
+                >
+                  {{ opt.name }}
+                </SelectItem>
+              </template>
+              <SelectItem v-else value="no-credentials" disabled>
+                No credentials found
               </SelectItem>
             </SelectContent>
           </Select>
