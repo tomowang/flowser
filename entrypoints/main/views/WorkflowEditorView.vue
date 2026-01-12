@@ -267,6 +267,22 @@ const saveWorkflow = async () => {
     active: isWorkflowActive.value,
   };
 
+  // Try to capture MiniMap SVG
+  try {
+    const miniMapSvg = document.querySelector(".vue-flow__minimap svg");
+    if (miniMapSvg) {
+      // Clone it so we don't affect the live one
+      const clone = miniMapSvg.cloneNode(true) as SVGElement;
+
+      // We can also ensure it has width/height or viewBox set if needed.
+      // Usually minimap svg behaves well.
+      // Serialize to string
+      workflow.previewSvg = new XMLSerializer().serializeToString(clone);
+    }
+  } catch (e) {
+    console.error("Failed to capture minimap screenshot", e);
+  }
+
   const sanitizedWorkflow = JSON.parse(JSON.stringify(workflow));
 
   isSaving.value = true;

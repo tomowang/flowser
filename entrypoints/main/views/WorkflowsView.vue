@@ -37,14 +37,23 @@ onMounted(async () => {
         class="block"
       >
         <div
-          class="bg-card hover:bg-accent/50 border rounded-lg p-4 transition-colors"
+          class="bg-card hover:bg-accent/50 border rounded-lg p-4 transition-colors relative overflow-hidden group"
         >
-          <h3 class="font-semibold text-lg mb-1">{{ wf.name }}</h3>
-          <p class="text-sm text-muted-foreground">
-            {{ t("workflows.lastUpdated") }}
-            {{ new Date(wf.updatedAt).toLocaleDateString() }}
-          </p>
-          <div class="mt-4 flex items-center text-xs text-muted-foreground">
+          <div class="flex gap-4 items-center mb-2 relative z-10">
+            <!-- Preview image background or content -->
+            <div v-if="wf.previewSvg" class="h-16 bg-muted/20 rounded-md overflow-hidden flex items-center justify-center border">
+              <img :src="`data:image/svg+xml;utf8,${encodeURIComponent(wf.previewSvg)}`" class="w-full h-full object-cover opacity-80 transition-opacity group-hover:opacity-100" />
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg mb-1">{{ wf.name }}</h3>
+              <p class="text-sm text-muted-foreground">
+                {{ t("workflows.lastUpdated") }}
+                {{ new Date(wf.updatedAt).toLocaleDateString() }}
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex items-center text-xs text-muted-foreground relative z-10">
             <span>{{ wf.nodes.length }} {{ t("workflows.nodes") }}</span>
             <span class="mx-2">•</span>
             <span>{{
