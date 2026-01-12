@@ -216,23 +216,8 @@ export class WorkflowRunner {
 
       // .all()
       const allFunc = this.context!.newFunction("all", () => {
-        const jsonHandle = this.context!.newString(JSON.stringify(data));
-        const parseHandle = this.context!.getProp(this.context!.global, "JSON");
-        const parseFunc = this.context!.getProp(parseHandle, "parse");
-        const result = this.context!.callFunction(
-          parseFunc,
-          parseHandle,
-          jsonHandle,
-        );
-        jsonHandle.dispose();
-        parseHandle.dispose();
-        parseFunc.dispose();
-
-        if (result.error) {
-          result.error.dispose();
-          return this.context!.undefined;
-        }
-        return result.value;
+        const jsonString = JSON.stringify(data);
+        return this.parseJsonSafe(jsonString);
       });
       this.context!.setProp(obj, "all", allFunc);
       allFunc.dispose();
@@ -248,13 +233,9 @@ export class WorkflowRunner {
       const itemData = data[index] || data[0];
       if (itemData) {
         const itemJson = JSON.stringify(itemData);
-        const itemResult = this.context!.evalCode(`JSON.parse('${itemJson}')`);
-        if (itemResult.error) {
-          itemResult.error.dispose();
-        } else {
-          this.context!.setProp(obj, "item", itemResult.value);
-          itemResult.value.dispose();
-        }
+        const itemValue = this.parseJsonSafe(itemJson);
+        this.context!.setProp(obj, "item", itemValue);
+        itemValue.dispose();
       }
 
       return obj;
@@ -262,6 +243,28 @@ export class WorkflowRunner {
 
     this.context.setProp(this.context.global, "$", nodeFunc);
     nodeFunc.dispose();
+  }
+
+  private parseJsonSafe(jsonString: string) {
+    if (!this.context) throw new Error("Context not initialized");
+    const jsonHandle = this.context.newString(jsonString);
+    const parseHandle = this.context.getProp(this.context.global, "JSON");
+    const parseFunc = this.context.getProp(parseHandle, "parse");
+    const result = this.context.callFunction(
+      parseFunc,
+      parseHandle,
+      jsonHandle,
+    );
+
+    jsonHandle.dispose();
+    parseHandle.dispose();
+    parseFunc.dispose();
+
+    if (result.error) {
+      result.error.dispose();
+      return this.context.undefined;
+    }
+    return result.value;
   }
 
   private evaluateStringWithExpressions(
@@ -299,43 +302,29 @@ export class WorkflowRunner {
       // $input.all()
       const allFunc = this.context.newFunction("all", () => {
         const json = JSON.stringify(inputData);
-        const result = this.context!.evalCode(`JSON.parse('${json}')`);
-        if (result.error) {
-          result.error.dispose();
-          return this.context!.undefined;
-        }
-        return result.value;
+        return this.parseJsonSafe(json);
       });
       this.context.setProp(inputObj, "all", allFunc);
       allFunc.dispose();
 
-      // $input.item
+      // $input.item & $json
       if (inputData[itemIndex]) {
         const itemJson = JSON.stringify(inputData[itemIndex]);
-        const itemResult = this.context.evalCode(`JSON.parse('${itemJson}')`);
-        if (itemResult.error) {
-          itemResult.error.dispose();
-        } else {
-          this.context.setProp(inputObj, "item", itemResult.value);
-          itemResult.value.dispose();
+        const itemValue = this.parseJsonSafe(itemJson);
+        this.context.setProp(inputObj, "item", itemValue);
+        itemValue.dispose();
 
-          // $json
-          const jsonPart = inputData[itemIndex].json;
-          const jsonPartString = JSON.stringify(jsonPart);
-          const jsonPartResult = this.context.evalCode(
-            `JSON.parse('${jsonPartString}')`,
-          );
-          if (jsonPartResult.error) {
-            jsonPartResult.error.dispose();
-          } else {
-            this.context.setProp(
-              this.context.global,
-              "$json",
-              jsonPartResult.value,
-            );
-            jsonPartResult.value.dispose();
-          }
-        }
+        // $json
+        const jsonPart = inputData[itemIndex].json;
+        const jsonPartString = JSON.stringify(jsonPart);
+        const jsonPartValue = this.parseJsonSafe(jsonPartString);
+        this.context.setProp(this.context.global, "$json", jsonPartValue);
+        jsonPartValue.dispose();
+      } else {
+        // Ensure $json is at least an empty object if no input
+        const emptyObj = this.context.newObject();
+        this.context.setProp(this.context.global, "$json", emptyObj);
+        emptyObj.dispose();
       }
 
       this.context.setProp(this.context.global, "$input", inputObj);
