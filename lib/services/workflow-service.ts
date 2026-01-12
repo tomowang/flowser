@@ -22,4 +22,17 @@ export class WorkflowService {
     const db = await dbPromise;
     await db.delete("workflows", id);
   }
+
+  static async updateWorkflowStatus(
+    id: string,
+    active: boolean,
+  ): Promise<void> {
+    const db = await dbPromise;
+    const workflow = await db.get("workflows", id);
+    if (workflow) {
+      workflow.active = active;
+      workflow.updatedAt = Date.now();
+      await db.put("workflows", workflow);
+    }
+  }
 }

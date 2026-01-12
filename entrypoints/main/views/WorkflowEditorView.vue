@@ -30,6 +30,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -50,6 +52,7 @@ const currentWorkflowName = ref<string>(t("workflowEditor.untitledWorkflow"));
 const searchQuery = ref("");
 const isSaving = ref(false);
 const isExecuting = ref(false);
+const isWorkflowActive = ref(false);
 
 const isMasterKeyModalOpen = ref(false);
 
@@ -229,6 +232,7 @@ const loadWorkflow = (workflow: IWorkflow) => {
       type: "custom", // Force custom type
     })),
   );
+  isWorkflowActive.value = workflow.active;
   logs.value.push(t("workflowEditor.loadedWorkflow") + " " + workflow.name);
 };
 
@@ -260,7 +264,7 @@ const saveWorkflow = async () => {
     })),
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    active: false,
+    active: isWorkflowActive.value,
   };
 
   const sanitizedWorkflow = JSON.parse(JSON.stringify(workflow));
@@ -281,6 +285,7 @@ const createNewWorkflow = () => {
   currentWorkflowName.value = t("workflowEditor.newWorkflow");
   setNodes([]);
   setEdges([]);
+  isWorkflowActive.value = false;
   logs.value.push(t("workflowEditor.createdNewWorkflow"));
 };
 
@@ -310,7 +315,7 @@ const runWorkflow = async () => {
     })),
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    active: false,
+    active: isWorkflowActive.value,
   };
 
   const runner = new WorkflowRunner(workflow);
@@ -326,6 +331,24 @@ const runWorkflow = async () => {
     logs.value.push(`Error: ${e.message}`);
   } finally {
     isExecuting.value = false;
+  }
+};
+
+const onActiveToggle = async (checked: boolean) => {
+  isWorkflowActive.value = checked;
+
+  if (currentWorkflowId.value) {
+    try {
+      await WorkflowService.updateWorkflowStatus(
+        currentWorkflowId.value,
+        checked,
+      );
+    } catch (e) {
+      console.error(e);
+      // Revert if failed
+      isWorkflowActive.value = !checked;
+      toast.error(t("common.error"));
+    }
   }
 };
 
@@ -352,7 +375,7 @@ const toggleExecutionPanel = () => {
         @blur="saveWorkflow"
         class="h-8 font-semibold px-2 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[200px]"
       />
-      <div class="h-4 w-[1px] bg-border mx-2"></div>
+      <div class="h-4 w-px bg-border mx-2"></div>
       <Button
         size="sm"
         variant="outline"
@@ -374,6 +397,15 @@ const toggleExecutionPanel = () => {
         <Play v-else class="w-4 h-4 mr-1" />
         {{ t("workflowEditor.execute") }}
       </Button>
+
+      <div class="h-4 w-px bg-border mx-2"></div>
+
+      <div class="flex items-center space-x-2">
+        <Switch v-model="isWorkflowActive" id="workflow-active" @update:model-value="onActiveToggle" />
+        <Label for="workflow-active" class="text-sm font-medium">{{
+          t("workflows.active")
+        }}</Label>
+      </div>
     </div>
 
     <ResizablePanelGroup
