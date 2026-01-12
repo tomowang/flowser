@@ -18,13 +18,13 @@ import { ICredential } from "@/lib/types";
 import { computed } from "vue";
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
+import { getCredentialType } from "@/lib/credentials";
 
 const credentials = ref<Omit<ICredential, "encryptedData" | "iv">[]>([]);
 const isMasterKeyModalOpen = ref(false);
 const isAddDialogOpen = ref(false);
 
 const { t } = useI18n();
-
 
 const loadCredentials = async () => {
   try {
@@ -53,8 +53,6 @@ const onUnlocked = () => {
   loadCredentials();
 };
 
-
-
 const deleteCredential = async (id: string) => {
   if (confirm(t("credentials.deleteConfirm"))) {
     await CredentialService.deleteCredential(id);
@@ -70,15 +68,14 @@ const deleteCredential = async (id: string) => {
         {{ t("credentials.title") }}
       </h1>
       <Button @click="isAddDialogOpen = true">
-            <Plus class="mr-2 h-4 w-4" />
-            {{ t("credentials.addCredential") }}
+        <Plus class="mr-2 h-4 w-4" />
+        {{ t("credentials.addCredential") }}
       </Button>
 
       <CreateCredentialModal
         v-model:open="isAddDialogOpen"
         @created="loadCredentials"
       />
-
     </div>
 
     <div class="rounded-md border">
@@ -94,7 +91,9 @@ const deleteCredential = async (id: string) => {
         <TableBody>
           <TableRow v-for="cred in credentials" :key="cred.id">
             <TableCell class="font-medium">{{ cred.name }}</TableCell>
-            <TableCell>{{ cred.type }}</TableCell>
+            <TableCell>{{
+              getCredentialType(cred.type)?.displayName
+            }}</TableCell>
             <TableCell>{{
               new Date(cred.createdAt).toLocaleDateString()
             }}</TableCell>
