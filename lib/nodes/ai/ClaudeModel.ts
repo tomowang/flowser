@@ -1,4 +1,9 @@
-import { INodeType, IExecuteFunctions, INodeExecutionData, SupplyData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  SupplyData,
+} from "../../types";
 import { MessageCircle } from "lucide-vue-next";
 
 export const ClaudeModel: INodeType = {
@@ -14,15 +19,10 @@ export const ClaudeModel: INodeType = {
     },
     inputs: [],
     outputs: [{ name: "model", type: "model", label: "Model" }],
+    credentials: [
+      { name: "anthropic_api", required: true, displayName: "Anthropic API" },
+    ],
     properties: [
-      {
-        displayName: "Credential",
-        name: "credentialId",
-        type: "credential",
-        credentialType: "anthropic_api",
-        default: "",
-        description: "Select the credential to use",
-      },
       {
         displayName: "Model Name",
         name: "modelName",
@@ -42,23 +42,26 @@ export const ClaudeModel: INodeType = {
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     return [[]];
   },
-  async supplyData(this: IExecuteFunctions, itemIndex: number): Promise<SupplyData> {
-    const credentialId = this.getNodeParameter("credentialId", itemIndex) as string;
-    const modelName = this.getNodeParameter("modelName", itemIndex, "claude-3-5-sonnet-20240620") as string;
+  async supplyData(
+    this: IExecuteFunctions,
+    itemIndex: number,
+  ): Promise<SupplyData> {
+    const modelName = this.getNodeParameter(
+      "modelName",
+      itemIndex,
+      "claude-3-5-sonnet-20240620",
+    ) as string;
 
-    if (!credentialId) {
+    // Get credential using new getCredential method
+    const credential = await this.getCredential?.("anthropic_api");
+    if (!credential?.apiKey) {
       throw new Error("No credential selected for Claude Model");
     }
 
-    const { CredentialService } = await import("../../services/credential-service");
-    
-    const apiKey = await CredentialService.getDecryptedValue(credentialId);
-    if (!apiKey) {
-      throw new Error("Failed to decrypt Anthropic API key");
-    }
+    const apiKey = credential.apiKey as string;
 
     const { createAnthropic } = await import("@ai-sdk/anthropic");
-    
+
     const anthropic = createAnthropic({
       apiKey: apiKey,
     });

@@ -45,18 +45,26 @@ export interface ICredential {
   createdAt: number;
 }
 
+// Credential reference in node type description (similar to n8n's INodeCredentialDescription)
+export interface INodeCredentialDescription {
+  name: string; // References ICredentialType.name
+  required?: boolean;
+  displayName?: string;
+}
+
+// Credential type definition (similar to n8n's ICredentialType)
+export interface ICredentialType {
+  name: string; // e.g., 'gemini_api'
+  displayName: string; // e.g., 'Gemini API'
+  icon?: any;
+  properties: INodeProperties[]; // Fields to collect (e.g., apiKey)
+  documentationUrl?: string;
+}
+
 export interface INodeProperties {
   displayName: string;
   name: string;
-  type:
-    | "string"
-    | "number"
-    | "boolean"
-    | "options"
-    | "json"
-    | "code"
-    | "credential";
-  credentialType?: string; // If type is 'credential', this defines the required credential type (e.g. 'gemini_api')
+  type: "string" | "number" | "boolean" | "options" | "json" | "code";
   default?: any;
   options?: { name: string; value: string }[];
   placeholder?: string;
@@ -83,6 +91,7 @@ export interface INodeTypeDescription {
   inputs: INodePort[];
   outputs: INodePort[];
   properties: INodeProperties[];
+  credentials?: INodeCredentialDescription[];
 }
 
 export interface IExecuteFunctions {
@@ -91,6 +100,9 @@ export interface IExecuteFunctions {
   getNodeParameter(paramName: string, fallback?: any): any;
   getNodeParameter(paramName: string, itemIndex: number, fallback?: any): any;
   getConnectedNodes?(inputName: string): any[];
+  getCredential?(
+    credentialType: string,
+  ): Promise<Record<string, unknown> | null>;
 }
 
 export interface ISupplyDataFunctions extends IExecuteFunctions {
@@ -114,7 +126,10 @@ export interface SupplyData {
 export interface INodeType {
   description: INodeTypeDescription;
   execute?(this: IExecuteFunctions): Promise<INodeExecutionData[][]>;
-  supplyData?(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData>;
+  supplyData?(
+    this: ISupplyDataFunctions,
+    itemIndex: number,
+  ): Promise<SupplyData>;
 }
 
 // Workflow persistence model

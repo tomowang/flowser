@@ -6,15 +6,17 @@ export class CredentialService {
   static async saveCredential(
     name: string,
     type: string,
-    value: string,
+    data: Record<string, unknown>,
   ): Promise<string> {
-    const { iv, data } = await SecurityService.encrypt(value);
+    // Serialize the credential data to JSON string before encrypting
+    const jsonData = JSON.stringify(data);
+    const { iv, data: encryptedData } = await SecurityService.encrypt(jsonData);
 
     const credential: ICredential = {
       id: crypto.randomUUID(),
       name,
       type,
-      encryptedData: data,
+      encryptedData,
       iv,
       createdAt: Date.now(),
     };
@@ -38,12 +40,31 @@ export class CredentialService {
     }));
   }
 
-  static async getDecryptedValue(id: string): Promise<string | null> {
+  static async getDecryptedCredential(
+    id: string,
+  ): Promise<Record<string, unknown> | null> {
     const db = await dbPromise;
     const cred = (await db.get("credentials", id)) as ICredential;
     if (!cred) return null;
 
-    return await SecurityService.decrypt(cred.encryptedData, cred.iv);
+    const decrypted = await SecurityService.decrypt(
+      cred.encryptedData,
+      cred.iv,
+    );
+    try {
+      return JSON.parse(decrypted);
+    } catch {
+      // Legacy support: if it's not JSON, return as { apiKey: value }
+      return { apiKey: decrypted };
+    }
+  }
+
+  // Legacy helper for backward compatibility
+  static async getDecryptedValue(id: string): Promise<string | null> {
+    const data = await this.getDecryptedCredential(id);
+    if (!data) return null;
+    // Return apiKey for legacy callers
+    return (data.apiKey as string) || null;
   }
 
   static async deleteCredential(id: string) {

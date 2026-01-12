@@ -1,4 +1,9 @@
-import { INodeType, IExecuteFunctions, INodeExecutionData, SupplyData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  SupplyData,
+} from "../../types";
 import { Bot } from "lucide-vue-next";
 
 export const OpenAIModel: INodeType = {
@@ -14,15 +19,10 @@ export const OpenAIModel: INodeType = {
     },
     inputs: [],
     outputs: [{ name: "model", type: "model", label: "Model" }],
+    credentials: [
+      { name: "openai_api", required: true, displayName: "OpenAI API" },
+    ],
     properties: [
-      {
-        displayName: "Credential",
-        name: "credentialId",
-        type: "credential",
-        credentialType: "openai_api",
-        default: "",
-        description: "Select the credential to use",
-      },
       {
         displayName: "Model Name",
         name: "modelName",
@@ -38,36 +38,32 @@ export const OpenAIModel: INodeType = {
         ],
         default: "gpt-5",
       },
-      {
-        displayName: "Base URL",
-        name: "baseUrl",
-        type: "string",
-        default: "",
-        description: "Optional custom Base URL (e.g. for proxies)",
-      },
     ],
   },
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     return [[]];
   },
-  async supplyData(this: IExecuteFunctions, itemIndex: number): Promise<SupplyData> {
-    const credentialId = this.getNodeParameter("credentialId", itemIndex) as string;
-    const modelName = this.getNodeParameter("modelName", itemIndex, "gpt-4o-mini") as string;
-    const baseUrl = this.getNodeParameter("baseUrl", itemIndex) as string;
+  async supplyData(
+    this: IExecuteFunctions,
+    itemIndex: number,
+  ): Promise<SupplyData> {
+    const modelName = this.getNodeParameter(
+      "modelName",
+      itemIndex,
+      "gpt-4o-mini",
+    ) as string;
 
-    if (!credentialId) {
+    // Get credential using new getCredential method
+    const credential = await this.getCredential?.("openai_api");
+    if (!credential?.apiKey) {
       throw new Error("No credential selected for OpenAI Model");
     }
 
-    const { CredentialService } = await import("../../services/credential-service");
-    
-    const apiKey = await CredentialService.getDecryptedValue(credentialId);
-    if (!apiKey) {
-      throw new Error("Failed to decrypt OpenAI API key");
-    }
+    const apiKey = credential.apiKey as string;
+    const baseUrl = credential.baseUrl as string | undefined;
 
     const { createOpenAI } = await import("@ai-sdk/openai");
-    
+
     const openai = createOpenAI({
       apiKey: apiKey,
       baseURL: baseUrl || undefined,

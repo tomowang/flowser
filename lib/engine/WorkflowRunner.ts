@@ -143,6 +143,16 @@ export class WorkflowRunner {
             };
           });
       },
+      getCredential: async (credentialType: string) => {
+        // Credentials are stored in node.data.credentials[credentialType] as credential ID
+        const credentialId = node.data?.credentials?.[credentialType];
+        if (!credentialId) return null;
+
+        const { CredentialService } = await import(
+          "../services/credential-service"
+        );
+        return await CredentialService.getDecryptedCredential(credentialId);
+      },
     };
 
     // Execute

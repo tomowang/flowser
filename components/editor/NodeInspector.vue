@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { INodeCredentialDescription } from "@/lib/types";
 
 const props = defineProps<{
   node: any; // The selected node object from Vue Flow
@@ -22,9 +23,10 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:data"]);
 
-const dynamicOptions = ref<Record<string, { name: string; value: string }[]>>(
-  {},
-);
+// Credential options: keyed by credential type name
+const credentialOptions = ref<
+  Record<string, { name: string; value: string }[]>
+>({});
 
 // Get node type definition
 const nodeType = computed(() => {
@@ -34,27 +36,24 @@ const nodeType = computed(() => {
 
 const isCreateCredentialOpen = ref(false);
 const credentialTypeForCreation = ref<string>("");
-const currentCredentialPropName = ref<string>("");
+const currentCredentialName = ref<string>("");
 
 const loadCredentials = async () => {
-  dynamicOptions.value = {};
+  credentialOptions.value = {};
   if (!nodeType.value) return;
 
-  for (const prop of nodeType.value.description.properties) {
-    if (prop.type === "credential") {
-      try {
-        const creds = await CredentialService.getCredentials();
-        const filtered = prop.credentialType
-          ? creds.filter((c) => c.type === prop.credentialType)
-          : creds;
+  const credentials = nodeType.value.description.credentials || [];
+  for (const cred of credentials) {
+    try {
+      const allCreds = await CredentialService.getCredentials();
+      const filtered = allCreds.filter((c) => c.type === cred.name);
 
-        dynamicOptions.value[prop.name] = filtered.map((c) => ({
-          name: c.name,
-          value: c.id,
-        }));
-      } catch (e) {
-        console.warn("Failed to load credentials for inspector", e);
-      }
+      credentialOptions.value[cred.name] = filtered.map((c) => ({
+        name: c.name,
+        value: c.id,
+      }));
+    } catch (e) {
+      console.warn("Failed to load credentials for inspector", e);
     }
   }
 };
@@ -68,37 +67,48 @@ watch(
   { immediate: true },
 );
 
-const openCreateCredentialModal = (type: string, propName: string) => {
-  credentialTypeForCreation.value = type;
-  currentCredentialPropName.value = propName;
+const openCreateCredentialModal = (credType: string) => {
+  credentialTypeForCreation.value = credType;
+  currentCredentialName.value = credType;
   isCreateCredentialOpen.value = true;
 };
 
 const onCredentialCreated = async (newId: string) => {
   await loadCredentials();
-  if (currentCredentialPropName.value) {
-    updateValue(currentCredentialPropName.value, newId);
+  if (currentCredentialName.value) {
+    updateCredentialValue(currentCredentialName.value, newId);
   }
 };
 
+// Get credentials from node type description
+const credentials = computed<INodeCredentialDescription[]>(() => {
+  return nodeType.value?.description.credentials || [];
+});
+
 const properties = computed(() => {
-  const staticProps = nodeType.value?.description.properties || [];
-  return staticProps.map((p) => {
-    if (dynamicOptions.value[p.name]) {
-      // Create a new object to avoid mutating the registry definition permanently in a wrong way
-      // though here we are just returning a new mapped array config
-      return {
-        ...p,
-        options: dynamicOptions.value[p.name],
-      };
-    }
-    return p;
-  });
+  return nodeType.value?.description.properties || [];
 });
 
 const updateValue = (key: string, value: any) => {
   const newData = { ...props.node.data, [key]: value };
   emit("update:data", newData);
+};
+
+// Update credential value in node data, stored as credentials[credType]
+const updateCredentialValue = (credType: string, credId: string) => {
+  const currentCredentials = props.node.data.credentials || {};
+  const newData = {
+    ...props.node.data,
+    credentials: {
+      ...currentCredentials,
+      [credType]: credId,
+    },
+  };
+  emit("update:data", newData);
+};
+
+const getCredentialValue = (credType: string): string => {
+  return props.node.data.credentials?.[credType] || "";
 };
 </script>
 
@@ -111,6 +121,49 @@ const updateValue = (key: string, value: any) => {
       <p class="text-xs text-muted-foreground">
         {{ nodeType.description.description }}
       </p>
+    </div>
+
+    <!-- Credentials Section -->
+    <div v-if="credentials.length > 0" class="space-y-3">
+      <div
+        v-for="cred in credentials"
+        :key="cred.name"
+        class="flex flex-col gap-1"
+      >
+        <label class="text-sm font-medium">{{
+          cred.displayName || cred.name
+        }}</label>
+        <div class="flex gap-2">
+          <Select
+            :model-value="getCredentialValue(cred.name)"
+            @update:model-value="
+              (val) => updateCredentialValue(cred.name, val as string)
+            "
+          >
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="Select a credential" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="opt in credentialOptions[cred.name] || []"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.name }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            class="shrink-0"
+            @click="openCreateCredentialModal(cred.name)"
+            title="Create new credential"
+          >
+            <Plus class="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
 
     <!-- Properties Form -->
@@ -154,40 +207,6 @@ const updateValue = (key: string, value: any) => {
           </SelectContent>
         </Select>
 
-        <!-- Credential Select -->
-
-        <div
-          v-else-if="prop.type === 'credential'"
-          class="flex gap-2"
-        >
-          <Select
-            :model-value="node.data[prop.name] ?? prop.default"
-            @update:model-value="(val) => updateValue(prop.name, val)"
-          >
-            <SelectTrigger class="w-full">
-              <SelectValue placeholder="Select a credential" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="opt in prop.options"
-                :key="opt.value"
-                :value="opt.value"
-              >
-                {{ opt.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            class="shrink-0"
-            @click="openCreateCredentialModal(prop.credentialType || '', prop.name)"
-            title="Create new credential"
-          >
-            <Plus class="h-4 w-4" />
-          </Button>
-        </div>
-
         <!-- JSON/Code Editor -->
         <Codemirror
           v-else-if="prop.type === 'json' || prop.type === 'code'"
@@ -220,7 +239,6 @@ const updateValue = (key: string, value: any) => {
   <div v-else class="text-muted-foreground text-sm">
     Select a node to edit properties.
   </div>
-
 
   <CreateCredentialModal
     v-model:open="isCreateCredentialOpen"

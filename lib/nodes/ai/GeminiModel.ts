@@ -1,4 +1,9 @@
-import { INodeType, IExecuteFunctions, INodeExecutionData, SupplyData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  SupplyData,
+} from "../../types";
 import { CredentialService } from "../../services/credential-service";
 import { Sparkles } from "lucide-vue-next";
 
@@ -15,15 +20,10 @@ export const GeminiModel: INodeType = {
     },
     inputs: [],
     outputs: [{ name: "model", type: "model", label: "Model" }],
+    credentials: [
+      { name: "gemini_api", required: true, displayName: "Gemini API" },
+    ],
     properties: [
-      {
-        displayName: "Credential",
-        name: "credentialId",
-        type: "credential",
-        credentialType: "gemini_api",
-        default: "",
-        description: "Select the credential to use",
-      },
       {
         displayName: "Model Name",
         name: "modelName",
@@ -32,8 +32,8 @@ export const GeminiModel: INodeType = {
           { name: "Gemini 2.5 Flash Lite", value: "gemini-2.5-flash-lite" },
           { name: "Gemini 2.5 Flash", value: "gemini-2.5-flash" },
           { name: "Gemini 2.5 Pro", value: "gemini-2.5-pro" },
-          { name: "Gemini 3.0 Flash Preview", value: "gemini-3-flash-preview"},
-          { name: "Gemini 3.0 Pro Preview", value: "gemini-3-pro-preview"}
+          { name: "Gemini 3.0 Flash Preview", value: "gemini-3-flash-preview" },
+          { name: "Gemini 3.0 Pro Preview", value: "gemini-3-pro-preview" },
         ],
         default: "gemini-2.5-flash-lite",
       },
@@ -44,27 +44,26 @@ export const GeminiModel: INodeType = {
     // They are called by the Agent.
     return [[]];
   },
-  async supplyData(this: IExecuteFunctions, itemIndex: number): Promise<SupplyData> {
-    const credentialId = this.getNodeParameter("credentialId", itemIndex) as string;
-    const modelName = this.getNodeParameter("modelName", itemIndex, "gemini-2.5-flash-lite") as string;
+  async supplyData(
+    this: IExecuteFunctions,
+    itemIndex: number,
+  ): Promise<SupplyData> {
+    const modelName = this.getNodeParameter(
+      "modelName",
+      itemIndex,
+      "gemini-2.5-flash-lite",
+    ) as string;
 
-    if (!credentialId) {
+    // Get credential using new getCredential method
+    const credential = await this.getCredential?.("gemini_api");
+    if (!credential?.apiKey) {
       throw new Error("No credential selected for Gemini Model");
     }
 
-    // Dynamic import to avoid issues if service is backend-only, 
-    // but here we are in a browser extension context? 
-    // The user rules and usage implies this runs in the extension structure (WXT).
-    // We previously saw CredentialService import in Agent.ts comments.
-    const { CredentialService } = await import("../../services/credential-service");
-    
-    const apiKey = await CredentialService.getDecryptedValue(credentialId);
-    if (!apiKey) {
-      throw new Error("Failed to decrypt Gemini API key");
-    }
+    const apiKey = credential.apiKey as string;
 
     const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
-    
+
     const google = createGoogleGenerativeAI({
       apiKey: apiKey,
     });

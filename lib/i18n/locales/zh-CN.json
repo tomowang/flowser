@@ -39,7 +39,7 @@
     "addCredential": "添加凭证",
     "addCredentialTitle": "添加凭证",
     "addCredentialDescription": "添加新的 API 密钥或秘密。数据将使用您的主密钥加密。",
-    "namePlaceholder": "我的 Gemini 密钥",
+    "namePlaceholder": "输入凭证名称",
     "selectType": "选择类型",
     "valuePlaceholder": "sk-...",
     "createdAt": "创建时间",

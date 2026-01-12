@@ -39,7 +39,7 @@
     "addCredential": "Add Credential",
     "addCredentialTitle": "Add Credential",
     "addCredentialDescription": "Add a new API key or secret. Data is encrypted using your Master Key.",
-    "namePlaceholder": "My Gemini Key",
+    "namePlaceholder": "Enter credential name",
     "selectType": "Select type",
     "valuePlaceholder": "sk-...",
     "createdAt": "Created At",

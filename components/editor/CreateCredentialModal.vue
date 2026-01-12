@@ -21,8 +21,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CredentialService } from "@/lib/services/credential-service";
 import { SecurityService } from "@/lib/services/security-service";
-import { Registry } from "@/lib/nodes/registry";
+import { getAllCredentialTypes, getCredentialType } from "@/lib/credentials";
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
+import type { INodeProperties } from "@/lib/types";
 
 const props = defineProps<{
   open: boolean;
@@ -34,35 +35,34 @@ const emit = defineEmits(["update:open", "created"]);
 const { t } = useI18n();
 const isMasterKeyModalOpen = ref(false);
 
-const formData = ref({
+const formData = ref<{
+  name: string;
+  type: string;
+  values: Record<string, string>;
+}>({
   name: "",
   type: "gemini_api",
-  value: "",
+  values: {},
 });
 
+// Get all registered credential types
 const availableCredentialTypes = computed(() => {
-  const types = new Set<{ label: string; value: string }>();
-  Registry.getAll().forEach((node) => {
-    node.description.properties?.forEach((prop) => {
-      if (prop.type === "credential" && prop.credentialType) {
-        const label = prop.credentialType
-          .split("_")
-          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(" ");
-        types.add({ label, value: prop.credentialType });
-      }
-    });
-  });
-  
-  const unique = new Map();
-  types.forEach((t) => unique.set(t.value, t));
+  return getAllCredentialTypes().map((ct) => ({
+    label: ct.displayName,
+    value: ct.name,
+  }));
+});
 
-  if (unique.size === 0) {
-    unique.set("gemini_api", { label: "Gemini API", value: "gemini_api" });
-    unique.set("openai_api", { label: "OpenAI API", value: "openai_api" });
-  }
+// Get properties for current credential type
+const currentCredentialProperties = computed<INodeProperties[]>(() => {
+  const credType = getCredentialType(formData.value.type);
+  return credType?.properties || [];
+});
 
-  return Array.from(unique.values());
+// Get display name for current credential type
+const currentCredentialDisplayName = computed(() => {
+  const credType = getCredentialType(formData.value.type);
+  return credType?.displayName || "";
 });
 
 watch(
@@ -72,32 +72,53 @@ watch(
       if (props.defaultType) {
         formData.value.type = props.defaultType;
       }
-    } else {
-       // Reset form when closed? maybe not needed if parent handles it
+      // Set default name to credential type's displayName
+      const credType = getCredentialType(formData.value.type);
+      formData.value.name = credType?.displayName || "";
+      // Reset values when opening
+      formData.value.values = {};
     }
-  }
+  },
 );
 
 watch(
-    () => props.defaultType,
-    (newVal) => {
-       if (newVal) formData.value.type = newVal;
-    }
+  () => props.defaultType,
+  (newVal) => {
+    if (newVal) formData.value.type = newVal;
+  },
 );
 
+// Reset values when credential type changes
+watch(
+  () => formData.value.type,
+  () => {
+    formData.value.values = {};
+  },
+);
 
 const saveCredential = async () => {
-  if (!formData.value.name || !formData.value.value) return;
+  if (!formData.value.name) return;
+
+  // Check required properties
+  const hasRequiredValues = currentCredentialProperties.value
+    .filter((p) => p.required)
+    .every((p) => formData.value.values[p.name]);
+
+  if (!hasRequiredValues) return;
 
   try {
     const credId = await CredentialService.saveCredential(
       formData.value.name,
       formData.value.type,
-      formData.value.value,
+      formData.value.values,
     );
     emit("created", credId);
     emit("update:open", false);
-    formData.value = { name: "", type: props.defaultType || "gemini_api", value: "" }; // Reset
+    formData.value = {
+      name: "",
+      type: props.defaultType || "gemini_api",
+      values: {},
+    };
   } catch (e) {
     console.error(e);
     if (!SecurityService.hasMasterKey()) {
@@ -107,8 +128,6 @@ const saveCredential = async () => {
 };
 
 const onUnlocked = () => {
-  // Retry save or just let user click again? 
-  // For better UX, we could retry save.
   saveCredential();
 };
 </script>
@@ -155,16 +174,23 @@ const onUnlocked = () => {
             </Select>
           </div>
         </div>
-        <div class="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="value" class="text-right">{{
-            t("common.value")
+        <!-- Dynamic properties based on credential type -->
+        <div
+          v-for="prop in currentCredentialProperties"
+          :key="prop.name"
+          class="grid grid-cols-4 items-center gap-4"
+        >
+          <Label :htmlFor="prop.name" class="text-right">{{
+            prop.displayName
           }}</Label>
           <Input
-            id="value"
-            v-model="formData.value"
-            type="password"
+            :id="prop.name"
+            v-model="formData.values[prop.name]"
+            :type="
+              prop.name.toLowerCase().includes('key') ? 'password' : 'text'
+            "
             class="col-span-3"
-            :placeholder="t('credentials.valuePlaceholder')"
+            :placeholder="prop.description || prop.displayName"
           />
         </div>
       </div>
