@@ -157,6 +157,7 @@ describe("Agent Node Execution", () => {
       createdAt: Date.now(),
       updatedAt: Date.now(),
       active: true,
+      previewSvg: "",
     };
 
     const runner = new WorkflowRunner(workflow);
