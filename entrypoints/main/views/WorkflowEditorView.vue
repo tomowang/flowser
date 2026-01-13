@@ -267,6 +267,7 @@ const saveWorkflow = async () => {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     active: isWorkflowActive.value,
+    previewSvg: "",
   };
 
   // Try to capture MiniMap SVG
@@ -342,6 +343,7 @@ const runWorkflow = async () => {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     active: isWorkflowActive.value,
+    previewSvg: "",
   };
 
   const runner = new WorkflowRunner(workflow);
@@ -427,7 +429,11 @@ const toggleExecutionPanel = () => {
       <div class="h-4 w-px bg-border mx-2"></div>
 
       <div class="flex items-center space-x-2">
-        <Switch v-model="isWorkflowActive" id="workflow-active" @update:model-value="onActiveToggle" />
+        <Switch
+          v-model="isWorkflowActive"
+          id="workflow-active"
+          @update:model-value="onActiveToggle"
+        />
         <Label for="workflow-active" class="text-sm font-medium">{{
           t("workflows.active")
         }}</Label>

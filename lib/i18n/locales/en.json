@@ -3,6 +3,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
+    "confirm": "Confirm",
+    "confirmDelete": "Are you sure you want to delete this?",
     "edit": "Edit",
     "add": "Add",
     "actions": "Actions",
@@ -10,7 +12,8 @@
     "name": "Name",
     "type": "Type",
     "value": "Value",
-    "saveChanges": "Save changes"
+    "saveChanges": "Save changes",
+    "error": "Something went wrong"
   },
   "sidebar": {
     "platform": "Platform",
@@ -27,12 +30,17 @@
   },
   "workflows": {
     "title": "Workflows",
+    "description": "Manage and monitor your automation workflows",
     "newWorkflow": "New Workflow",
-    "lastUpdated": "Last updated:",
-    "nodes": "nodes",
+    "updatedAt": "Updated at: {date}",
+    "createdAt": "Created at: {date}",
+    "nodes": "{count} node | {count} nodes",
     "active": "Active",
     "inactive": "Inactive",
-    "noWorkflowsFound": "No workflows found. Create one to get started."
+    "searchPlaceholder": "Search workflows...",
+    "noWorkflowsFound": "No workflows found. Create one to get started.",
+    "noResults": "No results found matching your search.",
+    "deleted": "Workflow deleted"
   },
   "credentials": {
     "title": "Credentials",

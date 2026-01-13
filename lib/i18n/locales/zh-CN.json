@@ -3,6 +3,8 @@
     "save": "保存",
     "cancel": "取消",
     "delete": "删除",
+    "confirm": "确定",
+    "deleteConfirm": "您确定要删除此内容吗？",
     "edit": "编辑",
     "add": "添加",
     "actions": "操作",
@@ -10,7 +12,8 @@
     "name": "名称",
     "type": "类型",
     "value": "值",
-    "saveChanges": "保存更改"
+    "saveChanges": "保存更改",
+    "error": "出错了"
   },
   "sidebar": {
     "platform": "平台",
@@ -27,12 +30,17 @@
   },
   "workflows": {
     "title": "工作流",
+    "description": "管理您的自动化工作流",
     "newWorkflow": "新建工作流",
-    "lastUpdated": "最后更新：",
-    "nodes": "个节点",
+    "updatedAt": "最后更新：{date}",
+    "createdAt": "创建时间：{date}",
+    "nodes": "{count}个节点",
     "active": "活跃",
     "inactive": "未激活",
-    "noWorkflowsFound": "未找到工作流。创建一个开始吧。"
+    "searchPlaceholder": "搜索工作流...",
+    "noWorkflowsFound": "未找到工作流。创建一个开始吧。",
+    "noResults": "您确定要删除此工作流吗？",
+    "deleted": "工作流删除成功。"
   },
   "credentials": {
     "title": "凭证",
