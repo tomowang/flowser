@@ -6,7 +6,7 @@ import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import { MiniMap } from "@vue-flow/minimap";
 import type { Node, Edge, Connection, NodeMouseEvent } from "@vue-flow/core";
-import { useRoute } from "vue-router";
+import { useRoute, RouterLink } from "vue-router";
 import { Registry } from "@/lib/nodes/registry";
 import NodeDelegate from "@/components/editor/NodeDelegate.vue";
 import CustomEdge from "@/components/editor/CustomEdge.vue";
@@ -32,6 +32,14 @@ import {
 } from "@/components/ui/resizable";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -398,6 +406,18 @@ const toggleExecutionPanel = () => {
     <div
       class="absolute top-4 left-4 z-10 flex items-center gap-2 bg-card p-2 rounded-md shadow border"
     >
+      <Breadcrumb class="mr-1">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink as-child>
+              <RouterLink to="/workflows">
+                {{ t("workflows.title") }}
+              </RouterLink>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+        </BreadcrumbList>
+      </Breadcrumb>
       <Input
         v-model="currentWorkflowName"
         @blur="onNameBlur"
