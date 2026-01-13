@@ -58,10 +58,9 @@ export const DeepSeekModel: INodeType = {
     const baseUrl =
       (credential.baseUrl as string) || "https://api.deepseek.com/v1";
 
-    // DeepSeek is OpenAI compatible
-    const { createOpenAI } = await import("@ai-sdk/openai");
+    const { createDeepSeek } = await import("@ai-sdk/deepseek");
 
-    const deepseek = createOpenAI({
+    const deepseek = createDeepSeek({
       apiKey: apiKey,
       baseURL: baseUrl,
     });
