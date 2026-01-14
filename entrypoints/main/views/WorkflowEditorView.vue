@@ -5,7 +5,13 @@ import { VueFlow, useVueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import { MiniMap } from "@vue-flow/minimap";
-import type { Node, Edge, Connection, NodeMouseEvent } from "@vue-flow/core";
+import {
+  type Node,
+  type Edge,
+  type Connection,
+  type NodeMouseEvent,
+  MarkerType,
+} from "@vue-flow/core";
 import { useRoute, RouterLink } from "vue-router";
 import { Registry } from "@/lib/nodes/registry";
 import NodeDelegate from "@/components/editor/NodeDelegate.vue";
@@ -158,7 +164,21 @@ onConnect((params: Connection) => {
     return;
   }
 
-  addEdges([{ ...params, type: "custom" }]); // Use custom edge
+  const isMain = sourceType === "main" && targetType === "main";
+
+  addEdges([
+    {
+      ...params,
+      type: "custom",
+      markerEnd: isMain
+        ? {
+            type: MarkerType.ArrowClosed,
+            width: 20,
+            height: 20,
+          }
+        : undefined,
+    },
+  ]); // Use custom edge
 });
 
 onNodeClick((event: NodeMouseEvent) => {
@@ -233,14 +253,42 @@ const loadWorkflow = (workflow: IWorkflow) => {
     })),
   );
   setEdges(
-    workflow.edges.map((e) => ({
-      id: e.id,
-      source: e.source,
-      target: e.target,
-      sourceHandle: e.sourceHandle,
-      targetHandle: e.targetHandle,
-      type: "custom", // Force custom type
-    })),
+    workflow.edges.map((e) => {
+      // Determine if main connection to set marker
+      let isMain = false;
+      const sourceNode = workflow.nodes.find((n) => n.id === e.source);
+      const targetNode = workflow.nodes.find((n) => n.id === e.target);
+
+      if (sourceNode && targetNode) {
+        const sourceType = getPortType(
+          sourceNode.data.nodeType,
+          e.sourceHandle || "",
+          "outputs",
+        );
+        const targetType = getPortType(
+          targetNode.data.nodeType,
+          e.targetHandle || "",
+          "inputs",
+        );
+        isMain = sourceType === "main" && targetType === "main";
+      }
+
+      return {
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        sourceHandle: e.sourceHandle,
+        targetHandle: e.targetHandle,
+        type: "custom", // Force custom type
+        markerEnd: isMain
+          ? {
+              type: MarkerType.ArrowClosed,
+              width: 20,
+              height: 20,
+            }
+          : undefined,
+      };
+    }),
   );
   isWorkflowActive.value = workflow.active;
   logs.value.push(t("workflowEditor.loadedWorkflow") + " " + workflow.name);

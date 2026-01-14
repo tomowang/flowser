@@ -123,7 +123,7 @@ const deleteNode = (e: Event) => {
           type="target"
           :position="Position.Bottom"
           :id="port.name"
-          class="!relative !transform-none !w-3 !h-3 !bg-muted-foreground hover:!bg-primary transition-colors border-2 border-background block"
+          class="!relative !transform-none !left-0 !w-3 !h-3 !bg-muted-foreground hover:!bg-primary transition-colors border-2 border-background block"
           :style="getHandleStyle(port.type)"
         />
         <span
@@ -147,7 +147,7 @@ const deleteNode = (e: Event) => {
           type="source"
           :position="Position.Top"
           :id="port.name"
-          class="!relative !transform-none !w-3 !h-3 !bg-muted-foreground hover:!bg-primary transition-colors border-2 border-background block"
+          class="!relative !transform-none !left-0 !w-3 !h-3 !bg-muted-foreground hover:!bg-primary transition-colors border-2 border-background block"
           :style="getHandleStyle(port.type)"
         />
         <span

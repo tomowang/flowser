@@ -6,6 +6,7 @@ import {
   getBezierPath,
   type EdgeProps,
   useVueFlow,
+  Position,
 } from "@vue-flow/core";
 import { Trash2 } from "lucide-vue-next";
 
@@ -30,6 +31,19 @@ const setHover = (value: boolean) => {
 
 const path = computed(() => getBezierPath(props));
 
+const isMainConnection = computed(
+  () =>
+    props.sourcePosition === Position.Right &&
+    props.targetPosition === Position.Left,
+);
+
+const edgeStyle = computed(() => {
+  if (!isMainConnection.value) {
+    return { ...props.style, strokeDasharray: "5, 6" };
+  }
+  return props.style;
+});
+
 const onEdgeClick = (e: MouseEvent) => {
   e.stopPropagation();
   removeEdges([props.id]);
@@ -49,7 +63,7 @@ const onEdgeClick = (e: MouseEvent) => {
     />
 
     <!-- The actual visible edge path -->
-    <BaseEdge :path="path[0]" :style="style" />
+    <BaseEdge :path="path[0]" :style="edgeStyle" :marker-end="markerEnd" />
 
     <!-- Delete Button -->
     <EdgeLabelRenderer>
