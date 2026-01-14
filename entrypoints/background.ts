@@ -43,7 +43,7 @@ export default defineBackground(() => {
     for (const workflow of workflows) {
       // @ts-ignore
       const triggerNode = workflow.nodes.find((n) => n.type === "tabCreated");
-      if (triggerNode) {
+      if (triggerNode && workflow.active) {
         console.log("Executing workflow", workflow.name);
         const runner = new WorkflowRunner(workflow);
         const triggerData = [{ json: tab as any }];
