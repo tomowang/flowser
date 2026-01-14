@@ -13,3 +13,4 @@ export * from "./TabCreated";
 export * from "./ClickElement";
 export * from "./TabCreate";
 export * from "./WindowCreate";
+export * from "./WindowQuery";
