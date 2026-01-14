@@ -15,7 +15,7 @@ export const AgentNode: INodeType = {
     inputs: [
       { name: "main", type: "main", label: "Input" },
       { name: "tools", type: "tool", label: "Tools" },
-      { name: "model", type: "model", label: "Model" },
+      { name: "model", type: "model", label: "Model", required: true },
     ],
     outputs: [{ name: "main", type: "main", label: "Output" }],
     properties: [

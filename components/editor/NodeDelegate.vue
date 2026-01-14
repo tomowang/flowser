@@ -22,9 +22,22 @@ const allOutputs = computed(() => nodeType.value?.description.outputs || []);
 const mainInputs = computed(() =>
   allInputs.value.filter((p) => p.type === "main"),
 );
-const bottomInputs = computed(() =>
-  allInputs.value.filter((p) => p.type !== "main"),
-);
+const bottomInputs = computed(() => {
+  const inputs = allInputs.value.filter((p) => p.type !== "main");
+  const order = ["model", "memory", "tool"];
+  return inputs.sort((a, b) => {
+    const idxA = order.indexOf(a.type);
+    const idxB = order.indexOf(b.type);
+    // If both are in the order list, sort by index
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    // If only A is in list, A comes first
+    if (idxA !== -1) return -1;
+    // If only B is in list, B comes first
+    if (idxB !== -1) return 1;
+    // maintain original order for others
+    return 0;
+  });
+});
 
 const mainOutputs = computed(() =>
   allOutputs.value.filter((p) => p.type === "main"),

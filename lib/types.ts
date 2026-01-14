@@ -76,6 +76,7 @@ export interface INodePort {
   name: string;
   type: string; // 'main' | 'tool' | ...
   label?: string;
+  required?: boolean;
 }
 
 export interface INodeTypeDescription {
