@@ -90,6 +90,8 @@
     "createdNewWorkflow": "已创建新工作流",
     "executionFinished": "执行完成。",
     "workflowNotFound": "未找到工作流 {id}。",
-    "securityMasterKeySet": "安全：主密钥已设置"
+    "securityMasterKeySet": "安全：主密钥已设置",
+    "connectionLimitReached": "此连接点已达到连接上限。",
+    "connectionTypeMismatch": "连接被拒绝：类型不匹配。"
   }
 }

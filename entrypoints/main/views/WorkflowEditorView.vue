@@ -161,7 +161,39 @@ onConnect((params: Connection) => {
     console.warn(
       `Connection rejected: Cannot connect ${sourceType} to ${targetType}`,
     );
+    toast.warning(t("workflowEditor.connectionTypeMismatch"));
     return;
+  }
+
+  // Check connection limits
+  // Rules:
+  // 1. Tool handles allow multiple connections
+  // 2. Main handles (input/output) allow only 1 connection
+  // 3. Model/Memory handles allow only 1 connection
+  const isMultiConnectionAllowed = (type: string) => type === "tool";
+
+  if (!isMultiConnectionAllowed(sourceType)) {
+    const sourceConnections = edges.value.filter(
+      (e) =>
+        e.source === params.source && e.sourceHandle === params.sourceHandle,
+    ).length;
+
+    if (sourceConnections >= 1) {
+      toast.warning(t("workflowEditor.connectionLimitReached"));
+      return;
+    }
+  }
+
+  if (!isMultiConnectionAllowed(targetType)) {
+    const targetConnections = edges.value.filter(
+      (e) =>
+        e.target === params.target && e.targetHandle === params.targetHandle,
+    ).length;
+
+    if (targetConnections >= 1) {
+      toast.warning(t("workflowEditor.connectionLimitReached"));
+      return;
+    }
   }
 
   const isMain = sourceType === "main" && targetType === "main";
