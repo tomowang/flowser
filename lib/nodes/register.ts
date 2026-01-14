@@ -13,7 +13,9 @@ import {
   TabClose,
   TabCreated,
   ClickElement,
+  TabCreate,
 } from "./index";
+
 
 Registry.register(ManualTrigger);
 Registry.register(HttpRequest);
@@ -28,3 +30,4 @@ Registry.register(TabQuery);
 Registry.register(TabClose);
 Registry.register(TabCreated);
 Registry.register(ClickElement);
+Registry.register(TabCreate);
