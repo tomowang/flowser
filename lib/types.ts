@@ -162,5 +162,5 @@ export interface IWorkflow {
   createdAt: number;
   updatedAt: number;
   active: boolean; // Is it auto-triggered?
-  previewSvg: string; // Serialized SVG of the mini-map
+  previewSvg?: string; // Serialized SVG of the mini-map
 }

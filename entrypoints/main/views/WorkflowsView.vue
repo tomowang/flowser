@@ -28,11 +28,12 @@ import {
   Search,
   Trash2,
   Calendar,
-  Activity,
+  GitCommitHorizontal,
   Clock,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import CardAction from "@/components/ui/card/CardAction.vue";
+import logoUrl from "@/assets/logo.svg";
 
 const { t } = useI18n();
 const workflows = ref<IWorkflow[]>([]);
@@ -144,7 +145,7 @@ const onToggleActive = async (checked: boolean, wf: IWorkflow) => {
               v-else
               class="w-full h-full flex items-center justify-center text-muted-foreground/30"
             >
-              <Activity class="h-12 w-12" />
+              <img :src="logoUrl" class="h-12 w-12 opacity-60" />
             </div>
           </div>
 
@@ -164,7 +165,7 @@ const onToggleActive = async (checked: boolean, wf: IWorkflow) => {
 
           <CardContent class="flex flex-col gap-2">
             <div class="flex items-center gap-1.5">
-              <Activity class="h-3.5 w-3.5" />
+              <GitCommitHorizontal class="h-3.5 w-3.5" />
               <span>{{
                 t(
                   "workflows.nodes",
