@@ -463,6 +463,7 @@ const toggleExecutionPanel = () => {
     <ResizablePanelGroup
       direction="vertical"
       class="flex-1 w-full h-full relative"
+      autoSaveId="workflow-editor"
     >
       <ResizablePanel :default-size="75" :min-size="25" class="relative">
         <!-- Canvas -->
