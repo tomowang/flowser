@@ -19,7 +19,7 @@ import CustomEdge from "@/components/editor/CustomEdge.vue";
 import { toast } from "vue-sonner";
 // Remove NodeInspector import
 import NodePropertiesModal from "@/components/editor/NodePropertiesModal.vue";
-import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
+import { WorkflowRunner, ExecutionStatus } from "@/lib/engine/WorkflowRunner";
 import { IWorkflow, IWorkflowExecutionResult } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
 import { ExecutionService } from "@/lib/services/execution-service";
@@ -434,7 +434,22 @@ const runWorkflow = async () => {
     previewSvg: "",
   };
 
-  const runner = new WorkflowRunner(workflow);
+  // Reset execution status for all nodes
+  nodes.value.forEach((node) => {
+    node.data.executionStatus = undefined;
+    node.data.executionError = undefined;
+  });
+
+  const runner = new WorkflowRunner(workflow, (nodeId, status) => {
+    const node = findNode(nodeId);
+    if (node) {
+      node.data.executionStatus = status;
+      if (status === "running") {
+        // Clear previous error if re-running
+        node.data.executionError = undefined;
+      }
+    }
+  });
 
   isExecuting.value = true;
   try {

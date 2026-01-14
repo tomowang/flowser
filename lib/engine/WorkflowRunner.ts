@@ -11,15 +11,22 @@ import { getQuickJS } from "../services/quickjs";
 import { QuickJSContext, QuickJSRuntime } from "quickjs-emscripten";
 import { toast } from "vue-sonner";
 
+export type ExecutionStatus = "running" | "success" | "error";
+
 export class WorkflowRunner {
   private workflow: IWorkflow;
   private executionData: Map<string, INodeExecutionData[]> = new Map();
   private nodeExecutionResults: IExecutionNodeResult[] = [];
   private runtime: QuickJSRuntime | undefined;
   private context: QuickJSContext | undefined;
+  private onStatusChange?: (nodeId: string, status: ExecutionStatus) => void;
 
-  constructor(workflow: IWorkflow) {
+  constructor(
+    workflow: IWorkflow,
+    onStatusChange?: (nodeId: string, status: ExecutionStatus) => void,
+  ) {
     this.workflow = workflow;
+    this.onStatusChange = onStatusChange;
   }
 
   async run(
@@ -84,6 +91,7 @@ export class WorkflowRunner {
     inputData: INodeExecutionData[],
   ) {
     console.log(`Executing node ${node.id} (${node.type})`);
+    this.onStatusChange?.(node.id, "running");
     const startTime = Date.now();
 
     // Find node type definition
@@ -184,6 +192,7 @@ export class WorkflowRunner {
         inputData,
         outputData: outputData[0],
       });
+      this.onStatusChange?.(node.id, executeError ? "error" : "success");
     }
 
     // Store execution data

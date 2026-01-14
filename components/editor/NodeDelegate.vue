@@ -61,8 +61,17 @@ const deleteNode = (e: Event) => {
 
 <template>
   <div
-    class="relative group min-w-[180px] rounded-lg border bg-card p-3 shadow-md hover:shadow-lg transition-all hover:border-primary/50"
-    :class="{ 'ring-2 ring-primary ring-offset-2': data.selected }"
+    class="relative group min-w-[180px] rounded-lg border bg-card p-3 shadow-md hover:shadow-lg transition-all"
+    :class="{
+      'ring-2 ring-primary ring-offset-2':
+        data.selected && !data.executionStatus,
+      'status-running': data.executionStatus === 'running',
+      '!border-green-500 ring-2 ring-green-500/20':
+        data.executionStatus === 'success',
+      '!border-red-500 ring-2 ring-red-500/20':
+        data.executionStatus === 'error',
+      'hover:border-primary/50': !data.executionStatus,
+    }"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
   >
@@ -168,3 +177,23 @@ const deleteNode = (e: Event) => {
     </button>
   </div>
 </template>
+
+<style scoped>
+@keyframes border-flash {
+  0%,
+  100% {
+    border-color: #f97316; /* orange-500 */
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+  }
+  50% {
+    border-color: #fb923c; /* orange-400 */
+    box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.4);
+  }
+}
+
+.status-running {
+  animation: border-flash 1.5s infinite ease-in-out;
+  /* Override other borders */
+  border-color: #f97316 !important;
+}
+</style>
