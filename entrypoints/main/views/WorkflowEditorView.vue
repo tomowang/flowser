@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { VueFlow, useVueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
@@ -272,6 +272,43 @@ const onDrop = (event: DragEvent) => {
 
 // --- Storage Logic ---
 
+const lastSavedSnapshot = ref<string>("");
+
+const getWorkflowSnapshot = (
+  name: string,
+  currentNodes: any[],
+  currentEdges: any[],
+  isLiveState: boolean,
+) => {
+  const snapshot = {
+    name: name,
+    nodes: currentNodes.map((n) => ({
+      id: n.id,
+      type: isLiveState ? n.data?.nodeType : n.type,
+      position: { x: n.position.x, y: n.position.y },
+      data: n.data,
+    })),
+    edges: currentEdges.map((e) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      sourceHandle: e.sourceHandle || undefined,
+      targetHandle: e.targetHandle || undefined,
+    })),
+  };
+  return JSON.stringify(snapshot);
+};
+
+const hasChanges = computed(() => {
+  const currentSnapshot = getWorkflowSnapshot(
+    currentWorkflowName.value,
+    nodes.value,
+    edges.value,
+    true,
+  );
+  return currentSnapshot !== lastSavedSnapshot.value;
+});
+
 const loadWorkflow = (workflow: IWorkflow) => {
   currentWorkflowId.value = workflow.id;
   currentWorkflowName.value = workflow.name;
@@ -323,10 +360,18 @@ const loadWorkflow = (workflow: IWorkflow) => {
     }),
   );
   isWorkflowActive.value = workflow.active;
+  lastSavedSnapshot.value = getWorkflowSnapshot(
+    workflow.name,
+    workflow.nodes,
+    workflow.edges,
+    false,
+  );
   logs.value.push(t("workflowEditor.loadedWorkflow") + " " + workflow.name);
 };
 
 const saveWorkflow = async () => {
+  if (!hasChanges.value && currentWorkflowId.value) return; // Prevent saving if no changes and not new
+
   const workflowId = currentWorkflowId.value || crypto.randomUUID();
   let name = currentWorkflowName.value;
   if (!currentWorkflowId.value) {
@@ -381,6 +426,13 @@ const saveWorkflow = async () => {
     await WorkflowService.saveWorkflow(sanitizedWorkflow);
     currentWorkflowId.value = workflowId;
     originalWorkflowName.value = name;
+    // Update snapshot after successful save
+    lastSavedSnapshot.value = getWorkflowSnapshot(
+      name,
+      nodes.value,
+      edges.value,
+      true,
+    );
     logs.value.push(t("workflowEditor.savedWorkflow") + " " + name);
     toast.success(t("workflowEditor.savedWorkflow") + " " + name);
   } finally {
@@ -401,6 +453,12 @@ const createNewWorkflow = () => {
   setNodes([]);
   setEdges([]);
   isWorkflowActive.value = false;
+  lastSavedSnapshot.value = getWorkflowSnapshot(
+    currentWorkflowName.value,
+    [],
+    [],
+    true,
+  );
   logs.value.push(t("workflowEditor.createdNewWorkflow"));
 };
 
@@ -523,7 +581,7 @@ const toggleExecutionPanel = () => {
         size="sm"
         variant="outline"
         @click="saveWorkflow"
-        :disabled="isSaving"
+        :disabled="isSaving || !hasChanges"
         class="cursor-pointer"
       >
         <Spinner v-if="isSaving" class="w-4 h-4 mr-1" />
