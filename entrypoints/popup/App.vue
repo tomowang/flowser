@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { browser } from "wxt/browser";
 import { WorkflowService } from "@/lib/services/workflow-service";
+import { SecurityService } from "@/lib/services/security-service";
 import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
 import { IWorkflow } from "@/lib/types";
 import { Search, ExternalLink } from "lucide-vue-next";
@@ -78,7 +79,8 @@ const openDashboard = () => {
   });
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await SecurityService.restoreFromSession();
   loadWorkflows();
 });
 </script>

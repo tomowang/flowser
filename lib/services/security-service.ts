@@ -1,3 +1,4 @@
+import { storage } from "#imports";
 import { dbPromise } from "../db";
 
 export class SecurityService {
@@ -169,19 +170,18 @@ export class SecurityService {
 
   static async saveToSession(key: CryptoKey) {
     const exported = await crypto.subtle.exportKey("jwk", key);
-    sessionStorage.setItem("flowser_mk", JSON.stringify(exported));
+    await storage.setItem("session:flowser_mk", exported);
     this.masterKey = key;
   }
 
   static async restoreFromSession(): Promise<boolean> {
-    const saved = sessionStorage.getItem("flowser_mk");
+    const saved = await storage.getItem<JsonWebKey>("session:flowser_mk");
     if (!saved) return false;
 
     try {
-      const jwk = JSON.parse(saved);
       const key = await crypto.subtle.importKey(
         "jwk",
-        jwk,
+        saved,
         { name: "AES-GCM", length: 256 },
         true, // extractable
         ["encrypt", "decrypt"],
