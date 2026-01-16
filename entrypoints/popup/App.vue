@@ -38,7 +38,6 @@ const handleRun = async (id: string) => {
   if (!workflow) return;
 
   try {
-    toast.info(`Starting execution: ${workflow.name}`);
     const runner = new WorkflowRunner(workflow);
     const result = await runner.run();
 
@@ -140,6 +139,11 @@ onMounted(() => {
         />
       </div>
     </div>
-    <Toaster />
+    <Toaster
+      position="top-center"
+      richColors
+      closeButton
+      closeButtonPosition="top-right"
+    />
   </div>
 </template>
