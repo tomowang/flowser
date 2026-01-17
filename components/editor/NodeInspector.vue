@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { INodeCredentialDescription } from "@/lib/types";
+import { CronLight } from "@vue-js-cron/light";
+import "@vue-js-cron/light/dist/light.css";
 
 const props = defineProps<{
   node: any; // The selected node object from Vue Flow
@@ -122,7 +124,7 @@ const shouldShowProperty = (prop: any) => {
     const propertyDef = properties.value.find((p) => p.name === key);
     const currentValue =
       props.node.data[key] ?? propertyDef?.default;
-      
+
     // Handle array of valid values
     if (Array.isArray(validValues)) {
       return validValues.includes(currentValue);
@@ -259,6 +261,18 @@ const shouldShowProperty = (prop: any) => {
             "
           />
         </div>
+
+        <!-- Cron Editor -->
+         <div v-else-if="prop.type === 'cron'" class="flex flex-col gap-2">
+          <div class="text-xs font-mono bg-muted p-2 rounded">
+            {{ node.data[prop.name] ?? prop.default }}
+          </div>
+          <CronLight
+            :model-value="node.data[prop.name] ?? prop.default"
+            @update:model-value="(val: string) => updateValue(prop.name, val)"
+            locale="en"
+          />
+         </div>
       </div>
     </div>
   </div>

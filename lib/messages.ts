@@ -1,5 +1,6 @@
 export enum MessageType {
   HTTP_EXECUTE_REQUEST = "HTTP:EXECUTE_REQUEST",
+  WORKFLOW_UPDATED = "WORKFLOW:UPDATED",
 }
 
 export interface ExecuteHttpRequestPayload {

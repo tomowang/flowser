@@ -64,7 +64,7 @@ export interface ICredentialType {
 export interface INodeProperties {
   displayName: string;
   name: string;
-  type: "string" | "number" | "boolean" | "options" | "json" | "code";
+  type: "string" | "number" | "boolean" | "options" | "json" | "code" | "cron";
   default?: any;
   options?: { name: string; value: string }[];
   placeholder?: string;
@@ -93,6 +93,7 @@ export interface INodeTypeDescription {
   description: string;
   defaults: {
     name: string;
+    [key: string]: any;
   };
   inputs: INodePort[];
   outputs: INodePort[];

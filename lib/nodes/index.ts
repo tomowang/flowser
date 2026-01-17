@@ -17,3 +17,4 @@ export * from "./WindowClose";
 export * from "./Wait";
 export * from "./TestNode";
 export * from "./FetchContent";
+export * from "./ScheduleTrigger";

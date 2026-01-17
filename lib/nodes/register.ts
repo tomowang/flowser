@@ -19,9 +19,11 @@ import {
   Wait,
   TestNode,
   FetchContent,
+  ScheduleTrigger,
 } from "./index";
 
 Registry.register(ManualTrigger);
+Registry.register(ScheduleTrigger);
 Registry.register(HttpRequest);
 Registry.register(AgentNode);
 Registry.register(GeminiModel);
