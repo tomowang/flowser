@@ -88,11 +88,16 @@ const currentCredentialProperties = computed<INodeProperties[]>(() => {
   return credType?.properties || [];
 });
 
-// Get display name for current credential type
-const currentCredentialDisplayName = computed(() => {
+const populateDefaults = () => {
   const credType = getCredentialType(formData.value.type);
-  return credType?.displayName || "";
-});
+  const defaults: Record<string, string> = {};
+  credType?.properties.forEach((p) => {
+    if (p.default !== undefined) {
+      defaults[p.name] = String(p.default);
+    }
+  });
+  formData.value.values = defaults;
+};
 
 watch(
   () => props.open,
@@ -108,7 +113,7 @@ watch(
         const credType = getCredentialType(formData.value.type);
         formData.value.name = credType?.displayName || "";
         // Reset values when opening
-        formData.value.values = {};
+        populateDefaults();
       }
     }
   },
@@ -128,7 +133,7 @@ watch(
   () => formData.value.type,
   () => {
     if (!isLoading.value) {
-      formData.value.values = {};
+      populateDefaults();
     }
   },
 );
