@@ -70,6 +70,11 @@ export interface INodeProperties {
   placeholder?: string;
   description?: string;
   required?: boolean;
+  displayOptions?: {
+    show?: {
+      [key: string]: any[];
+    };
+  };
 }
 
 export interface INodePort {

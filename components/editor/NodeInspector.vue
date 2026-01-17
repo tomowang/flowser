@@ -110,6 +110,26 @@ const updateCredentialValue = (credType: string, credId: string) => {
 const getCredentialValue = (credType: string): string => {
   return props.node.data.credentials?.[credType] || "";
 };
+
+const shouldShowProperty = (prop: any) => {
+  if (!prop.displayOptions?.show) return true;
+
+  const { show } = prop.displayOptions;
+
+  // Check all conditions (AND logic)
+  return Object.entries(show).every(([key, validValues]: [string, any]) => {
+    // Get value from node data or fall back to default
+    const propertyDef = properties.value.find((p) => p.name === key);
+    const currentValue =
+      props.node.data[key] ?? propertyDef?.default;
+      
+    // Handle array of valid values
+    if (Array.isArray(validValues)) {
+      return validValues.includes(currentValue);
+    }
+    return validValues === currentValue;
+  });
+};
 </script>
 
 <template>
@@ -176,6 +196,7 @@ const getCredentialValue = (credType: string): string => {
       <div
         v-for="prop in properties"
         :key="prop.name"
+        v-show="shouldShowProperty(prop)"
         class="flex flex-col gap-1"
       >
         <label class="text-sm font-medium">{{ prop.displayName }}</label>
@@ -216,7 +237,7 @@ const getCredentialValue = (credType: string): string => {
         <Codemirror
           v-else-if="prop.type === 'json' || prop.type === 'code'"
           :model-value="node.data[prop.name] ?? prop.default"
-          :style="{ height: '300px' }"
+          :style="{ height: '100px' }"
           :autofocus="false"
           :indent-with-tab="true"
           :tab-size="2"
