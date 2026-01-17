@@ -6,7 +6,7 @@ export const Wait: INodeType = {
     displayName: "Wait",
     name: "wait",
     icon: Clock,
-    group: ["utils"],
+    group: ["core"],
     version: 1,
     description: "Waits for a specified amount of time",
     defaults: {

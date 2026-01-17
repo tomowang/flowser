@@ -7,7 +7,7 @@ export const Code: INodeType = {
     displayName: "Code",
     name: "code",
     icon: Code2,
-    group: ["development"],
+    group: ["core"],
     version: 1,
     description: "Executes custom JavaScript code",
     defaults: {

@@ -7,7 +7,7 @@ export const TabCreate: INodeType = {
     displayName: "Tab Create",
     name: "tabCreate",
     icon: Plus,
-    group: ["browser"],
+    group: ["tab"],
     version: 1,
     description: "Create a new tab",
     defaults: {

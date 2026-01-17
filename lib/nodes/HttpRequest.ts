@@ -8,7 +8,7 @@ export const HttpRequest: INodeType = {
     displayName: "HTTP Request",
     name: "httpRequest",
     icon: Globe,
-    group: ["development"],
+    group: ["core"],
     version: 1,
     description: "Makes an HTTP request",
     defaults: {

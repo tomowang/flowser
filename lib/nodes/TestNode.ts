@@ -6,7 +6,7 @@ export const TestNode: INodeType = {
     displayName: "Test Node",
     name: "testNode",
     icon: Info,
-    group: ["development"],
+    group: ["core"],
     version: 1,
     description: "Node for testing purposes",
     defaults: {

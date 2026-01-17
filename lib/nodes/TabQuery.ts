@@ -7,7 +7,7 @@ export const TabQuery: INodeType = {
     displayName: "Tab Query",
     name: "tabQuery",
     icon: AppWindow,
-    group: ["browser"],
+    group: ["tab"],
     version: 1,
     description: "Query browser tabs",
     defaults: {

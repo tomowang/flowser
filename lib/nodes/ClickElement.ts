@@ -7,7 +7,7 @@ export const ClickElement: INodeType = {
     displayName: "Click Element",
     name: "clickElement",
     icon: MousePointerClick,
-    group: ["browser", "action"],
+    group: ["page_action"],
     version: 1,
     description: "Click an element on the page",
     defaults: {

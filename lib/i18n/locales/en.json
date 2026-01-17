@@ -92,6 +92,15 @@
     "workflowNotFound": "Workflow {id} not found.",
     "securityMasterKeySet": "Security: Master Key Set",
     "connectionLimitReached": "Connection limit reached for this handle.",
-    "connectionTypeMismatch": "Connection rejected: Type mismatch."
+    "connectionTypeMismatch": "Connection rejected: Type mismatch.",
+    "groups": {
+      "core": "Core",
+      "trigger": "Trigger",
+      "tab": "Tab",
+      "window": "Window",
+      "page_action": "Page Actions",
+      "ai": "AI",
+      "other": "Other"
+    }
   }
 }

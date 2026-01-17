@@ -6,7 +6,7 @@ export const AgentNode: INodeType = {
     displayName: "AI Agent",
     name: "agent",
     icon: Bot,
-    group: ["agent"],
+    group: ["ai"],
     version: 1,
     description: "An AI Agent that can use tools",
     defaults: {

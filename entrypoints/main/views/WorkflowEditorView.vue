@@ -20,7 +20,7 @@ import { toast } from "vue-sonner";
 // Remove NodeInspector import
 import NodePropertiesModal from "@/components/editor/NodePropertiesModal.vue";
 import { WorkflowRunner, ExecutionStatus } from "@/lib/engine/WorkflowRunner";
-import { IWorkflow, IWorkflowExecutionResult } from "@/lib/types";
+import { IWorkflow, IWorkflowExecutionResult, INodeType } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
 import { ExecutionService } from "@/lib/services/execution-service";
 import ExecutionPanel from "@/components/editor/execution/ExecutionPanel.vue";
@@ -29,7 +29,7 @@ import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
 import { SecurityService } from "@/lib/services/security-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Play, Save } from "lucide-vue-next"; // Icons
+import { Search, Plus, Play, Save, ChevronRight, ChevronDown } from "lucide-vue-next"; // Icons
 import { Spinner } from "@/components/ui/spinner";
 import {
   ResizableHandle,
@@ -56,6 +56,64 @@ const { t } = useI18n();
 const route = useRoute();
 
 // Initial state
+const collapsedGroups = ref<Record<string, boolean>>({
+  core: true,
+  trigger: true,
+  tab: true,
+  window: true,
+  page_action: true,
+  ai: true,
+  other: true,
+});
+
+const toggleGroup = (group: string) => {
+  collapsedGroups.value[group] = !collapsedGroups.value[group];
+};
+
+const groupedNodes = computed(() => {
+  const query = searchQuery.value.toLowerCase().trim();
+  const groups: Record<string, INodeType[]> = {
+    core: [],
+    trigger: [],
+    tab: [],
+    window: [],
+    page_action: [],
+    ai: [],
+    other: [],
+  };
+
+  const allNodes = Registry.getAll();
+  // Sort by displayName
+  const sortedNodes = allNodes.sort((a, b) =>
+    a.description.displayName.localeCompare(b.description.displayName),
+  );
+
+  for (const node of sortedNodes) {
+    if (query && !node.description.displayName.toLowerCase().includes(query)) {
+      continue;
+    }
+
+    const groupName = node.description.group?.[0] || "other";
+    if (Array.isArray(groups[groupName])) {
+      groups[groupName].push(node);
+    } else {
+      groups["other"].push(node);
+    }
+  }
+
+  // Filter out empty groups and return only relevant ones
+  const result: Record<string, INodeType[]> = {};
+  const order = ["core", "trigger", "tab", "window", "page_action", "ai", "other"];
+  
+  for (const key of order) {
+    if (groups[key] && groups[key].length > 0) {
+      result[key] = groups[key];
+    }
+  }
+  
+  return result;
+});
+
 const nodes = ref<Node[]>([]);
 const edges = ref<Edge[]>([]);
 const selectedNode = ref<Node | null>(null);
@@ -65,6 +123,21 @@ const currentWorkflowId = ref<string | null>(null);
 const currentWorkflowName = ref<string>(t("workflowEditor.untitledWorkflow"));
 const originalWorkflowName = ref<string>("");
 const searchQuery = ref("");
+
+watch(searchQuery, (newVal) => {
+  if (newVal.trim()) {
+    // Expand all groups when searching
+    Object.keys(collapsedGroups.value).forEach((key) => {
+      collapsedGroups.value[key] = false;
+    });
+  } else {
+    // Collapse all groups when search is cleared
+    Object.keys(collapsedGroups.value).forEach((key) => {
+      collapsedGroups.value[key] = true;
+    });
+  }
+});
+
 const isSaving = ref(false);
 const isExecuting = ref(false);
 const isWorkflowActive = ref(false);
@@ -671,32 +744,46 @@ const toggleExecutionPanel = () => {
           </div>
 
           <div class="flex-1 overflow-y-auto p-4 space-y-2">
-            <div
-              v-for="node in Registry.getAll()"
-              :key="node.description.name"
-              class="cursor-grab flex items-center gap-3 rounded-md border bg-popover p-3 hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm"
-              draggable="true"
-              @dragstart="
-                (event) =>
-                  event.dataTransfer?.setData(
-                    'application/vueflow',
-                    node.description.name,
-                  )
-              "
-            >
-              <div
-                class="flex h-8 w-8 items-center justify-center rounded bg-muted"
+            <div v-for="(nodes, groupName) in groupedNodes" :key="groupName" class="space-y-1">
+              <!-- Group Header -->
+              <div 
+                class="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-muted/50 cursor-pointer select-none text-sm font-semibold text-muted-foreground"
+                @click="toggleGroup(groupName)"
               >
-                <!-- Icon support if available -->
-                <component
-                  :is="node.description.icon || Plus"
-                  class="h-4 w-4"
-                />
+                <ChevronRight v-if="collapsedGroups[groupName]" class="h-4 w-4" />
+                <ChevronDown v-else class="h-4 w-4" />
+                <span>{{ t(`workflowEditor.groups.${groupName}`) }}</span>
               </div>
-              <div class="flex flex-col text-left">
-                <span class="text-sm font-medium">{{
-                  node.description.displayName
-                }}</span>
+
+              <!-- Group Content -->
+              <div v-show="!collapsedGroups[groupName]" class="space-y-2 pl-2">
+                <div
+                  v-for="node in nodes"
+                  :key="node.description.name"
+                  class="cursor-grab flex items-center gap-3 rounded-md border bg-popover p-3 hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm"
+                  draggable="true"
+                  @dragstart="
+                    (event) =>
+                      event.dataTransfer?.setData(
+                        'application/vueflow',
+                        node.description.name,
+                      )
+                  "
+                >
+                  <div
+                    class="flex h-8 w-8 items-center justify-center rounded bg-muted"
+                  >
+                    <component
+                      :is="node.description.icon || Plus"
+                      class="h-4 w-4 text-foreground/70"
+                    />
+                  </div>
+                  <div class="flex flex-col text-left">
+                    <span class="text-sm font-medium">{{
+                      node.description.displayName
+                    }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -12,7 +12,7 @@ export const GeminiModel: INodeType = {
     displayName: "Gemini Chat Model",
     name: "geminiModel",
     icon: Sparkles,
-    group: ["model"],
+    group: ["ai"],
     version: 1,
     description: "Google Gemini LLM Model",
     defaults: {

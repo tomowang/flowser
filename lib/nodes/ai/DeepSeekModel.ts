@@ -11,7 +11,7 @@ export const DeepSeekModel: INodeType = {
     displayName: "DeepSeek Chat Model",
     name: "deepSeekModel",
     icon: Zap,
-    group: ["model"],
+    group: ["ai"],
     version: 1,
     description: "DeepSeek LLM Model",
     defaults: {
