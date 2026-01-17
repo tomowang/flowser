@@ -2,7 +2,9 @@
 import { computed, ref } from "vue";
 import { Handle, Position, useVueFlow } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
-import { Trash2 } from "lucide-vue-next";
+import { Trash2, AlertTriangle } from "lucide-vue-next";
+import { validateNode } from "@/lib/utils/validation";
+import { IWorkflowNode } from "@/lib/types";
 
 const props = defineProps<{
   id: string; // Add ID prop to identify the node for removal
@@ -15,6 +17,20 @@ const isHovered = ref(false);
 const nodeType = computed(() => {
   return Registry.get(props.data.nodeType);
 });
+
+// Construct a temporary IWorkflowNode object for validation
+// We only need type and data for validation
+const validationResult = computed(() => {
+  const nodeForValidation: IWorkflowNode = {
+    id: props.id,
+    type: props.data.nodeType,
+    data: props.data,
+    position: { x: 0, y: 0 }, // Dummy position
+  };
+  return validateNode(nodeForValidation);
+});
+
+const isValid = computed(() => validationResult.value.isValid);
 
 const allInputs = computed(() => nodeType.value?.description.inputs || []);
 const allOutputs = computed(() => nodeType.value?.description.outputs || []);
@@ -175,6 +191,15 @@ const deleteNode = (e: Event) => {
     >
       <Trash2 class="h-3 w-3" />
     </button>
+
+    <!-- Validation Warning (Bottom Right) -->
+    <div
+      v-if="!isValid"
+      class="absolute -bottom-2 -right-2 z-50 rounded-full bg-yellow-100 p-1 text-yellow-600 shadow-sm border border-yellow-200"
+      :title="validationResult.errors.join('\n')"
+    >
+      <AlertTriangle class="h-3 w-3" />
+    </div>
   </div>
 </template>
 

@@ -100,6 +100,8 @@ export class WorkflowRunner {
       throw new Error(`Node type ${node.type} not found`);
     }
 
+
+
     // Prepare execution context
     const itemIndex = 0;
     const executionFunctions: IExecuteFunctions = {
@@ -168,6 +170,16 @@ export class WorkflowRunner {
     let executeError: any = null;
 
     try {
+      // Validate node
+      const { validateNode } = await import("../utils/validation");
+      const validationResult = validateNode(node);
+      if (!validationResult.isValid) {
+        throw new Error(
+          `Node validation failed: ${validationResult.errors.join(", ")}`,
+        );
+      }
+
+
       if (nodeType.execute) {
         outputData = await nodeType.execute.call(executionFunctions);
       } else {
