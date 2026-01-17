@@ -4,6 +4,7 @@ import { GeminiApiCredential } from "./GeminiApi";
 import { OpenAIApiCredential } from "./OpenAIApi";
 import { AnthropicApiCredential } from "./AnthropicApi";
 import { DeepSeekApiCredential } from "./DeepSeekApi";
+import { DemoCredential } from "./DemoCredential";
 
 export {
   GeminiApiCredential,
@@ -19,6 +20,10 @@ const credentialTypes: ICredentialType[] = [
   AnthropicApiCredential,
   DeepSeekApiCredential,
 ];
+
+if (import.meta.env.DEV) {
+  credentialTypes.push(DemoCredential);
+}
 
 // Get all registered credential types
 export function getAllCredentialTypes(): ICredentialType[] {

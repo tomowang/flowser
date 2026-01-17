@@ -14,3 +14,4 @@ export * from "./TabCreate";
 export * from "./WindowCreate";
 export * from "./WindowQuery";
 export * from "./Wait";
+export * from "./TestNode";

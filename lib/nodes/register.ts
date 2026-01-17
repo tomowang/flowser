@@ -16,8 +16,8 @@ import {
   WindowCreate,
   WindowQuery,
   Wait,
+  TestNode,
 } from "./index";
-
 
 Registry.register(ManualTrigger);
 Registry.register(HttpRequest);
@@ -35,4 +35,8 @@ Registry.register(TabCreate);
 Registry.register(WindowCreate);
 Registry.register(WindowQuery);
 Registry.register(Wait);
+
+if (import.meta.env.DEV) {
+  Registry.register(TestNode);
+}
 
