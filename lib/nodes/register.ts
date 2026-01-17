@@ -18,6 +18,7 @@ import {
   WindowClose,
   Wait,
   TestNode,
+  FetchContent,
 } from "./index";
 
 Registry.register(ManualTrigger);
@@ -37,6 +38,7 @@ Registry.register(WindowCreate);
 Registry.register(WindowQuery);
 Registry.register(WindowClose);
 Registry.register(Wait);
+Registry.register(FetchContent);
 
 if (import.meta.env.DEV) {
   Registry.register(TestNode);

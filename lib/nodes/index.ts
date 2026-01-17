@@ -16,3 +16,4 @@ export * from "./WindowQuery";
 export * from "./WindowClose";
 export * from "./Wait";
 export * from "./TestNode";
+export * from "./FetchContent";
