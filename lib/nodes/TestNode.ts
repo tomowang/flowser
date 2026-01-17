@@ -15,7 +15,7 @@ export const TestNode: INodeType = {
     inputs: [{ name: "main", type: "main", label: "Main" }],
     outputs: [{ name: "main", type: "main", label: "Main" }],
     credentials: [
-      { name: "demo_credential", required: false, displayName: "Demo Credential" },
+      { name: "demo_credential", required: true, displayName: "Demo Credential" },
     ],
     properties: [
       {

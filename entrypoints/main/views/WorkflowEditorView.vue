@@ -14,6 +14,7 @@ import {
 } from "@vue-flow/core";
 import { useRoute, RouterLink } from "vue-router";
 import { Registry } from "@/lib/nodes/registry";
+import { validateNode } from "@/lib/utils/validation";
 import NodeDelegate from "@/components/editor/NodeDelegate.vue";
 import CustomEdge from "@/components/editor/CustomEdge.vue";
 import { toast } from "vue-sonner";
@@ -104,13 +105,13 @@ const groupedNodes = computed(() => {
   // Filter out empty groups and return only relevant ones
   const result: Record<string, INodeType[]> = {};
   const order = ["core", "trigger", "browser", "page_action", "ai", "other"];
-  
+
   for (const key of order) {
     if (groups[key] && groups[key].length > 0) {
       result[key] = groups[key];
     }
   }
-  
+
   return result;
 });
 
@@ -440,6 +441,25 @@ const loadWorkflow = (workflow: IWorkflow) => {
     false,
   );
   logs.value.push(t("workflowEditor.loadedWorkflow") + " " + workflow.name);
+
+  // Validate nodes on load
+  let invalidCount = 0;
+  for (const node of workflow.nodes) {
+    const validationResult = validateNode(node);
+    if (!validationResult.isValid) {
+      invalidCount++;
+      const nodeName = node.data.label || node.type;
+      logs.value.push(
+        `Validation Warning [${nodeName}]: ${validationResult.errors.join(", ")}`,
+      );
+    }
+  }
+
+  if (invalidCount > 0) {
+    logs.value.push(
+      `Workflow loaded with ${invalidCount} invalid node(s). Check details above.`,
+    );
+  }
 };
 
 const saveWorkflow = async () => {
@@ -746,7 +766,7 @@ const toggleExecutionPanel = () => {
           <div class="flex-1 overflow-y-auto p-4 space-y-2">
             <div v-for="(nodes, groupName) in groupedNodes" :key="groupName" class="space-y-1">
               <!-- Group Header -->
-              <div 
+              <div
                 class="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-muted/50 cursor-pointer select-none text-sm font-semibold text-muted-foreground"
                 @click="toggleGroup(groupName)"
               >
