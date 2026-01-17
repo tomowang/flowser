@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-vue-next";
+import { Plus, Trash2, Edit } from "lucide-vue-next";
 import { CredentialService } from "@/lib/services/credential-service";
 import { SecurityService } from "@/lib/services/security-service";
 import { ICredential } from "@/lib/types";
@@ -23,6 +23,7 @@ import { getCredentialType } from "@/lib/credentials";
 const credentials = ref<Omit<ICredential, "encryptedData" | "iv">[]>([]);
 const isMasterKeyModalOpen = ref(false);
 const isAddDialogOpen = ref(false);
+const editingCredentialId = ref<string | undefined>(undefined);
 
 const { t } = useI18n();
 
@@ -59,6 +60,16 @@ const deleteCredential = async (id: string) => {
     await loadCredentials();
   }
 };
+
+const editCredential = (id: string) => {
+  editingCredentialId.value = id;
+  isAddDialogOpen.value = true;
+};
+
+const openAddDialog = () => {
+  editingCredentialId.value = undefined;
+  isAddDialogOpen.value = true;
+};
 </script>
 
 <template>
@@ -67,13 +78,14 @@ const deleteCredential = async (id: string) => {
       <h1 class="text-2xl font-bold tracking-tight">
         {{ t("credentials.title") }}
       </h1>
-      <Button @click="isAddDialogOpen = true">
+      <Button @click="openAddDialog">
         <Plus class="mr-2 h-4 w-4" />
         {{ t("credentials.addCredential") }}
       </Button>
 
       <CreateCredentialModal
         v-model:open="isAddDialogOpen"
+        :credential-id="editingCredentialId"
         @created="loadCredentials"
       />
     </div>
@@ -98,6 +110,13 @@ const deleteCredential = async (id: string) => {
               new Date(cred.createdAt).toLocaleDateString()
             }}</TableCell>
             <TableCell class="text-right">
+              <Button
+                variant="ghost"
+                size="icon"
+                @click="editCredential(cred.id)"
+              >
+                <Edit class="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"

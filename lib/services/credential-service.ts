@@ -26,6 +26,37 @@ export class CredentialService {
     return credential.id;
   }
 
+  static async updateCredential(
+    id: string,
+    name: string,
+    type: string,
+    data: Record<string, unknown>,
+  ): Promise<void> {
+    const db = await dbPromise;
+    const existing = (await db.get("credentials", id)) as ICredential;
+    if (!existing) {
+      throw new Error("Credential not found");
+    }
+
+    const jsonData = JSON.stringify(data);
+    const { iv, data: encryptedData } = await SecurityService.encrypt(jsonData);
+
+    const credential: ICredential = {
+      ...existing,
+      name,
+      type,
+      encryptedData,
+      iv,
+    };
+
+    await db.put("credentials", credential);
+  }
+
+  static async getCredential(id: string): Promise<ICredential | undefined> {
+    const db = await dbPromise;
+    return db.get("credentials", id);
+  }
+
   static async getCredentials(): Promise<
     Omit<ICredential, "encryptedData" | "iv">[]
   > {

@@ -28,6 +28,7 @@ import type { INodeProperties } from "@/lib/types";
 const props = defineProps<{
   open: boolean;
   defaultType?: string;
+  credentialId?: string;
 }>();
 
 const emit = defineEmits(["update:open", "created"]);
@@ -44,6 +45,34 @@ const formData = ref<{
   type: "gemini_api",
   values: {},
 });
+
+const isEditMode = computed(() => !!props.credentialId);
+
+const loadCredential = async () => {
+  if (!props.credentialId) return;
+
+  isLoading.value = true;
+  try {
+    const cred = await CredentialService.getCredential(props.credentialId);
+    if (cred) {
+      const values = await CredentialService.getDecryptedCredential(
+        props.credentialId,
+      );
+      formData.value = {
+        name: cred.name,
+        type: cred.type,
+        values: (values as Record<string, string>) || {},
+      };
+    }
+  } catch (e) {
+    console.error("Failed to load credential", e);
+  } finally {
+    // Ensure we don't clear values due to type change
+    setTimeout(() => {
+      isLoading.value = false;
+    }, 100);
+  }
+};
 
 // Get all registered credential types
 const availableCredentialTypes = computed(() => {
@@ -67,16 +96,20 @@ const currentCredentialDisplayName = computed(() => {
 
 watch(
   () => props.open,
-  (newVal) => {
+  async (newVal) => {
     if (newVal) {
-      if (props.defaultType) {
-        formData.value.type = props.defaultType;
+      if (props.credentialId) {
+        await loadCredential();
+      } else {
+        if (props.defaultType) {
+          formData.value.type = props.defaultType;
+        }
+        // Set default name to credential type's displayName
+        const credType = getCredentialType(formData.value.type);
+        formData.value.name = credType?.displayName || "";
+        // Reset values when opening
+        formData.value.values = {};
       }
-      // Set default name to credential type's displayName
-      const credType = getCredentialType(formData.value.type);
-      formData.value.name = credType?.displayName || "";
-      // Reset values when opening
-      formData.value.values = {};
     }
   },
 );
@@ -88,11 +121,15 @@ watch(
   },
 );
 
+const isLoading = ref(false);
+
 // Reset values when credential type changes
 watch(
   () => formData.value.type,
   () => {
-    formData.value.values = {};
+    if (!isLoading.value) {
+      formData.value.values = {};
+    }
   },
 );
 
@@ -107,12 +144,22 @@ const saveCredential = async () => {
   if (!hasRequiredValues) return;
 
   try {
-    const credId = await CredentialService.saveCredential(
-      formData.value.name,
-      formData.value.type,
-      formData.value.values,
-    );
-    emit("created", credId);
+    if (props.credentialId) {
+      await CredentialService.updateCredential(
+        props.credentialId,
+        formData.value.name,
+        formData.value.type,
+        formData.value.values,
+      );
+      emit("created", props.credentialId);
+    } else {
+      const credId = await CredentialService.saveCredential(
+        formData.value.name,
+        formData.value.type,
+        formData.value.values,
+      );
+      emit("created", credId);
+    }
     emit("update:open", false);
     formData.value = {
       name: "",
@@ -136,9 +183,20 @@ const onUnlocked = () => {
   <Dialog :open="open" @update:open="(val) => emit('update:open', val)">
     <DialogContent class="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>{{ t("credentials.addCredentialTitle") }}</DialogTitle>
+        <DialogTitle>{{
+          isEditMode
+            ? t("credentials.editCredentialTitle", "Edit Credential")
+            : t("credentials.addCredentialTitle")
+        }}</DialogTitle>
         <DialogDescription>
-          {{ t("credentials.addCredentialDescription") }}
+          {{
+            isEditMode
+              ? t(
+                  "credentials.editCredentialDescription",
+                  "Modify the credential details below.",
+                )
+              : t("credentials.addCredentialDescription")
+          }}
         </DialogDescription>
       </DialogHeader>
       <div class="grid gap-4 py-4">
@@ -196,7 +254,7 @@ const onUnlocked = () => {
       </div>
       <DialogFooter>
         <Button type="submit" @click="saveCredential">{{
-          t("common.saveChanges")
+          isEditMode ? t("common.save", "Save") : t("credentials.addCredential")
         }}</Button>
       </DialogFooter>
     </DialogContent>
