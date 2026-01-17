@@ -158,7 +158,7 @@ describe("Node Validation", () => {
     // Trigger should succeed
     const triggerResult = result.nodeExecutionResults.find((n) => n.nodeId === "trigger");
     expect(triggerResult?.status).toBe("success");
-    
+
     // Node 1 should fail or not start if validation happens before execution log
     // Implementation check: we log "Executing node..." then validate.
     // If validation fails, it throws.
@@ -166,5 +166,51 @@ describe("Node Validation", () => {
     expect(node1Result).toBeDefined();
     expect(node1Result?.status).toBe("error");
     expect(node1Result?.errorMessage).toContain("Node validation failed");
+  });
+  it("should return invalid for missing required credential", () => {
+    // Register a node with required credential
+    const CredentialNode: INodeType = {
+      description: {
+        displayName: "Credential Node",
+        name: "credentialNode",
+        icon: "",
+        group: ["test"],
+        version: 1,
+        description: "Credential Node",
+        defaults: { name: "Credential Node" },
+        inputs: [],
+        outputs: [],
+        properties: [],
+        credentials: [
+          { name: "test_cred", required: true, displayName: "Test Credential" },
+        ],
+      },
+    };
+    Registry.register(CredentialNode);
+
+    const validResult = validateNode({
+      id: "1",
+      type: "credentialNode",
+      data: {
+        credentials: {
+          test_cred: "some-id",
+        },
+      },
+      position: { x: 0, y: 0 },
+    });
+    expect(validResult.isValid).toBe(true);
+
+    const invalidResult = validateNode({
+      id: "1",
+      type: "credentialNode",
+      data: {
+        credentials: {},
+      },
+      position: { x: 0, y: 0 },
+    });
+    expect(invalidResult.isValid).toBe(false);
+    expect(invalidResult.errors).toContain(
+      "Credential 'Test Credential' is required",
+    );
   });
 });

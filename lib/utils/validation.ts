@@ -27,6 +27,16 @@ export function validateNode(node: IWorkflowNode): IValidationResult {
     }
   }
 
+  const credentials = nodeType.description.credentials || [];
+  for (const cred of credentials) {
+    if (cred.required) {
+      const value = node.data?.credentials?.[cred.name];
+      if (!value) {
+        errors.push(`Credential '${cred.displayName || cred.name}' is required`);
+      }
+    }
+  }
+
   return {
     isValid: errors.length === 0,
     errors,
