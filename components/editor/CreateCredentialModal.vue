@@ -249,9 +249,7 @@ const onUnlocked = () => {
           <Input
             :id="prop.name"
             v-model="formData.values[prop.name]"
-            :type="
-              prop.name.toLowerCase().includes('key') ? 'password' : 'text'
-            "
+            :type="prop.type === 'password' ? 'password' : 'text'"
             class="col-span-3"
             :placeholder="prop.description || prop.displayName"
           />

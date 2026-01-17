@@ -7,7 +7,7 @@ export const DeepSeekApiCredential: ICredentialType = {
     {
       displayName: "API Key",
       name: "apiKey",
-      type: "string",
+      type: "password",
       required: true,
       description: "DeepSeek API key",
     },

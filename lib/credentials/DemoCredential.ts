@@ -13,7 +13,7 @@ export const DemoCredential: ICredentialType = {
     {
       displayName: "Password",
       name: "password",
-      type: "string",
+      type: "password",
       default: "password",
       description: "This is a demo password",
     },

@@ -7,7 +7,7 @@ export const OpenAIApiCredential: ICredentialType = {
     {
       displayName: "API Key",
       name: "apiKey",
-      type: "string",
+      type: "password",
       required: true,
       description: "OpenAI API key",
     },

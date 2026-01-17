@@ -64,7 +64,7 @@ export interface ICredentialType {
 export interface INodeProperties {
   displayName: string;
   name: string;
-  type: "string" | "number" | "boolean" | "options" | "json" | "code" | "cron";
+  type: "string" | "number" | "boolean" | "options" | "json" | "code" | "cron" | "password";
   default?: any;
   options?: { name: string; value: string }[];
   placeholder?: string;

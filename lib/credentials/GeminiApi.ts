@@ -7,7 +7,7 @@ export const GeminiApiCredential: ICredentialType = {
     {
       displayName: "API Key",
       name: "apiKey",
-      type: "string",
+      type: "password",
       required: true,
       description: "Google AI Gemini API key",
     },

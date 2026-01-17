@@ -7,7 +7,7 @@ export const AnthropicApiCredential: ICredentialType = {
     {
       displayName: "API Key",
       name: "apiKey",
-      type: "string",
+      type: "password",
       required: true,
       description: "Anthropic API key",
     },
