@@ -16,6 +16,7 @@ import {
   TabCreate,
   WindowCreate,
   WindowQuery,
+  Wait,
 } from "./index";
 
 
@@ -35,3 +36,5 @@ Registry.register(ClickElement);
 Registry.register(TabCreate);
 Registry.register(WindowCreate);
 Registry.register(WindowQuery);
+Registry.register(Wait);
+
