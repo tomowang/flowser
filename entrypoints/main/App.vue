@@ -31,9 +31,9 @@ const isDev = import.meta.env.DEV;
   </SidebarProvider>
   <Toaster
     position="top-center"
-    richColors
-    closeButton
-    closeButtonPosition="top-right"
+    rich-colors
+    close-button
+    close-button-position="top-right"
   />
   <div
     v-if="isDev"

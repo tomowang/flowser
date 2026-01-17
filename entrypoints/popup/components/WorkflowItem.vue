@@ -41,8 +41,8 @@ const formatDate = (timestamp: number) => {
     <div class="flex items-center gap-1">
       <button
         class="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 hover:text-green-600 transition-colors"
-        @click="emit('run', workflow.id)"
         title="Run Workflow"
+        @click="emit('run', workflow.id)"
       >
         <Play class="w-4 h-4" />
       </button>

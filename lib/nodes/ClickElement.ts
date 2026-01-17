@@ -74,8 +74,8 @@ export const ClickElement: INodeType = {
           target: { tabId: tabId },
           func: (selectorType: string, selector: string, multiple: boolean) => {
             function getElementsByXPath(xpath: string, parent = document) {
-              let results = [];
-              let query = document.evaluate(
+              const results = [];
+              const query = document.evaluate(
                 xpath,
                 parent,
                 null,

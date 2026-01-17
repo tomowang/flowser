@@ -143,7 +143,7 @@ const onUnlocked = () => {
       </DialogHeader>
       <div class="grid gap-4 py-4">
         <div class="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="name" class="text-right">{{
+          <Label html-for="name" class="text-right">{{
             t("common.name")
           }}</Label>
           <Input
@@ -154,7 +154,7 @@ const onUnlocked = () => {
           />
         </div>
         <div class="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="type" class="text-right">{{
+          <Label html-for="type" class="text-right">{{
             t("common.type")
           }}</Label>
           <div class="col-span-3">
@@ -180,7 +180,7 @@ const onUnlocked = () => {
           :key="prop.name"
           class="grid grid-cols-4 items-center gap-4"
         >
-          <Label :htmlFor="prop.name" class="text-right">{{
+          <Label :html-for="prop.name" class="text-right">{{
             prop.displayName
           }}</Label>
           <Input

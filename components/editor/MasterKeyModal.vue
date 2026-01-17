@@ -78,15 +78,15 @@ const unlock = async () => {
 
         <div class="flex justify-end gap-2">
           <button
-            @click="$emit('close')"
             class="rounded px-3 py-1.5 text-xs font-semibold hover:bg-accent"
+            @click="$emit('close')"
           >
             {{ t("common.cancel") }}
           </button>
           <button
-            @click="unlock"
             :disabled="isLoading"
             class="rounded bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            @click="unlock"
           >
             {{ isLoading ? t("masterKey.unlocking") : t("masterKey.unlock") }}
           </button>

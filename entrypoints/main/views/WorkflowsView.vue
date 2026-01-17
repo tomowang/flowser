@@ -155,9 +155,9 @@ const onToggleActive = async (checked: boolean, wf: IWorkflow) => {
               >{{ wf.name }}</CardTitle
             >
             <CardAction
-              @click.stop.prevent="openDeleteDialog($event, wf.id)"
               class="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-destructive/10 hover:text-destructive rounded-md cursor-pointer z-10"
               :title="t('common.delete')"
+              @click.stop.prevent="openDeleteDialog($event, wf.id)"
             >
               <Trash2 class="h-4 w-4" />
             </CardAction>

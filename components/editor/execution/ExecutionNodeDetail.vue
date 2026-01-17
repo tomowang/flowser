@@ -10,7 +10,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="flex h-full bg-background" v-if="nodeResult">
+  <div v-if="nodeResult" class="flex h-full bg-background">
     <!-- Input Column -->
     <div class="flex-1 flex flex-col border-r h-full overflow-hidden">
       <div

@@ -77,15 +77,15 @@ const onNodeSelect = (nodeId: string) => {
       </div>
       <div class="flex items-center gap-2">
         <button
-          @click.stop="emit('toggle-collapse')"
           class="text-muted-foreground hover:text-foreground transition-colors p-1"
+          @click.stop="emit('toggle-collapse')"
         >
           <ChevronUp v-if="isCollapsed" class="h-4 w-4" />
           <ChevronDown v-else class="h-4 w-4" />
         </button>
         <button
-          @click.stop="emit('close')"
           class="text-muted-foreground hover:text-foreground transition-colors p-1"
+          @click.stop="emit('close')"
         >
           <X class="h-4 w-4" />
         </button>

@@ -573,16 +573,16 @@ const toggleExecutionPanel = () => {
       </Breadcrumb>
       <Input
         v-model="currentWorkflowName"
-        @blur="onNameBlur"
         class="h-8 font-semibold px-2 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[200px]"
+        @blur="onNameBlur"
       />
       <div class="h-4 w-px bg-border mx-2"></div>
       <Button
         size="sm"
         variant="outline"
-        @click="saveWorkflow"
         :disabled="isSaving || !hasChanges"
         class="cursor-pointer"
+        @click="saveWorkflow"
       >
         <Spinner v-if="isSaving" class="w-4 h-4 mr-1" />
         <Save v-else class="w-4 h-4 mr-1" />
@@ -590,9 +590,9 @@ const toggleExecutionPanel = () => {
       </Button>
       <Button
         size="sm"
-        @click="runWorkflow"
         :disabled="isExecuting"
         class="cursor-pointer"
+        @click="runWorkflow"
       >
         <Spinner v-if="isExecuting" class="w-4 h-4 mr-1" />
         <Play v-else class="w-4 h-4 mr-1" />
@@ -603,8 +603,8 @@ const toggleExecutionPanel = () => {
 
       <div class="flex items-center space-x-2">
         <Switch
-          v-model="isWorkflowActive"
           id="workflow-active"
+          v-model="isWorkflowActive"
           @update:model-value="onActiveToggle"
         />
         <Label for="workflow-active" class="text-sm font-medium">{{
@@ -616,7 +616,7 @@ const toggleExecutionPanel = () => {
     <ResizablePanelGroup
       direction="vertical"
       class="flex-1 w-full h-full relative"
-      autoSaveId="workflow-editor"
+      auto-save-id="workflow-editor"
     >
       <ResizablePanel :default-size="75" :min-size="25" class="relative">
         <!-- Canvas -->
@@ -649,8 +649,8 @@ const toggleExecutionPanel = () => {
 
         <!-- Floating Node Panel (Right) -->
         <aside
-          class="absolute top-20 right-4 z-10 w-64 bg-card border rounded-lg shadow-lg flex flex-col max-h-[calc(100%-8rem)]"
           v-if="!selectedNode"
+          class="absolute top-20 right-4 z-10 w-64 bg-card border rounded-lg shadow-lg flex flex-col max-h-[calc(100%-8rem)]"
         >
           <!-- ... (Content of node panel) ... -->
           <div class="p-4 border-b">
@@ -711,9 +711,9 @@ const toggleExecutionPanel = () => {
         :default-size="25"
         :max-size="75"
         :collapsible="true"
+        class="bg-background border-t flex flex-col min-h-10"
         @expand="isExecutionPanelCollapsed = false"
         @collapse="isExecutionPanelCollapsed = true"
-        class="bg-background border-t flex flex-col min-h-10"
       >
         <ExecutionPanel
           v-if="executionResult"

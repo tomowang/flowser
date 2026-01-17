@@ -95,10 +95,10 @@ const deleteNode = (e: Event) => {
     <!-- Main Inputs (Left) -->
     <Handle
       v-for="port in mainInputs"
+      :id="port.name"
       :key="port.name"
       type="target"
       :position="Position.Left"
-      :id="port.name"
       class="transition-colors !w-3 !h-3"
       :style="{
         ...getHandleStyle(port.type),
@@ -108,10 +108,10 @@ const deleteNode = (e: Event) => {
     <!-- Main Outputs (Right) -->
     <Handle
       v-for="port in mainOutputs"
+      :id="port.name"
       :key="port.name"
       type="source"
       :position="Position.Right"
-      :id="port.name"
       class="transition-colors !w-3 !h-3"
       :style="{
         ...getHandleStyle(port.type),
@@ -129,9 +129,9 @@ const deleteNode = (e: Event) => {
         class="relative group/handle"
       >
         <Handle
+          :id="port.name"
           type="target"
           :position="Position.Bottom"
-          :id="port.name"
           class="!relative !transform-none !rotate-45 !rounded-none !left-0 !w-2 !h-2 !bg-white transition-colors border-2 !border-muted-foreground block"
           :style="getHandleStyle(port.type)"
         />
@@ -153,9 +153,9 @@ const deleteNode = (e: Event) => {
         class="relative group/handle"
       >
         <Handle
+          :id="port.name"
           type="source"
           :position="Position.Top"
-          :id="port.name"
           class="!relative !transform-none !rotate-45 !rounded-none !left-0 !w-2 !h-2 !bg-white transition-colors border-2 !border-muted-foreground block"
           :style="getHandleStyle(port.type)"
         />
@@ -169,9 +169,9 @@ const deleteNode = (e: Event) => {
     <!-- Delete Button (Top Right) -->
     <button
       v-if="isHovered"
-      @click="deleteNode"
       class="absolute -top-3 -right-3 z-50 rounded-full bg-red-500 p-1.5 text-white shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
       title="Delete Node"
+      @click="deleteNode"
     >
       <Trash2 class="h-3 w-3" />
     </button>

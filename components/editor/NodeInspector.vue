@@ -162,8 +162,8 @@ const getCredentialValue = (credType: string): string => {
             variant="outline"
             size="icon"
             class="shrink-0"
-            @click="openCreateCredentialModal(cred.name)"
             title="Create new credential"
+            @click="openCreateCredentialModal(cred.name)"
           >
             <Plus class="h-4 w-4" />
           </Button>

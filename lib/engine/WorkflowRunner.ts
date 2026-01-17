@@ -101,7 +101,7 @@ export class WorkflowRunner {
     }
 
     // Prepare execution context
-    let itemIndex = 0;
+    const itemIndex = 0;
     const executionFunctions: IExecuteFunctions = {
       getInputData: () => inputData,
       getNodeParameter: (paramName: string, ...args: any[]) => {

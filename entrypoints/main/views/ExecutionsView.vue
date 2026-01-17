@@ -96,8 +96,8 @@ onMounted(() => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  @click="viewExecution(exec)"
                   :title="t('executions.viewDetails')"
+                  @click="viewExecution(exec)"
                 >
                   <Eye class="h-4 w-4" />
                 </Button>
@@ -105,8 +105,8 @@ onMounted(() => {
                   variant="ghost"
                   size="icon"
                   class="text-muted-foreground hover:text-destructive"
-                  @click="deleteExecution(exec.id)"
                   :title="t('executions.deleteLog')"
+                  @click="deleteExecution(exec.id)"
                 >
                   <Trash2 class="h-4 w-4" />
                 </Button>

@@ -143,9 +143,9 @@ onMounted(async () => {
     </div>
     <Toaster
       position="top-center"
-      richColors
-      closeButton
-      closeButtonPosition="top-right"
+      rich-colors
+      close-button
+      close-button-position="top-right"
     />
   </div>
 </template>
