@@ -100,6 +100,7 @@
       "page_action": "Page Actions",
       "ai": "AI",
       "other": "Other"
-    }
+    },
+    "noTriggerNode": "No Manually Trigger node found. Please add one to start the workflow."
   }
 }

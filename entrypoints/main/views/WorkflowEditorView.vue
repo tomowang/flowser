@@ -610,6 +610,9 @@ const runWorkflow = async () => {
     logs.value.push(t("workflowEditor.executionFinished"));
   } catch (e: any) {
     console.error(e);
+    if (e.message === "No trigger node found") {
+      toast.warning(t("workflowEditor.noTriggerNode"));
+    }
     logs.value.push(`Error: ${e.message}`);
   } finally {
     isExecuting.value = false;
