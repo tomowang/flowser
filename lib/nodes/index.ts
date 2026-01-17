@@ -13,5 +13,6 @@ export * from "./ClickElement";
 export * from "./TabCreate";
 export * from "./WindowCreate";
 export * from "./WindowQuery";
+export * from "./WindowClose";
 export * from "./Wait";
 export * from "./TestNode";

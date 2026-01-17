@@ -15,6 +15,7 @@ import {
   TabCreate,
   WindowCreate,
   WindowQuery,
+  WindowClose,
   Wait,
   TestNode,
 } from "./index";
@@ -34,6 +35,7 @@ Registry.register(ClickElement);
 Registry.register(TabCreate);
 Registry.register(WindowCreate);
 Registry.register(WindowQuery);
+Registry.register(WindowClose);
 Registry.register(Wait);
 
 if (import.meta.env.DEV) {
