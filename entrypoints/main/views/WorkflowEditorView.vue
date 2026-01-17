@@ -59,8 +59,8 @@ const route = useRoute();
 const collapsedGroups = ref<Record<string, boolean>>({
   core: true,
   trigger: true,
-  tab: true,
-  window: true,
+
+  browser: true,
   page_action: true,
   ai: true,
   other: true,
@@ -75,8 +75,8 @@ const groupedNodes = computed(() => {
   const groups: Record<string, INodeType[]> = {
     core: [],
     trigger: [],
-    tab: [],
-    window: [],
+
+    browser: [],
     page_action: [],
     ai: [],
     other: [],
@@ -103,7 +103,7 @@ const groupedNodes = computed(() => {
 
   // Filter out empty groups and return only relevant ones
   const result: Record<string, INodeType[]> = {};
-  const order = ["core", "trigger", "tab", "window", "page_action", "ai", "other"];
+  const order = ["core", "trigger", "browser", "page_action", "ai", "other"];
   
   for (const key of order) {
     if (groups[key] && groups[key].length > 0) {

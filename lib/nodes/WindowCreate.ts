@@ -7,7 +7,7 @@ export const WindowCreate: INodeType = {
     displayName: "Window Create",
     name: "windowCreate",
     icon: AppWindow,
-    group: ["window"],
+    group: ["browser"],
     version: 1,
     description: "Create a new window",
     defaults: {

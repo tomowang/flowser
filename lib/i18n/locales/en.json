@@ -96,8 +96,7 @@
     "groups": {
       "core": "Core",
       "trigger": "Trigger",
-      "tab": "Tab",
-      "window": "Window",
+      "browser": "Browser",
       "page_action": "Page Actions",
       "ai": "AI",
       "other": "Other"

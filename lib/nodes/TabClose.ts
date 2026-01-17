@@ -7,7 +7,7 @@ export const TabClose: INodeType = {
     displayName: "Tab Close",
     name: "tabClose",
     icon: CopyX,
-    group: ["tab"],
+    group: ["browser"],
     version: 1,
     description: "Close a specific tab",
     defaults: {

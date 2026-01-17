@@ -7,7 +7,7 @@ export const WindowClose: INodeType = {
     displayName: "Window Close",
     name: "windowClose",
     icon: AppWindow,
-    group: ["window"],
+    group: ["browser"],
     version: 1,
     description: "Close a specific window",
     defaults: {

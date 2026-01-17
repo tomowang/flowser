@@ -7,7 +7,7 @@ export const WindowQuery: INodeType = {
     displayName: "Window Query",
     name: "windowQuery",
     icon: AppWindow,
-    group: ["window"],
+    group: ["browser"],
     version: 1,
     description: "Query browser windows",
     defaults: {
