@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useVueFlow } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
 import { CredentialService } from "@/lib/services/credential-service";
 import { Codemirror } from "vue-codemirror";
@@ -39,6 +40,58 @@ const nodeType = computed(() => {
 const isCreateCredentialOpen = ref(false);
 const credentialTypeForCreation = ref<string>("");
 const currentCredentialName = ref<string>("");
+
+const { nodes } = useVueFlow();
+const nameError = ref("");
+const localName = ref("");
+
+watch(
+  () => props.node?.data?.label,
+  (newLabel) => {
+    // Only update local if it's different (e.g. external change)
+    // and we are not currently editing (to avoid cursor jumping, though simple string sync is usually fine)
+    if (newLabel && newLabel !== localName.value) {
+      localName.value = newLabel;
+    }
+  },
+  { immediate: true },
+);
+
+const updateName = (newName: string) => {
+  localName.value = newName;
+
+  if (!newName.trim()) {
+    nameError.value = "Name cannot be empty";
+    return;
+  }
+
+  // Check uniqueness against other nodes
+  const exists = nodes.value.some(
+    (n) => n.id !== props.node.id && (n.data?.label || n.id) === newName,
+  );
+
+  if (exists) {
+    nameError.value = "Name already exists";
+    return; // Do not update actual node data
+  }
+
+  nameError.value = "";
+  // Check if really changed
+  if (props.node.data.label !== newName) {
+     const newData = { ...props.node.data, label: newName };
+     emit("update:data", newData);
+  }
+};
+
+const validateNameOnBlur = () => {
+  // If invalid on blur, maybe revert?
+  // For now, staying in error state is acceptable, or we revert to last valid.
+  if (nameError.value) {
+     // Revert to actual data
+     localName.value = props.node.data.label;
+     nameError.value = "";
+  }
+};
 
 const loadCredentials = async () => {
   credentialOptions.value = {};
@@ -143,6 +196,20 @@ const shouldShowProperty = (prop: any) => {
       <p class="text-xs text-muted-foreground">
         {{ nodeType.description.description }}
       </p>
+    </div>
+
+    <!-- Node Name Edit -->
+    <div class="space-y-1">
+      <label class="text-sm font-medium">Name</label>
+      <input
+        type="text"
+        class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        :class="{ 'border-red-500 ring-red-500': nameError }"
+        :value="localName"
+        @input="(e) => updateName((e.target as HTMLInputElement).value)"
+        @blur="validateNameOnBlur"
+      />
+      <p v-if="nameError" class="text-xs text-red-500">{{ nameError }}</p>
     </div>
 
     <!-- Credentials Section -->

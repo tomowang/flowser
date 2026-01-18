@@ -329,12 +329,25 @@ const onDrop = (event: DragEvent) => {
     }
   }
 
+const getUniqueNodeName = (baseName: string) => {
+    let name = baseName;
+    let counter = 1;
+    // Helper to check if name exists
+    const exists = (n: string) => nodes.value.some((node) => node.data.label === n);
+
+    while (exists(name)) {
+      name = `${baseName} (${counter})`;
+      counter++;
+    }
+    return name;
+  };
+
   const newNode: Node = {
     id: `${type}-${Date.now()}`,
     type: "custom",
     position,
     data: {
-      label: nodeType.description.displayName,
+      label: getUniqueNodeName(nodeType.description.displayName),
       nodeType: type,
       ...nodeType.description.defaults,
       ...defaultParams,
