@@ -493,12 +493,15 @@ const saveWorkflow = async () => {
   const workflow: IWorkflow = {
     id: workflowId,
     name: name,
-    nodes: nodes.value.map((n) => ({
-      id: n.id,
-      type: n.data.nodeType,
-      position: n.position,
-      data: n.data,
-    })),
+    nodes: nodes.value.map((n) => {
+      const { executionStatus, executionError, ...data } = n.data;
+      return {
+        id: n.id,
+        type: n.data.nodeType,
+        position: n.position,
+        data,
+      };
+    }),
     edges: edges.value.map((e) => ({
       id: e.id,
       source: e.source,
