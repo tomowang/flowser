@@ -9,6 +9,7 @@ import { IWorkflowNode } from "@/lib/types";
 const props = defineProps<{
   id: string; // Add ID prop to identify the node for removal
   data: any;
+  selected?: boolean;
 }>();
 
 const { removeNodes } = useVueFlow();
@@ -79,8 +80,8 @@ const deleteNode = (e: Event) => {
   <div
     class="relative group min-w-[180px] rounded-lg border bg-card p-3 shadow-md hover:shadow-lg transition-all"
     :class="{
-      'ring-2 ring-primary ring-offset-2':
-        data.selected && !data.executionStatus,
+      '!ring-2 !ring-gray-400 !shadow-[0_0_10px_2px_rgba(156,163,175,0.5)]':
+        selected,
       'status-running': data.executionStatus === 'running',
       '!border-green-500 ring-2 ring-green-500/20':
         data.executionStatus === 'success',

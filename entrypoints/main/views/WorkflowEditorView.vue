@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Play, Save, ChevronRight, ChevronDown } from "lucide-vue-next"; // Icons
 import { Spinner } from "@/components/ui/spinner";
+import { useMagicKeys } from "@vueuse/core";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -163,6 +164,8 @@ const {
   setEdges,
   findNode,
 } = useVueFlow();
+
+const { space } = useMagicKeys();
 
 // Load workflow on mount or route change
 const loadInitWorkflow = async () => {
@@ -741,9 +744,23 @@ const toggleExecutionPanel = () => {
             :default-zoom="1"
             :min-zoom="0.2"
             :max-zoom="4"
+            :pan-on-drag="false"
+            :pan-on-scroll="true"
+            :zoom-on-scroll="false"
+            :pan-activation-key-code="'Space'"
+            :selection-key-code="true"
+            :multi-selection-key-code="['Meta', 'Control']"
+            :nodes-draggable="!space"
+            :nodes-connectable="!space"
+            :elements-selectable="!space"
+            :class="{ 'panning-mode': space }"
           >
             <template #node-custom="props">
-              <NodeDelegate :id="props.id" :data="props.data" />
+              <NodeDelegate
+                :id="props.id"
+                :data="props.data"
+                :selected="props.selected"
+              />
             </template>
 
             <template #edge-custom="props">
@@ -868,25 +885,38 @@ const toggleExecutionPanel = () => {
   </div>
 </template>
 
-<style>
+<style scoped>
 /* Adjustments for controls position if needed */
 .vue-flow__controls {
   display: flex;
   flex-direction: row;
 }
 
-.vue-flow__controls-button {
+:deep(.vue-flow__controls .vue-flow__controls-button) {
   border: none;
   border-right: 1px solid #eee;
 }
 
-.vue-flow__controls-button:last-child {
+:deep(.vue-flow__controls .vue-flow__controls-button:last-child) {
   border-right: none;
+}
+
+:deep(.vue-flow__pane.selection) {
+  cursor: default;
+}
+
+/* Force cursor styles when Space is held (panning mode) */
+:deep(.panning-mode .vue-flow__pane) {
+  cursor: grab;
+}
+
+:deep(.panning-mode .vue-flow__pane.dragging) {
+  cursor: grabbing;
 }
 
 /* Place minimap above controls */
 .vue-flow__minimap {
-  bottom: 40px !important; /* Force override of .vue-flow__panel.bottom */
+  bottom: 40px; /* Force override of .vue-flow__panel.bottom */
   transform: none; /* Reset potential defaults */
 }
 </style>
