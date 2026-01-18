@@ -20,6 +20,7 @@ import {
   TestNode,
   FetchContent,
   ScheduleTrigger,
+  EditFields,
 } from "./index";
 
 Registry.register(ManualTrigger);
@@ -41,6 +42,7 @@ Registry.register(WindowQuery);
 Registry.register(WindowClose);
 Registry.register(Wait);
 Registry.register(FetchContent);
+Registry.register(EditFields);
 
 if (import.meta.env.DEV) {
   Registry.register(TestNode);

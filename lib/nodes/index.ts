@@ -18,3 +18,4 @@ export * from "./Wait";
 export * from "./TestNode";
 export * from "./FetchContent";
 export * from "./ScheduleTrigger";
+export * from "./EditFields";
