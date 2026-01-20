@@ -733,20 +733,65 @@ const runWorkflow = async () => {
     node.data.executionError = undefined;
   });
 
-  const runner = new WorkflowRunner(workflow, (nodeId, status) => {
-    const node = findNode(nodeId);
-    if (node) {
-      node.data.executionStatus = status;
-      if (status === "running") {
-        // Clear previous error if re-running
-        node.data.executionError = undefined;
+  const runner = new WorkflowRunner(
+    workflow,
+    (nodeId, status) => {
+      const node = findNode(nodeId);
+      if (node) {
+        node.data.executionStatus = status;
+        if (status === "running") {
+          // Clear previous error if re-running
+          node.data.executionError = undefined;
+        }
       }
-    }
-  });
+    },
+    (nodeResult) => {
+      // Incremental update
+      if (executionResult.value) {
+        const existingIndex =
+          executionResult.value.nodeExecutionResults.findIndex(
+            (r) => r.nodeId === nodeResult.nodeId,
+          );
+        if (existingIndex !== -1) {
+          executionResult.value.nodeExecutionResults[existingIndex] =
+            nodeResult;
+        } else {
+          executionResult.value.nodeExecutionResults.push(nodeResult);
+        }
+        executionResult.value.endTime = Date.now();
+      }
+    },
+    (nodeId, inputData) => {
+      const node = findNode(nodeId);
+      if (executionResult.value && node) {
+        executionResult.value.nodeExecutionResults.push({
+          nodeId: node.id,
+          nodeName: node.data?.label || node.type,
+          startTime: Date.now(),
+          endTime: 0,
+          status: "running",
+          inputData: inputData || [],
+          outputData: [],
+        });
+      }
+    },
+  );
 
   isExecuting.value = true;
+  // Initialize result for incremental updates
+  executionResult.value = {
+    id: crypto.randomUUID(),
+    workflowId: workflow.id,
+    workflowName: workflow.name,
+    startTime: Date.now(),
+    endTime: Date.now(),
+    status: "running", // Will be updated to error if fails
+    nodeExecutionResults: [],
+  };
+
   try {
     const result = await runner.run();
+    // Final update
     executionResult.value = result;
     await ExecutionService.saveExecution(result);
     logs.value.push(t("workflowEditor.executionFinished"));

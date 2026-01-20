@@ -20,13 +20,22 @@ export class WorkflowRunner {
   private runtime: QuickJSRuntime | undefined;
   private context: QuickJSContext | undefined;
   private onStatusChange?: (nodeId: string, status: ExecutionStatus) => void;
+  private onNodeCompleted?: (result: IExecutionNodeResult) => void;
+  private onNodeStarted?: (
+    nodeId: string,
+    inputData: INodeExecutionData[],
+  ) => void;
 
   constructor(
     workflow: IWorkflow,
     onStatusChange?: (nodeId: string, status: ExecutionStatus) => void,
+    onNodeCompleted?: (result: IExecutionNodeResult) => void,
+    onNodeStarted?: (nodeId: string, inputData: INodeExecutionData[]) => void,
   ) {
     this.workflow = workflow;
     this.onStatusChange = onStatusChange;
+    this.onNodeCompleted = onNodeCompleted;
+    this.onNodeStarted = onNodeStarted;
   }
 
   async run(
@@ -92,6 +101,7 @@ export class WorkflowRunner {
   ) {
     console.log(`Executing node ${node.id} (${node.type})`);
     this.onStatusChange?.(node.id, "running");
+    this.onNodeStarted?.(node.id, inputData);
     const startTime = Date.now();
 
     // Find node type definition
@@ -99,8 +109,6 @@ export class WorkflowRunner {
     if (!nodeType) {
       throw new Error(`Node type ${node.type} not found`);
     }
-
-
 
     // Prepare execution context
     const itemIndex = 0;
@@ -179,7 +187,6 @@ export class WorkflowRunner {
         );
       }
 
-
       if (nodeType.execute) {
         outputData = await nodeType.execute.call(executionFunctions);
       } else {
@@ -194,7 +201,7 @@ export class WorkflowRunner {
       throw e;
     } finally {
       const endTime = Date.now();
-      this.nodeExecutionResults.push({
+      const nodeResult: IExecutionNodeResult = {
         nodeId: node.id,
         nodeName: node.data?.label || nodeType.description.displayName,
         startTime,
@@ -203,8 +210,10 @@ export class WorkflowRunner {
         errorMessage: executeError?.message,
         inputData,
         outputData: outputData[0],
-      });
+      };
+      this.nodeExecutionResults.push(nodeResult);
       this.onStatusChange?.(node.id, executeError ? "error" : "success");
+      this.onNodeCompleted?.(nodeResult);
     }
 
     // Store execution data

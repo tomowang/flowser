@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IExecutionNodeResult } from "@/lib/types";
-import { Check, X, Clock } from "lucide-vue-next";
+import { Check, X, Clock, Loader2 } from "lucide-vue-next";
 import { computed } from "vue";
 
 const props = defineProps<{
@@ -15,6 +15,7 @@ const sortedResults = computed(() => {
 });
 
 const formatDuration = (start: number, end: number) => {
+  if (end === 0) return "-";
   const diff = end - start;
   return `${diff}ms`;
 };
@@ -36,10 +37,15 @@ const formatDuration = (start: number, end: number) => {
         :class="{
           'bg-green-100 text-green-700': result.status === 'success',
           'bg-red-100 text-red-700': result.status === 'error',
+          'bg-blue-100 text-blue-700': result.status === 'running',
         }"
       >
         <Check v-if="result.status === 'success'" class="h-3 w-3" />
-        <X v-else class="h-3 w-3" />
+        <X v-else-if="result.status === 'error'" class="h-3 w-3" />
+        <Loader2
+          v-else-if="result.status === 'running'"
+          class="h-3 w-3 animate-spin"
+        />
       </div>
 
       <div class="flex flex-col min-w-0 flex-1">

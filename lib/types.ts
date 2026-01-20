@@ -20,7 +20,7 @@ export interface IExecutionNodeResult {
   nodeName: string;
   startTime: number;
   endTime: number;
-  status: "success" | "error";
+  status: "success" | "error" | "running";
   errorMessage?: string;
   inputData: INodeExecutionData[];
   outputData: INodeExecutionData[];
@@ -32,7 +32,7 @@ export interface IWorkflowExecutionResult {
   workflowName?: string;
   startTime: number;
   endTime: number;
-  status: "success" | "error";
+  status: "success" | "error" | "running";
   nodeExecutionResults: IExecutionNodeResult[];
 }
 
@@ -64,7 +64,15 @@ export interface ICredentialType {
 export interface INodeProperties {
   displayName: string;
   name: string;
-  type: "string" | "number" | "boolean" | "options" | "json" | "code" | "cron" | "password";
+  type:
+    | "string"
+    | "number"
+    | "boolean"
+    | "options"
+    | "json"
+    | "code"
+    | "cron"
+    | "password";
   default?: any;
   options?: { name: string; value: string }[];
   placeholder?: string;
