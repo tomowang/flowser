@@ -11,12 +11,16 @@ import {
   type Connection,
   type NodeMouseEvent,
   MarkerType,
+  type NodeChange,
+  type EdgeChange,
+  type VueFlowStore,
 } from "@vue-flow/core";
 import { useRoute, RouterLink } from "vue-router";
 import { Registry } from "@/lib/nodes/registry";
 import { validateNode } from "@/lib/utils/validation";
 import NodeDelegate from "@/components/editor/NodeDelegate.vue";
 import CustomEdge from "@/components/editor/CustomEdge.vue";
+import { useWorkflowHistory } from "@/lib/composables/useWorkflowHistory";
 import { toast } from "vue-sonner";
 // Remove NodeInspector import
 import NodePropertiesModal from "@/components/editor/NodePropertiesModal.vue";
@@ -30,7 +34,16 @@ import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
 import { SecurityService } from "@/lib/services/security-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Play, Save, ChevronRight, ChevronDown } from "lucide-vue-next"; // Icons
+import {
+  Search,
+  Plus,
+  Play,
+  Save,
+  ChevronRight,
+  ChevronDown,
+  Undo2,
+  Redo2,
+} from "lucide-vue-next"; // Icons
 import { Spinner } from "@/components/ui/spinner";
 import { useMagicKeys } from "@vueuse/core";
 import {
@@ -116,8 +129,20 @@ const groupedNodes = computed(() => {
   return result;
 });
 
-const nodes = ref<Node[]>([]);
-const edges = ref<Edge[]>([]);
+const {
+  state: workflowState,
+  initState,
+  updateState,
+  updateStateDebounced,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
+} = useWorkflowHistory();
+
+const nodes = computed(() => workflowState.value.nodes);
+const edges = computed(() => workflowState.value.edges);
+
 const selectedNode = ref<Node | null>(null);
 const logs = ref<any[]>([]); // Keep for basic logs if needed, but mainly use executionResult
 const executionResult = ref<IWorkflowExecutionResult | null>(null);
@@ -154,16 +179,15 @@ const onUnlocked = () => {
   logs.value.push(t("workflowEditor.securityMasterKeySet"));
 };
 
-const {
-  onConnect,
-  addEdges,
-  onNodeClick,
-  onNodeDoubleClick,
-  onPaneClick,
-  setNodes,
-  setEdges,
-  findNode,
-} = useVueFlow();
+const vueFlowInstance = ref<VueFlowStore | null>(null);
+
+const onPaneReady = (instance: VueFlowStore) => {
+  vueFlowInstance.value = instance;
+};
+
+const findNode = (id: string) => {
+  return workflowState.value.nodes.find((n) => n.id === id);
+};
 
 const { space } = useMagicKeys();
 
@@ -215,7 +239,7 @@ const getPortType = (
   return port.type;
 };
 
-onConnect((params: Connection) => {
+const onConnect = (params: Connection) => {
   if (!params.source || !params.target) return;
 
   const sourceNode = findNode(params.source);
@@ -275,36 +299,104 @@ onConnect((params: Connection) => {
 
   const isMain = sourceType === "main" && targetType === "main";
 
-  addEdges([
-    {
-      ...params,
-      type: "custom",
-      markerEnd: isMain
-        ? {
-            type: MarkerType.ArrowClosed,
-            width: 20,
-            height: 20,
-          }
-        : undefined,
-    },
-  ]); // Use custom edge
-});
+  const newEdge = {
+    ...params,
+    id: `e-${Date.now()}`,
+    type: "custom",
+    markerEnd: isMain
+      ? {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+        }
+      : undefined,
+  };
 
-onNodeClick((event: NodeMouseEvent) => {
+  const nextEdges = [...workflowState.value.edges, newEdge];
+  updateState(workflowState.value.nodes, nextEdges);
+};
+
+const onNodesChange = (changes: NodeChange[]) => {
+  if (!vueFlowInstance.value) return;
+
+  // Apply changes to the internal Vue Flow store
+  vueFlowInstance.value.applyNodeChanges(changes);
+
+  // Sync back to our managed state
+  // We access the nodes property from the store instance (it is a Ref to the array or the array itself in unref context)
+  // Since we are adding logic, assuming instance.nodes is the way to access.
+  // Actually, VueFlowStore has `nodes` as Ref<GraphNode[]> and `edges` as Ref<GraphEdge[]>.
+  // We need to unref it or access .value if it's a ref.
+  // But wait, the previous error `GraphNode[] has no call signatures` implies it IS the array.
+  // So accessing `vueFlowInstance.value.nodes` might be the Ref?
+  // Let's rely on standard object conversion which is safer: instance.toObject()
+  const nextNodes = vueFlowInstance.value.toObject().nodes.map((n) => ({
+    id: n.id,
+    type: n.type,
+    position: { ...n.position },
+    data: { ...n.data },
+  })) as Node[];
+
+  const nextEdges = workflowState.value.edges;
+
+  const hasPositionChange = changes.some((c) => c.type === "position");
+  const hasStructuralChange = changes.some(
+    (c) => c.type === "add" || c.type === "remove",
+  );
+
+  if (hasStructuralChange) {
+    updateState(nextNodes, nextEdges);
+  } else if (hasPositionChange) {
+    updateStateDebounced(nextNodes, nextEdges);
+  } else {
+    workflowState.value.nodes = nextNodes;
+  }
+};
+
+const onEdgesChange = (changes: EdgeChange[]) => {
+  if (!vueFlowInstance.value) return;
+
+  vueFlowInstance.value.applyEdgeChanges(changes);
+
+  const nextEdges = vueFlowInstance.value.toObject().edges.map((e) => ({
+    id: e.id,
+    source: e.source,
+    target: e.target,
+    sourceHandle: e.sourceHandle,
+    targetHandle: e.targetHandle,
+    type: e.type,
+    data: { ...e.data },
+    markerEnd: e.markerEnd,
+  })) as Edge[];
+
+  const nextNodes = workflowState.value.nodes;
+
+  const hasStructuralChange = changes.some(
+    (c) => c.type === "add" || c.type === "remove",
+  );
+
+  if (hasStructuralChange) {
+    updateState(nextNodes, nextEdges);
+  } else {
+    workflowState.value.edges = nextEdges;
+  }
+};
+
+const onNodeClick = (event: NodeMouseEvent) => {
   // Just select for visual feedback, but don't open modal
   selectedNode.value = event.node;
-});
+};
 
 const isPropertiesModalOpen = ref(false);
 
-onNodeDoubleClick((event: NodeMouseEvent) => {
+const onNodeDoubleClick = (event: NodeMouseEvent) => {
   selectedNode.value = event.node;
   isPropertiesModalOpen.value = true;
-});
+};
 
-onPaneClick(() => {
+const onPaneClick = () => {
   selectedNode.value = null;
-});
+};
 
 const onDragOver = (event: DragEvent) => {
   event.preventDefault();
@@ -332,11 +424,12 @@ const onDrop = (event: DragEvent) => {
     }
   }
 
-const getUniqueNodeName = (baseName: string) => {
+  const getUniqueNodeName = (baseName: string) => {
     let name = baseName;
     let counter = 1;
     // Helper to check if name exists
-    const exists = (n: string) => nodes.value.some((node) => node.data.label === n);
+    const exists = (n: string) =>
+      nodes.value.some((node) => node.data.label === n);
 
     while (exists(name)) {
       name = `${baseName} (${counter})`;
@@ -357,7 +450,14 @@ const getUniqueNodeName = (baseName: string) => {
     },
   };
 
-  nodes.value.push(newNode);
+  nodes.value.push(newNode); // Note: nodes is computed, but we need to update state
+  // Wait, nodes is computed, so we cannot push to it directly if it was just a getter.
+  // But wait, workflowState.value.nodes IS the array. We can modify the array if we access the value.
+  // BUT the computed I defined: const nodes = computed(() => workflowState.value.nodes);
+  // nodes.value returns the array instance.
+  // HOWEVER, best practice is to update state properly.
+  const nextNodes = [...workflowState.value.nodes, newNode];
+  updateState(nextNodes, workflowState.value.edges);
 };
 
 // --- Storage Logic ---
@@ -403,52 +503,55 @@ const loadWorkflow = (workflow: IWorkflow) => {
   currentWorkflowId.value = workflow.id;
   currentWorkflowName.value = workflow.name;
   originalWorkflowName.value = workflow.name;
-  setNodes(
-    workflow.nodes.map((n) => ({
-      id: n.id,
-      type: "custom",
-      position: n.position,
-      data: n.data,
-    })),
-  );
-  setEdges(
-    workflow.edges.map((e) => {
-      // Determine if main connection to set marker
-      let isMain = false;
-      const sourceNode = workflow.nodes.find((n) => n.id === e.source);
-      const targetNode = workflow.nodes.find((n) => n.id === e.target);
+  currentWorkflowId.value = workflow.id;
+  currentWorkflowName.value = workflow.name;
+  originalWorkflowName.value = workflow.name;
 
-      if (sourceNode && targetNode) {
-        const sourceType = getPortType(
-          sourceNode.data.nodeType,
-          e.sourceHandle || "",
-          "outputs",
-        );
-        const targetType = getPortType(
-          targetNode.data.nodeType,
-          e.targetHandle || "",
-          "inputs",
-        );
-        isMain = sourceType === "main" && targetType === "main";
-      }
+  const loadedNodes = workflow.nodes.map((n) => ({
+    id: n.id,
+    type: "custom",
+    position: n.position,
+    data: n.data,
+  }));
 
-      return {
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        sourceHandle: e.sourceHandle,
-        targetHandle: e.targetHandle,
-        type: "custom", // Force custom type
-        markerEnd: isMain
-          ? {
-              type: MarkerType.ArrowClosed,
-              width: 20,
-              height: 20,
-            }
-          : undefined,
-      };
-    }),
-  );
+  const loadedEdges = workflow.edges.map((e: any) => {
+    // Determine if main connection to set marker
+    let isMain = false;
+    const sourceNode = workflow.nodes.find((n) => n.id === e.source);
+    const targetNode = workflow.nodes.find((n) => n.id === e.target);
+
+    if (sourceNode && targetNode) {
+      const sourceType = getPortType(
+        sourceNode.data.nodeType,
+        e.sourceHandle || "",
+        "outputs",
+      );
+      const targetType = getPortType(
+        targetNode.data.nodeType,
+        e.targetHandle || "",
+        "inputs",
+      );
+      isMain = sourceType === "main" && targetType === "main";
+    }
+
+    return {
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      sourceHandle: e.sourceHandle,
+      targetHandle: e.targetHandle,
+      type: "custom", // Force custom type
+      markerEnd: isMain
+        ? {
+            type: MarkerType.ArrowClosed,
+            width: 20,
+            height: 20,
+          }
+        : undefined,
+    };
+  });
+
+  initState(loadedNodes, loadedEdges);
   isWorkflowActive.value = workflow.active;
   lastSavedSnapshot.value = getWorkflowSnapshot(
     workflow.name,
@@ -562,8 +665,10 @@ const createNewWorkflow = () => {
   currentWorkflowId.value = null;
   currentWorkflowName.value = t("workflowEditor.newWorkflow");
   originalWorkflowName.value = currentWorkflowName.value;
-  setNodes([]);
-  setEdges([]);
+  currentWorkflowId.value = null;
+  currentWorkflowName.value = t("workflowEditor.newWorkflow");
+  originalWorkflowName.value = currentWorkflowName.value;
+  initState([], []); // Clear state
   isWorkflowActive.value = false;
   lastSavedSnapshot.value = getWorkflowSnapshot(
     currentWorkflowName.value,
@@ -692,6 +797,27 @@ const toggleExecutionPanel = () => {
         @blur="onNameBlur"
       />
       <div class="h-4 w-px bg-border mx-2"></div>
+      <div class="flex items-center gap-1">
+        <Button
+          size="icon"
+          variant="ghost"
+          :disabled="!canUndo"
+          class="h-8 w-8"
+          @click="undo"
+        >
+          <Undo2 class="h-4 w-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          :disabled="!canRedo"
+          class="h-8 w-8"
+          @click="redo"
+        >
+          <Redo2 class="h-4 w-4" />
+        </Button>
+      </div>
+      <div class="h-4 w-px bg-border mx-2"></div>
       <Button
         size="sm"
         variant="outline"
@@ -741,8 +867,9 @@ const toggleExecutionPanel = () => {
           @drop="onDrop"
         >
           <VueFlow
-            v-model:nodes="nodes"
-            v-model:edges="edges"
+            :nodes="nodes"
+            :edges="edges"
+            :apply-default="false"
             class="h-full w-full"
             :default-zoom="1"
             :min-zoom="0.2"
@@ -757,6 +884,13 @@ const toggleExecutionPanel = () => {
             :nodes-connectable="!space"
             :elements-selectable="!space"
             :class="{ 'panning-mode': space }"
+            @pane-ready="onPaneReady"
+            @nodes-change="onNodesChange"
+            @edges-change="onEdgesChange"
+            @connect="onConnect"
+            @node-click="onNodeClick"
+            @node-double-click="onNodeDoubleClick"
+            @pane-click="onPaneClick"
           >
             <template #node-custom="props">
               <NodeDelegate
@@ -800,13 +934,20 @@ const toggleExecutionPanel = () => {
           </div>
 
           <div class="flex-1 overflow-y-auto p-4 space-y-2">
-            <div v-for="(nodes, groupName) in groupedNodes" :key="groupName" class="space-y-1">
+            <div
+              v-for="(nodes, groupName) in groupedNodes"
+              :key="groupName"
+              class="space-y-1"
+            >
               <!-- Group Header -->
               <div
                 class="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-muted/50 cursor-pointer select-none text-sm font-semibold text-muted-foreground"
                 @click="toggleGroup(groupName)"
               >
-                <ChevronRight v-if="collapsedGroups[groupName]" class="h-4 w-4" />
+                <ChevronRight
+                  v-if="collapsedGroups[groupName]"
+                  class="h-4 w-4"
+                />
                 <ChevronDown v-else class="h-4 w-4" />
                 <span>{{ t(`workflowEditor.groups.${groupName}`) }}</span>
               </div>
