@@ -472,12 +472,16 @@ const getWorkflowSnapshot = (
 ) => {
   const snapshot = {
     name: name,
-    nodes: currentNodes.map((n) => ({
-      id: n.id,
-      type: isLiveState ? n.data?.nodeType : n.type,
-      position: { x: n.position.x, y: n.position.y },
-      data: n.data,
-    })),
+    nodes: currentNodes.map((n) => {
+      // Exclude execution stats from snapshot to avoid triggering "hasChanges" when running
+      const { executionStatus, executionError, ...data } = n.data || {};
+      return {
+        id: n.id,
+        type: isLiveState ? n.data?.nodeType : n.type,
+        position: { x: n.position.x, y: n.position.y },
+        data,
+      };
+    }),
     edges: currentEdges.map((e) => ({
       id: e.id,
       source: e.source,
