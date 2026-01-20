@@ -394,6 +394,26 @@ const onNodeDoubleClick = (event: NodeMouseEvent) => {
   isPropertiesModalOpen.value = true;
 };
 
+const onNodeDataUpdate = (newData: any) => {
+  if (!selectedNode.value) return;
+
+  const currentNodeId = selectedNode.value.id;
+  // Update local node data immediately for UI
+  selectedNode.value.data = newData;
+
+  const nextNodes = workflowState.value.nodes.map((n) => {
+    if (n.id === currentNodeId) {
+      return {
+        ...n,
+        data: { ...newData },
+      };
+    }
+    return n;
+  });
+
+  updateStateDebounced(nextNodes, workflowState.value.edges);
+};
+
 const onPaneClick = () => {
   selectedNode.value = null;
 };
@@ -1015,7 +1035,7 @@ const toggleExecutionPanel = () => {
       :node="selectedNode"
       :execution-result="executionResult"
       @close="isPropertiesModalOpen = false"
-      @update:data="(newData) => (selectedNode!.data = newData)"
+      @update:data="onNodeDataUpdate"
     />
 
     <!-- UI Modals -->
