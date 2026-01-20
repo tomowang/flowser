@@ -450,12 +450,6 @@ const onDrop = (event: DragEvent) => {
     },
   };
 
-  nodes.value.push(newNode); // Note: nodes is computed, but we need to update state
-  // Wait, nodes is computed, so we cannot push to it directly if it was just a getter.
-  // But wait, workflowState.value.nodes IS the array. We can modify the array if we access the value.
-  // BUT the computed I defined: const nodes = computed(() => workflowState.value.nodes);
-  // nodes.value returns the array instance.
-  // HOWEVER, best practice is to update state properly.
   const nextNodes = [...workflowState.value.nodes, newNode];
   updateState(nextNodes, workflowState.value.edges);
 };
