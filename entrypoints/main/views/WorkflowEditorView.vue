@@ -750,7 +750,7 @@ const runWorkflow = async () => {
       if (executionResult.value) {
         const existingIndex =
           executionResult.value.nodeExecutionResults.findIndex(
-            (r) => r.nodeId === nodeResult.nodeId,
+            (r) => r.id === nodeResult.id,
           );
         if (existingIndex !== -1) {
           executionResult.value.nodeExecutionResults[existingIndex] =
@@ -761,10 +761,11 @@ const runWorkflow = async () => {
         executionResult.value.endTime = Date.now();
       }
     },
-    (nodeId, inputData) => {
+    (nodeId, inputData, executionId) => {
       const node = findNode(nodeId);
       if (executionResult.value && node) {
         executionResult.value.nodeExecutionResults.push({
+          id: executionId,
           nodeId: node.id,
           nodeName: node.data?.label || node.type,
           startTime: Date.now(),

@@ -24,13 +24,18 @@ export class WorkflowRunner {
   private onNodeStarted?: (
     nodeId: string,
     inputData: INodeExecutionData[],
+    executionId: string,
   ) => void;
 
   constructor(
     workflow: IWorkflow,
     onStatusChange?: (nodeId: string, status: ExecutionStatus) => void,
     onNodeCompleted?: (result: IExecutionNodeResult) => void,
-    onNodeStarted?: (nodeId: string, inputData: INodeExecutionData[]) => void,
+    onNodeStarted?: (
+      nodeId: string,
+      inputData: INodeExecutionData[],
+      executionId: string,
+    ) => void,
   ) {
     this.workflow = workflow;
     this.onStatusChange = onStatusChange;
@@ -100,8 +105,9 @@ export class WorkflowRunner {
     inputData: INodeExecutionData[],
   ) {
     console.log(`Executing node ${node.id} (${node.type})`);
+    const executionId = crypto.randomUUID();
     this.onStatusChange?.(node.id, "running");
-    this.onNodeStarted?.(node.id, inputData);
+    this.onNodeStarted?.(node.id, inputData, executionId);
     const startTime = Date.now();
 
     // Find node type definition
@@ -202,6 +208,7 @@ export class WorkflowRunner {
     } finally {
       const endTime = Date.now();
       const nodeResult: IExecutionNodeResult = {
+        id: executionId,
         nodeId: node.id,
         nodeName: node.data?.label || nodeType.description.displayName,
         startTime,

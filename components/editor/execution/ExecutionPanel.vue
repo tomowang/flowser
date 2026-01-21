@@ -12,18 +12,32 @@ const props = defineProps<{
 
 const emit = defineEmits(["close", "toggle-collapse"]);
 
-const selectedNodeId = ref<string | undefined>(undefined);
+const selectedExecutionId = ref<string | undefined>(undefined);
 
 // Auto-select the first node or the failed node if any
 // This logic could be improved to select the last executed node by default or similar
 const initSelection = () => {
+  // Skip if we already have a valid selection
+  if (
+    selectedExecutionId.value &&
+    props.executionResult.nodeExecutionResults.some(
+      (n) => n.id === selectedExecutionId.value,
+    )
+  ) {
+    return;
+  }
+
   if (props.executionResult.nodeExecutionResults.length > 0) {
     const errorNode = props.executionResult.nodeExecutionResults.find(
       (n) => n.status === "error",
     );
-    selectedNodeId.value = errorNode
-      ? errorNode.nodeId
-      : props.executionResult.nodeExecutionResults[0].nodeId;
+    // Select the last node by default so we see the latest progress
+    const lastNode =
+      props.executionResult.nodeExecutionResults[
+        props.executionResult.nodeExecutionResults.length - 1
+      ];
+
+    selectedExecutionId.value = errorNode ? errorNode.id : lastNode.id;
   }
 };
 
@@ -42,13 +56,13 @@ watch(
 const selectedResult = computed(() => {
   return (
     props.executionResult.nodeExecutionResults.find(
-      (n) => n.nodeId === selectedNodeId.value,
+      (n) => n.id === selectedExecutionId.value,
     ) || null
   );
 });
 
-const onNodeSelect = (nodeId: string) => {
-  selectedNodeId.value = nodeId;
+const onNodeSelect = (id: string) => {
+  selectedExecutionId.value = id;
 };
 </script>
 
@@ -99,7 +113,7 @@ const onNodeSelect = (nodeId: string) => {
       <div class="w-64 shrink-0">
         <ExecutionNodeList
           :results="executionResult.nodeExecutionResults"
-          :selected-node-id="selectedNodeId"
+          :selected-execution-id="selectedExecutionId"
           @select="onNodeSelect"
         />
       </div>

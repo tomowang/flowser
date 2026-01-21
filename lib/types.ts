@@ -16,6 +16,7 @@ export interface INodeExecutionData {
 }
 
 export interface IExecutionNodeResult {
+  id: string;
   nodeId: string;
   nodeName: string;
   startTime: number;

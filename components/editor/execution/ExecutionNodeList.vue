@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 const props = defineProps<{
   results: IExecutionNodeResult[];
-  selectedNodeId?: string;
+  selectedExecutionId?: string;
 }>();
 
 const emit = defineEmits(["select"]);
@@ -25,12 +25,12 @@ const formatDuration = (start: number, end: number) => {
   <div class="flex flex-col h-full overflow-y-auto border-r bg-muted/20">
     <div
       v-for="result in sortedResults"
-      :key="result.nodeId"
+      :key="result.id"
       class="flex items-center gap-3 p-3 cursor-pointer hover:bg-accent/50 transition-colors border-b last:border-0"
       :class="{
-        'bg-accent text-accent-foreground': selectedNodeId === result.nodeId,
+        'bg-accent text-accent-foreground': selectedExecutionId === result.id,
       }"
-      @click="emit('select', result.nodeId)"
+      @click="emit('select', result.id)"
     >
       <div
         class="flex h-6 w-6 items-center justify-center rounded-full"
