@@ -20,7 +20,8 @@
     "workflows": "Workflows",
     "credentials": "Credentials",
     "executions": "Executions",
-    "settings": "Settings"
+    "settings": "Settings",
+    "datatables": "Data Tables"
   },
   "settings": {
     "title": "Settings",
@@ -102,5 +103,46 @@
       "other": "Other"
     },
     "noTriggerNode": "No Manually Trigger node found. Please add one to start the workflow."
+  },
+  "datatables": {
+    "title": "Data Tables",
+    "description": "Manage your data tables",
+    "newTable": "New Table",
+    "columnsCount": "{count} column | {count} columns",
+    "rowsCount": "{count} row | {count} rows",
+    "createTableTitle": "Create New Table",
+    "createTableDesc": "Enter a name for the new data table.",
+    "tableNamePlaceholder": "Table Name",
+    "deleteConfirm": "Are you sure you want to delete this table? All data will be lost.",
+    "tableCreated": "Table created",
+    "createTableError": "Failed to create table",
+    "tableDeleted": "Table deleted",
+    "deleteTableError": "Failed to delete table",
+    "tableNotFound": "Table not found",
+    "columnExists": "Column name already exists",
+    "columnsUpdated": "Columns updated",
+    "updateColumnsError": "Failed to update columns",
+    "rowUpdated": "Row updated",
+    "rowAdded": "Row added",
+    "saveRowError": "Failed to save row",
+    "rowDeleted": "Row deleted",
+    "deleteRowError": "Failed to delete row",
+    "columns": "Columns",
+    "addRow": "Add Row",
+    "editRow": "Edit Row",
+    "noColumns": "No columns defined yet.",
+    "defineColumns": "Define Columns",
+    "noData": "No data found. Add a row to get started.",
+    "manageColumns": "Manage Columns",
+    "manageColumnsDesc": "Add, remove or edit table columns.",
+    "noColumnsDefined": "No columns defined.",
+    "types": {
+      "string": "String",
+      "number": "Number",
+      "boolean": "Boolean",
+      "json": "JSON"
+    },
+    "true": "True",
+    "false": "False"
   }
 }

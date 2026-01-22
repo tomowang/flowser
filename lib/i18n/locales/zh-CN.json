@@ -20,7 +20,8 @@
     "workflows": "工作流",
     "credentials": "凭证",
     "executions": "执行记录",
-    "settings": "设置"
+    "settings": "设置",
+    "datatables": "数据表"
   },
   "settings": {
     "title": "设置",
@@ -102,5 +103,46 @@
       "other": "其他"
     },
     "noTriggerNode": "未找到手动触发节点。请添加一个手动触发节点以开始工作流。"
+  },
+  "datatables": {
+    "title": "数据表",
+    "description": "管理您的数据表",
+    "newTable": "新建数据表",
+    "columnsCount": "{count} 列",
+    "rowsCount": "{count} 行",
+    "createTableTitle": "创建新数据表",
+    "createTableDesc": "输入新数据表的名称。",
+    "tableNamePlaceholder": "表名",
+    "deleteConfirm": "您确定要删除此表吗？所有数据将丢失。",
+    "tableCreated": "数据表已创建",
+    "createTableError": "创建数据表失败",
+    "tableDeleted": "数据表已删除",
+    "deleteTableError": "删除数据表失败",
+    "tableNotFound": "未找到数据表",
+    "columnExists": "列名已存在",
+    "columnsUpdated": "列已更新",
+    "updateColumnsError": "更新列失败",
+    "rowUpdated": "行已更新",
+    "rowAdded": "行已添加",
+    "saveRowError": "保存行失败",
+    "rowDeleted": "行已删除",
+    "deleteRowError": "删除行失败",
+    "columns": "列",
+    "addRow": "添加行",
+    "editRow": "编辑行",
+    "noColumns": "尚未定义列。",
+    "defineColumns": "定义列",
+    "noData": "未找到数据。添加一行以开始。",
+    "manageColumns": "管理列",
+    "manageColumnsDesc": "添加、删除或编辑表列。",
+    "noColumnsDefined": "未定义列。",
+    "types": {
+      "string": "字符串",
+      "number": "数字",
+      "boolean": "布尔值",
+      "json": "JSON"
+    },
+    "true": "True",
+    "false": "False"
   }
 }

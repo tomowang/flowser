@@ -1,7 +1,7 @@
 import { openDB, DBSchema } from "idb";
 import { IWorkflow, ICredential } from "./types";
 
-import { IWorkflowExecutionResult } from "./types";
+import { IWorkflowExecutionResult, IDataTable, IDataTableRow } from "./types";
 
 interface FlowserDB extends DBSchema {
   workflows: {
@@ -17,9 +17,17 @@ interface FlowserDB extends DBSchema {
     value: IWorkflowExecutionResult;
     indexes: { "by-workflow": string };
   };
+  datatable_metadata: {
+    key: string;
+    value: IDataTable;
+  };
+  datatable_data: {
+    key: [string, string]; // [tableId, rowId]
+    value: IDataTableRow;
+  };
 }
 
-export const dbPromise = openDB<FlowserDB>("flowser-db", 3, {
+export const dbPromise = openDB<FlowserDB>("flowser-db", 4, {
   upgrade(db, oldVersion, newVersion, transaction) {
     if (!db.objectStoreNames.contains("workflows")) {
       db.createObjectStore("workflows", { keyPath: "id" });
@@ -30,6 +38,12 @@ export const dbPromise = openDB<FlowserDB>("flowser-db", 3, {
     if (!db.objectStoreNames.contains("executions")) {
       const store = db.createObjectStore("executions", { keyPath: "id" });
       store.createIndex("by-workflow", "workflowId");
+    }
+    if (!db.objectStoreNames.contains("datatable_metadata")) {
+      db.createObjectStore("datatable_metadata", { keyPath: "id" });
+    }
+    if (!db.objectStoreNames.contains("datatable_data")) {
+      db.createObjectStore("datatable_data", { keyPath: ["tableId", "rowId"] });
     }
   },
 });

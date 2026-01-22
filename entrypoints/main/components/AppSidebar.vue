@@ -19,6 +19,7 @@ import {
   History,
   Settings,
   GalleryVerticalEnd,
+  Database,
 } from "lucide-vue-next";
 import { RouterLink, useRoute } from "vue-router";
 import { computed } from "vue";
@@ -42,6 +43,11 @@ const items = computed(() => [
     title: t("sidebar.executions"),
     url: "/executions",
     icon: History,
+  },
+  {
+    title: t("sidebar.datatables"),
+    url: "/datatables",
+    icon: Database,
   },
 ]);
 </script>

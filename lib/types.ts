@@ -179,3 +179,22 @@ export interface IWorkflow {
   active: boolean; // Is it auto-triggered?
   previewSvg?: string; // Serialized SVG of the mini-map
 }
+
+export interface IDataTableColumn {
+  name: string;
+  type: "string" | "number" | "boolean" | "json";
+}
+
+export interface IDataTable {
+  id: string;
+  name: string;
+  columns: IDataTableColumn[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface IDataTableRow {
+  tableId: string;
+  rowId: string;
+  data: Record<string, any>;
+}
