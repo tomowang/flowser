@@ -43,6 +43,17 @@ Follow these steps to ensure high-quality git commits.
 
     **Format:** `<type>(<scope>): <subject>`
 
+    Current project has following scopes:
+    - `core`: Core functionality
+    - `ui`: User interface
+    - `runner`: Workflow runner and execution engine
+    - `editor`: Workflow editor
+    - `nodes`: Create or modify node
+    - `docs`: Documentation
+    - `tests`: Tests
+    - `i18n`: Internationalization
+    - `ci`: Continuous integration
+
 5.  **Commit**
     Execute the commit command.
 
