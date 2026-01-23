@@ -28,7 +28,8 @@ export const TabCreate: INodeType = {
         name: "active",
         type: "boolean",
         default: true,
-        description: "Whether the tab should become the active tab in the window",
+        description:
+          "Whether the tab should become the active tab in the window",
       },
       {
         displayName: "Pinned",
@@ -40,8 +41,8 @@ export const TabCreate: INodeType = {
       {
         displayName: "Window ID",
         name: "windowId",
-        type: "string",
-        default: "",
+        type: "number",
+        default: undefined,
         description: "The ID of the window to create the tab in",
       },
     ],
@@ -51,40 +52,37 @@ export const TabCreate: INodeType = {
     const returnData: INodeExecutionData[] = [];
 
     for (let i = 0; i < items.length; i++) {
-        const url = this.getNodeParameter("url", i) as string;
-        const active = this.getNodeParameter("active", i) as boolean;
-        const pinned = this.getNodeParameter("pinned", i) as boolean;
-        const windowIdInput = this.getNodeParameter("windowId", i) as string;
+      const url = this.getNodeParameter("url", i) as string;
+      const active = this.getNodeParameter("active", i) as boolean;
+      const pinned = this.getNodeParameter("pinned", i) as boolean;
+      const windowId = this.getNodeParameter("windowId", i) as number;
 
-        const createProperties: any = {
-            active,
-            pinned,
-        };
+      const createProperties: any = {
+        active,
+        pinned,
+      };
 
-        if (url) {
-            createProperties.url = url;
+      if (url) {
+        createProperties.url = url;
+      }
+
+      if (typeof windowId === "number" && !isNaN(windowId)) {
+        createProperties.windowId = windowId;
+      }
+
+      try {
+        const tab = await browser.tabs.create(createProperties);
+        returnData.push({
+          json: {
+            ...tab,
+          },
+        });
+      } catch (error) {
+        if (error instanceof Error) {
+          throw new Error(`Failed to create tab: ${error.message}`);
         }
-
-        if (windowIdInput) {
-            const windowId = parseInt(windowIdInput, 10);
-             if (!isNaN(windowId)) {
-                createProperties.windowId = windowId;
-            }
-        }
-
-        try {
-            const tab = await browser.tabs.create(createProperties);
-            returnData.push({
-                json: {
-                    ...tab,
-                },
-            });
-        } catch (error) {
-            if (error instanceof Error) {
-                throw new Error(`Failed to create tab: ${error.message}`);
-            }
-            throw new Error(`Failed to create tab`);
-        }
+        throw new Error(`Failed to create tab`);
+      }
     }
     return [returnData];
   },

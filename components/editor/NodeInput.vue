@@ -176,15 +176,21 @@ const toggleMode = (mode: "fixed" | "expression") => {
     <!-- Fixed Inputs -->
     <div v-else>
       <!-- String Input -->
+      <!-- String Input -->
       <input
-        v-if="
-          property.type === 'string' ||
-          property.type === 'password' ||
-          property.type === 'number'
-        "
+        v-if="property.type === 'string' || property.type === 'password'"
         :type="property.type === 'password' ? 'password' : 'text'"
         class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         v-model="displayValue"
+        :placeholder="property.placeholder"
+      />
+
+      <!-- Number Input -->
+      <input
+        v-else-if="property.type === 'number'"
+        type="number"
+        class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        v-model.number="displayValue"
         :placeholder="property.placeholder"
       />
 

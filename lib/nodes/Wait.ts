@@ -18,8 +18,8 @@ export const Wait: INodeType = {
       {
         displayName: "Seconds",
         name: "seconds",
-        type: "string",
-        default: "1",
+        type: "number",
+        default: 1,
         description: "The number of seconds to wait",
       },
     ],
@@ -29,11 +29,10 @@ export const Wait: INodeType = {
     const returnData: INodeExecutionData[] = [];
 
     for (let i = 0; i < items.length; i++) {
-      const secondsStr = this.getNodeParameter("seconds", i) as string;
-      const seconds = parseFloat(secondsStr);
+      const seconds = this.getNodeParameter("seconds", i) as number;
 
       if (isNaN(seconds) || seconds < 0) {
-        throw new Error(`Invalid seconds value: ${secondsStr}`);
+        throw new Error(`Invalid seconds value: ${seconds}`);
       }
 
       await new Promise((resolve) => setTimeout(resolve, seconds * 1000));

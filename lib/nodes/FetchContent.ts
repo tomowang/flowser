@@ -19,8 +19,8 @@ export const FetchContent: INodeType = {
       {
         displayName: "Tab ID",
         name: "tabId",
-        type: "string",
-        default: "",
+        type: "number",
+        default: undefined,
         description: "The ID of the tab to fetch content from.",
         required: true,
       },
@@ -78,8 +78,7 @@ export const FetchContent: INodeType = {
     const returnData: INodeExecutionData[] = [];
 
     for (let i = 0; i < items.length; i++) {
-      const tabIdInput = this.getNodeParameter("tabId", i, undefined) as string;
-      const tabId = Number(tabIdInput);
+      const tabId = this.getNodeParameter("tabId", i, undefined) as number;
 
       if (tabId && !isNaN(tabId)) {
         const result = await browser.scripting.executeScript({

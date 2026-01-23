@@ -19,8 +19,8 @@ export const ClickElement: INodeType = {
       {
         displayName: "Tab ID",
         name: "tabId",
-        type: "string",
-        default: "",
+        type: "number",
+        default: undefined,
         description: "The ID of the tab to click the element in.",
         required: true,
       },
@@ -67,8 +67,7 @@ export const ClickElement: INodeType = {
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      const tabIdInput = this.getNodeParameter("tabId", i, undefined) as string;
-      const tabId = Number(tabIdInput);
+      const tabId = this.getNodeParameter("tabId", i, undefined) as number;
       if (tabId && !isNaN(tabId)) {
         await browser.scripting.executeScript({
           target: { tabId: tabId },
