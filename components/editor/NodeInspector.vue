@@ -19,6 +19,7 @@ import {
 import type { INodeCredentialDescription } from "@/lib/types";
 import { CronLight } from "@vue-js-cron/light";
 import "@vue-js-cron/light/dist/light.css";
+import NodeInput from "./NodeInput.vue";
 
 const props = defineProps<{
   node: any; // The selected node object from Vue Flow
@@ -78,8 +79,8 @@ const updateName = (newName: string) => {
   nameError.value = "";
   // Check if really changed
   if (props.node.data.label !== newName) {
-     const newData = { ...props.node.data, label: newName };
-     emit("update:data", newData);
+    const newData = { ...props.node.data, label: newName };
+    emit("update:data", newData);
   }
 };
 
@@ -87,9 +88,9 @@ const validateNameOnBlur = () => {
   // If invalid on blur, maybe revert?
   // For now, staying in error state is acceptable, or we revert to last valid.
   if (nameError.value) {
-     // Revert to actual data
-     localName.value = props.node.data.label;
-     nameError.value = "";
+    // Revert to actual data
+    localName.value = props.node.data.label;
+    nameError.value = "";
   }
 };
 
@@ -175,8 +176,7 @@ const shouldShowProperty = (prop: any) => {
   return Object.entries(show).every(([key, validValues]: [string, any]) => {
     // Get value from node data or fall back to default
     const propertyDef = properties.value.find((p) => p.name === key);
-    const currentValue =
-      props.node.data[key] ?? propertyDef?.default;
+    const currentValue = props.node.data[key] ?? propertyDef?.default;
 
     // Handle array of valid values
     if (Array.isArray(validValues)) {
@@ -266,80 +266,12 @@ const shouldShowProperty = (prop: any) => {
         v-for="prop in properties"
         :key="prop.name"
         v-show="shouldShowProperty(prop)"
-        class="flex flex-col gap-1"
       >
-        <label class="text-sm font-medium">{{ prop.displayName }}</label>
-
-        <!-- String Input -->
-        <input
-          v-if="prop.type === 'string'"
-          type="text"
-          class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          :value="node.data[prop.name] ?? prop.default"
-          :placeholder="prop.placeholder"
-          @input="
-            (e) => updateValue(prop.name, (e.target as HTMLInputElement).value)
-          "
-        />
-
-        <!-- Options Select -->
-        <Select
-          v-else-if="prop.type === 'options'"
+        <NodeInput
+          :property="prop"
           :model-value="node.data[prop.name] ?? prop.default"
-          @update:model-value="(val) => updateValue(prop.name, val)"
-        >
-          <SelectTrigger>
-            <SelectValue :placeholder="prop.placeholder" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem
-              v-for="opt in prop.options"
-              :key="opt.value"
-              :value="opt.value"
-            >
-              {{ opt.name }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-
-        <!-- JSON/Code Editor -->
-        <Codemirror
-          v-else-if="prop.type === 'json' || prop.type === 'code'"
-          :model-value="node.data[prop.name] ?? prop.default"
-          :style="{ height: '100px' }"
-          :autofocus="false"
-          :indent-with-tab="true"
-          :tab-size="2"
-          :extensions="[prop.type === 'json' ? json() : javascript()]"
-          @update:model-value="(val) => updateValue(prop.name, val)"
+          @update:model-value="(val: any) => updateValue(prop.name, val)"
         />
-
-        <!-- Boolean/Switch (Basic checkbox for now) -->
-        <div
-          v-else-if="prop.type === 'boolean'"
-          class="flex items-center space-x-2"
-        >
-          <input
-            type="checkbox"
-            :checked="node.data[prop.name] ?? prop.default"
-            @change="
-              (e) =>
-                updateValue(prop.name, (e.target as HTMLInputElement).checked)
-            "
-          />
-        </div>
-
-        <!-- Cron Editor -->
-         <div v-else-if="prop.type === 'cron'" class="flex flex-col gap-2">
-          <div class="text-xs font-mono bg-muted p-2 rounded">
-            {{ node.data[prop.name] ?? prop.default }}
-          </div>
-          <CronLight
-            :model-value="node.data[prop.name] ?? prop.default"
-            @update:model-value="(val: string) => updateValue(prop.name, val)"
-            locale="en"
-          />
-         </div>
       </div>
     </div>
   </div>

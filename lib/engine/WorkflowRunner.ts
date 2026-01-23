@@ -138,9 +138,9 @@ export class WorkflowRunner {
         // Vue Flow stores custom data in .data
         const value = node.data?.[paramName] ?? fallback;
         if (typeof value === "string") {
-          if (value.includes("{{")) {
+          if (value.startsWith("=")) {
             return this.evaluateStringWithExpressions(
-              value,
+              value.slice(1),
               itemIndex,
               inputData,
             );
