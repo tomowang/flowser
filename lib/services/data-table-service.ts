@@ -54,13 +54,35 @@ export class DataTableService {
     await db.delete("datatable_data", range);
   }
 
+  static async getTableIdByName(name: string): Promise<string | undefined> {
+    const db = await dbPromise;
+    const tables = await db.getAll("datatable_metadata");
+    const table = tables.find((t) => t.name === name);
+    return table?.id;
+  }
+
   // Row operations
 
-  static async getRows(tableId: string): Promise<IDataTableRow[]> {
+  static async getRows(
+    tableId: string,
+    filters?: Record<string, any>,
+  ): Promise<IDataTableRow[]> {
     const db = await dbPromise;
     // Retrieve all rows for a table using the composite key range
     const range = IDBKeyRange.bound([tableId, ""], [tableId, "\uffff"]);
-    return db.getAll("datatable_data", range);
+    const rows = await db.getAll("datatable_data", range);
+
+    if (filters && Object.keys(filters).length > 0) {
+      return rows.filter((row) => {
+        return Object.entries(filters).every(([key, value]) => {
+          // Loose equality check to handle string/number mismatches from inputs
+          // eslint-disable-next-line eqeqeq
+          return row.data[key] == value;
+        });
+      });
+    }
+
+    return rows;
   }
 
   static async addRow(

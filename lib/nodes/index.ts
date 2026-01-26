@@ -19,3 +19,4 @@ export * from "./TestNode";
 export * from "./FetchContent";
 export * from "./ScheduleTrigger";
 export * from "./EditFields";
+export * from "./DataTable";
