@@ -168,22 +168,46 @@ const getCredentialValue = (credType: string): string => {
 };
 
 const shouldShowProperty = (prop: any) => {
-  if (!prop.displayOptions?.show) return true;
+  if (!prop.displayOptions) return true;
 
-  const { show } = prop.displayOptions;
+  const { show, hide } = prop.displayOptions;
 
-  // Check all conditions (AND logic)
-  return Object.entries(show).every(([key, validValues]: [string, any]) => {
-    // Get value from node data or fall back to default
-    const propertyDef = properties.value.find((p) => p.name === key);
-    const currentValue = props.node.data[key] ?? propertyDef?.default;
+  // Helper to check conditions
+  const checkConditions = (conditions: any) => {
+    return Object.entries(conditions).every(
+      ([key, validValues]: [string, any]) => {
+        const propertyDef = properties.value.find((p) => p.name === key);
+        const currentValue = props.node.data[key] ?? propertyDef?.default;
 
-    // Handle array of valid values
-    if (Array.isArray(validValues)) {
-      return validValues.includes(currentValue);
-    }
-    return validValues === currentValue;
-  });
+        if (Array.isArray(validValues)) {
+          return validValues.some((val) => {
+            if (typeof val === "object" && val !== null) {
+              // TODO: Handle DisplayCondition object if needed (complex conditions)
+              // For now assuming simple values or simple object match?
+              // n8n supports { propertyName: value } inside array?
+              // The types say: Array<NodeParameterValue | DisplayCondition>
+              // For simplicity, let's just handle simple values first as per request
+              return false;
+            }
+            return val === currentValue;
+          });
+        }
+        return validValues === currentValue;
+      },
+    );
+  };
+
+  let isVisible = true;
+
+  if (show) {
+    isVisible = isVisible && checkConditions(show);
+  }
+
+  if (hide) {
+    isVisible = isVisible && !checkConditions(hide);
+  }
+
+  return isVisible;
 };
 </script>
 

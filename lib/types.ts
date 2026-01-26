@@ -62,6 +62,21 @@ export interface ICredentialType {
   documentationUrl?: string;
 }
 
+export type NodeParameterValue = string | number | boolean;
+
+export interface DisplayCondition {
+  [key: string]: NodeParameterValue | NodeParameterValue[];
+}
+
+export interface IDisplayOptions {
+  hide?: {
+    [key: string]: Array<NodeParameterValue | DisplayCondition> | undefined;
+  };
+  show?: {
+    [key: string]: Array<NodeParameterValue | DisplayCondition> | undefined;
+  };
+}
+
 export interface INodeProperties {
   displayName: string;
   name: string;
@@ -79,11 +94,8 @@ export interface INodeProperties {
   placeholder?: string;
   description?: string;
   required?: boolean;
-  displayOptions?: {
-    show?: {
-      [key: string]: any[];
-    };
-  };
+  noDataExpression?: boolean;
+  displayOptions?: IDisplayOptions;
 }
 
 export interface INodePort {

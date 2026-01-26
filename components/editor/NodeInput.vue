@@ -129,7 +129,11 @@ const toggleMode = (mode: "fixed" | "expression") => {
       <!-- Mode Toggle -->
       <div
         class="flex items-center rounded-md border bg-muted p-0.5"
-        v-if="property.type !== 'json' && property.type !== 'code'"
+        v-if="
+          property.type !== 'json' &&
+          property.type !== 'code' &&
+          !property.noDataExpression
+        "
       >
         <button
           class="flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium transition-colors"

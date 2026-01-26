@@ -10,10 +10,9 @@ import {
   Code,
   TabQuery,
   TabGroupQuery,
-  TabClose,
+  TabAction,
   TabCreated,
   ClickElement,
-  TabCreate,
   WindowCreate,
   WindowQuery,
   WindowClose,
@@ -36,10 +35,9 @@ Registry.register(DeepSeekModel);
 Registry.register(Code);
 Registry.register(TabQuery);
 Registry.register(TabGroupQuery);
-Registry.register(TabClose);
+Registry.register(TabAction);
 Registry.register(TabCreated);
 Registry.register(ClickElement);
-Registry.register(TabCreate);
 Registry.register(WindowCreate);
 Registry.register(WindowQuery);
 Registry.register(WindowClose);
