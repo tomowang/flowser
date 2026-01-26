@@ -9,6 +9,7 @@ import {
   DeepSeekModel,
   Code,
   TabQuery,
+  TabGroupQuery,
   TabClose,
   TabCreated,
   ClickElement,
@@ -34,6 +35,7 @@ Registry.register(ClaudeModel);
 Registry.register(DeepSeekModel);
 Registry.register(Code);
 Registry.register(TabQuery);
+Registry.register(TabGroupQuery);
 Registry.register(TabClose);
 Registry.register(TabCreated);
 Registry.register(ClickElement);
