@@ -22,7 +22,7 @@ interface FlowserDB extends DBSchema {
     value: IDataTable;
   };
   datatable_data: {
-    key: [string, string]; // [tableId, rowId]
+    key: [string, number]; // [tableId, rowId]
     value: IDataTableRow;
   };
 }

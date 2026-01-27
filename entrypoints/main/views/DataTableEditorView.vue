@@ -42,7 +42,7 @@ const newColumnType = ref<"string" | "number" | "boolean" | "json">("string");
 
 // State for Add/Edit Row
 const isRowDialogOpen = ref(false);
-const editingRowId = ref<string | null>(null);
+const editingRowId = ref<number | null>(null);
 const localRowData = ref<Record<string, any>>({});
 
 const loadData = async () => {
@@ -152,7 +152,7 @@ const saveRow = async () => {
   }
 };
 
-const deleteRow = async (rowId: string) => {
+const deleteRow = async (rowId: number) => {
   try {
     await DataTableService.deleteRow(tableId, rowId);
     await loadData();
@@ -205,6 +205,9 @@ const deleteRow = async (rowId: string) => {
         <table class="w-full text-sm text-left">
           <thead class="bg-muted/50 text-muted-foreground font-medium border-b">
             <tr>
+              <th class="h-10 px-4 align-middle whitespace-nowrap w-[50px]">
+                ID
+              </th>
               <th
                 v-for="col in columns"
                 :key="col.name"
@@ -224,6 +227,9 @@ const deleteRow = async (rowId: string) => {
               :key="row.rowId"
               class="hover:bg-muted/5 transition-colors"
             >
+              <td class="p-4 align-middle whitespace-nowrap text-muted-foreground">
+                {{ row.rowId }}
+              </td>
               <td
                 v-for="col in columns"
                 :key="col.name"
@@ -268,7 +274,7 @@ const deleteRow = async (rowId: string) => {
             </tr>
             <tr v-if="rows.length === 0">
               <td
-                :colspan="columns.length + 1"
+                :colspan="columns.length + 2"
                 class="p-8 text-center text-muted-foreground"
               >
                 {{ t("datatables.noData") }}

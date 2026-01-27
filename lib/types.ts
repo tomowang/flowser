@@ -201,12 +201,13 @@ export interface IDataTable {
   id: string;
   name: string;
   columns: IDataTableColumn[];
+  nextRowId?: number;
   createdAt: number;
   updatedAt: number;
 }
 
 export interface IDataTableRow {
   tableId: string;
-  rowId: string;
+  rowId: number;
   data: Record<string, any>;
 }
