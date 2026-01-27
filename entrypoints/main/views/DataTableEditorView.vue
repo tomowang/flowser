@@ -21,8 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Plus, ArrowLeft, Settings, Database } from "lucide-vue-next";
+import { Trash2, Plus, ArrowLeft, Settings, Database, GripVertical } from "lucide-vue-next";
 import { toast } from "vue-sonner";
+import draggable from "vuedraggable";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -87,12 +88,13 @@ const saveColumns = async () => {
   if (!table.value) return;
   try {
     await DataTableService.updateTable(table.value.id, {
-      columns: toRaw(localColumns.value),
+      columns: JSON.parse(JSON.stringify(localColumns.value)),
     });
     await loadData();
     isColumnsDialogOpen.value = false;
     toast.success(t("datatables.columnsUpdated"));
   } catch (error) {
+    console.error(error);
     toast.error(t("datatables.updateColumnsError"));
   }
 };
@@ -319,26 +321,34 @@ const deleteRow = async (rowId: string) => {
           </div>
 
           <div class="border rounded-md divide-y">
-            <div
-              v-for="(col, idx) in localColumns"
-              :key="idx"
-              class="flex items-center justify-between p-3"
+            <draggable
+              v-model="localColumns"
+              item-key="name"
+              handle=".handle"
+              ghost-class="bg-muted"
             >
-              <div class="flex items-center gap-3">
-                <span class="font-medium">{{ col.name }}</span>
-                <span class="text-xs bg-muted px-2 py-1 rounded">{{
-                  col.type
-                }}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="h-8 w-8 text-destructive"
-                @click="removeColumn(idx)"
-              >
-                <Trash2 class="h-4 w-4" />
-              </Button>
-            </div>
+              <template #item="{ element: col, index: idx }">
+                <div class="flex items-center justify-between p-3">
+                  <div class="flex items-center gap-3">
+                    <GripVertical
+                      class="h-4 w-4 text-muted-foreground/50 cursor-grab active:cursor-grabbing handle"
+                    />
+                    <span class="font-medium">{{ col.name }}</span>
+                    <span class="text-xs bg-muted px-2 py-1 rounded">{{
+                      col.type
+                    }}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="h-8 w-8 text-destructive"
+                    @click="removeColumn(idx)"
+                  >
+                    <Trash2 class="h-4 w-4" />
+                  </Button>
+                </div>
+              </template>
+            </draggable>
             <div
               v-if="localColumns.length === 0"
               class="p-4 text-center text-sm text-muted-foreground"
