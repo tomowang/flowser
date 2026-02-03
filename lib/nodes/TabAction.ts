@@ -23,6 +23,7 @@ export const TabAction: INodeType = {
         options: [
           { name: "Create", value: "create" },
           { name: "Close", value: "close" },
+          { name: "Group", value: "group" },
         ],
         default: "create",
         description: "The action to perform",
@@ -74,7 +75,34 @@ export const TabAction: INodeType = {
         description: "The ID of the window to create the tab in",
         displayOptions: {
           show: {
-            action: ["create"],
+            action: ["create", "group"],
+          },
+        },
+      },
+      // Group options
+      {
+        displayName: "Tab IDs",
+        name: "tabIds",
+        type: "string",
+        default: "",
+        placeholder: "e.g. 123, 456 or {{ $json.tabId }}",
+        description:
+          "The ID(s) of the tab(s) to group. Separated by comma for multiple IDs.",
+        displayOptions: {
+          show: {
+            action: ["group"],
+          },
+        },
+      },
+      {
+        displayName: "Group ID",
+        name: "groupId",
+        type: "number",
+        default: undefined,
+        description: "The ID of the group to add the tabs to",
+        displayOptions: {
+          show: {
+            action: ["group"],
           },
         },
       },
@@ -163,6 +191,60 @@ export const TabAction: INodeType = {
               closed: false,
               tabIdInput,
               error: "Invalid Tab ID",
+            },
+          });
+        }
+      } else if (action === "group") {
+        const tabIdsInput = this.getNodeParameter("tabIds", i);
+        const groupId = this.getNodeParameter("groupId", i) as number;
+        const windowId = this.getNodeParameter("windowId", i) as number;
+
+        let tabIds: number[] = [];
+
+        if (Array.isArray(tabIdsInput)) {
+          tabIds = tabIdsInput.map((id) => Number(id));
+        } else if (typeof tabIdsInput === "string") {
+          tabIds = tabIdsInput
+            .split(",")
+            .map((id) => Number(id.trim()))
+            .filter((id) => !isNaN(id));
+        } else if (typeof tabIdsInput === "number") {
+          tabIds = [tabIdsInput];
+        }
+
+        if (tabIds.length > 0) {
+          const groupOptions: any = {
+            tabIds,
+          };
+
+          if (typeof groupId === "number" && !isNaN(groupId)) {
+            groupOptions.groupId = groupId;
+          }
+
+          if (typeof windowId === "number" && !isNaN(windowId)) {
+            groupOptions.createProperties = {
+              windowId,
+            };
+          }
+
+          try {
+            const newGroupId = await browser.tabs.group(groupOptions);
+            returnData.push({
+              json: {
+                groupId: newGroupId,
+                tabIds,
+              },
+            });
+          } catch (error) {
+            if (error instanceof Error) {
+              throw new Error(`Failed to group tabs: ${error.message}`);
+            }
+            throw new Error(`Failed to group tabs`);
+          }
+        } else {
+          returnData.push({
+            json: {
+              error: "No valid Tab IDs provided",
             },
           });
         }

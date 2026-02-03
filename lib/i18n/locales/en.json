@@ -13,6 +13,7 @@
     "type": "Type",
     "value": "Value",
     "saveChanges": "Save changes",
+    "group": "Group",
     "error": "Something went wrong"
   },
   "sidebar": {
