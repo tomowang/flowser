@@ -177,6 +177,13 @@ export class WorkflowRunner {
         );
         return await CredentialService.getDecryptedCredential(credentialId);
       },
+      evaluateExpression: (expression: string, itemIndex: number) => {
+        return this.evaluateStringWithExpressions(
+          expression,
+          itemIndex,
+          inputData,
+        );
+      },
     };
 
     // Execute
@@ -227,10 +234,42 @@ export class WorkflowRunner {
     this.executionData.set(node.id, outputData[0]);
 
     // Find next nodes
-    const nextNodes = this.findNextNodes(node.id);
-    for (const nextNode of nextNodes) {
-      // Pass output 0 to next node (simple linear flow)
-      await this.executeNode(nextNode, outputData[0]);
+    // Iterate over all connected edges from this node
+    const edges = this.workflow.edges.filter((e) => e.source === node.id);
+
+    for (const edge of edges) {
+      // Determine which output index this edge is connected to
+      let outputIndex = 0;
+      if (edge.sourceHandle && edge.sourceHandle !== "main") {
+        outputIndex = nodeType.description.outputs.findIndex(
+          (o) => o.name === edge.sourceHandle,
+        );
+      }
+
+      if (outputIndex === -1) {
+        // Fallback to index 0 if valid handle not found
+        // or effectively skip if strict?
+        // Let's assume index 0 if not found, but log warning
+        console.warn(
+          `Could not find output handle ${edge.sourceHandle} for node ${node.type}`,
+        );
+        outputIndex = 0;
+      }
+
+      const branchData = outputData[outputIndex];
+
+      // But undefined means the branch is not taken (e.g. If node returns [items, []] - empty branch takes empty array?)
+      // Wait, If Node returns: [returnDataTrue, returnDataFalse]
+      // If true branch has items, false branch might have 0 items.
+      // If we execute next node with 0 items, it runs 0 times.
+      // That is correct behavior for data processing nodes.
+      // However, check if branchData exists (index in bounds).
+      if (branchData && branchData.length > 0) {
+        const nextNode = this.workflow.nodes.find((n) => n.id === edge.target);
+        if (nextNode) {
+          await this.executeNode(nextNode, branchData);
+        }
+      }
     }
   }
 

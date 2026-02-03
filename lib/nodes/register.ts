@@ -22,6 +22,7 @@ import {
   ScheduleTrigger,
   EditFields,
   DataTable,
+  If,
 } from "./index";
 
 Registry.register(ManualTrigger);
@@ -45,6 +46,7 @@ Registry.register(Wait);
 Registry.register(FetchContent);
 Registry.register(EditFields);
 Registry.register(DataTable);
+Registry.register(If);
 
 if (import.meta.env.DEV) {
   Registry.register(TestNode);

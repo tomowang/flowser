@@ -131,6 +131,7 @@ export interface IExecuteFunctions {
   getCredential?(
     credentialType: string,
   ): Promise<Record<string, unknown> | null>;
+  evaluateExpression?(expression: string, itemIndex: number): any;
 }
 
 export interface ISupplyDataFunctions extends IExecuteFunctions {

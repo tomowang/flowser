@@ -20,3 +20,4 @@ export * from "./ScheduleTrigger";
 export * from "./EditFields";
 export * from "./DataTable";
 export * from "./TabGroupQuery";
+export * from "./If";

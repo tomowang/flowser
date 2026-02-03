@@ -111,7 +111,7 @@ const deleteNode = (e: Event) => {
 
     <!-- Main Inputs (Left) -->
     <Handle
-      v-for="port in mainInputs"
+      v-for="(port, index) in mainInputs"
       :id="port.name"
       :key="port.name"
       type="target"
@@ -119,12 +119,13 @@ const deleteNode = (e: Event) => {
       class="transition-colors !w-3 !h-3"
       :style="{
         ...getHandleStyle(port.type),
+        top: `${((index + 1) * 100) / (mainInputs.length + 1)}%`,
       }"
     />
 
     <!-- Main Outputs (Right) -->
     <Handle
-      v-for="port in mainOutputs"
+      v-for="(port, index) in mainOutputs"
       :id="port.name"
       :key="port.name"
       type="source"
@@ -132,6 +133,7 @@ const deleteNode = (e: Event) => {
       class="transition-colors !w-3 !h-3"
       :style="{
         ...getHandleStyle(port.type),
+        top: `${((index + 1) * 100) / (mainOutputs.length + 1)}%`,
       }"
     />
 
