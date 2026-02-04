@@ -12,6 +12,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Workflow,
@@ -27,6 +29,8 @@ import { computed } from "vue";
 import logo from "@/assets/logo.svg";
 
 const { t } = useI18n();
+
+const { state } = useSidebar();
 
 const items = computed(() => [
   {
@@ -57,17 +61,28 @@ const items = computed(() => [
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton size="lg" as-child>
-            <a href="#">
-              <div class="aspect-square size-8 rounded-lg">
-                <img :src="logo" />
-              </div>
-              <div class="flex flex-col gap-0.5 leading-none">
-                <span class="font-semibold">Flowser</span>
-                <span class="">v0.1.0</span>
-              </div>
-            </a>
-          </SidebarMenuButton>
+          <div
+            class="flex items-center justify-between gap-2"
+            :class="{
+              'flex-row': state === 'expanded',
+              'flex-col': state === 'collapsed',
+            }"
+          >
+            <SidebarMenuButton size="lg" as-child class="md:h-8 md:p-0">
+              <a href="#">
+                <div class="aspect-square size-8 rounded-lg">
+                  <img :src="logo" />
+                </div>
+                <div
+                  class="grid flex-1 text-left text-sm leading-tight"
+                  v-if="state === 'expanded'"
+                >
+                  <span class="truncate font-semibold">Flowser</span>
+                </div>
+              </a>
+            </SidebarMenuButton>
+            <SidebarTrigger />
+          </div>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeader>
