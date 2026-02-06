@@ -14,14 +14,15 @@ import { json } from "@codemirror/lang-json";
 import { CronLight } from "@vue-js-cron/light";
 import "@vue-js-cron/light/dist/light.css";
 import { Button } from "@/components/ui/button";
-import { FunctionSquare, Type } from "lucide-vue-next";
+import { FunctionSquare, Type, RefreshCw, Loader2 } from "lucide-vue-next";
 
 const props = defineProps<{
   modelValue: any;
   property: INodeProperties;
+  loading?: boolean;
 }>();
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "refresh"]);
 
 const isExpression = ref(false);
 
@@ -199,20 +200,34 @@ const toggleMode = (mode: "fixed" | "expression") => {
       />
 
       <!-- Options Select -->
-      <Select v-else-if="property.type === 'options'" v-model="displayValue">
-        <SelectTrigger>
-          <SelectValue :placeholder="property.placeholder" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem
-            v-for="opt in property.options"
-            :key="opt.value"
-            :value="opt.value"
-          >
-            {{ opt.name }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <div v-else-if="property.type === 'options'" class="flex gap-2">
+        <Select v-model="displayValue">
+          <SelectTrigger class="w-full">
+            <SelectValue :placeholder="property.placeholder" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="opt in property.options"
+              :key="opt.value"
+              :value="opt.value"
+            >
+              {{ opt.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          v-if="property.typeOptions?.loadOptionsMethod"
+          variant="outline"
+          size="icon"
+          class="shrink-0"
+          :disabled="loading"
+          @click="$emit('refresh')"
+          title="Refresh options"
+        >
+          <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
+          <RefreshCw v-else class="h-4 w-4" />
+        </Button>
+      </div>
 
       <!-- JSON/Code Editor -->
       <Codemirror

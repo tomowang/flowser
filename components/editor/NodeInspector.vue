@@ -142,13 +142,128 @@ const credentials = computed<INodeCredentialDescription[]>(() => {
 });
 
 const properties = computed(() => {
-  return nodeType.value?.description.properties || [];
+  const props = nodeType.value?.description.properties || [];
+  return props.map((p) => {
+    if (p.type === "options" && dynamicOptions.value[p.name]) {
+      // Merge default options with dynamic ones
+      const defaultOptions = p.options || [];
+      const dynamic = dynamicOptions.value[p.name];
+      // Avoid duplicates based on value
+      const validDynamic = dynamic.filter(
+        (d) => !defaultOptions.find((def) => def.value === d.value),
+      );
+      return {
+        ...p,
+        options: [...defaultOptions, ...validDynamic],
+      };
+    }
+    return p;
+  });
 });
 
 const updateValue = (key: string, value: any) => {
   const newData = { ...props.node.data, [key]: value };
   emit("update:data", newData);
 };
+
+// Dynamic Options Logic
+const dynamicOptions = ref<Record<string, { name: string; value: string }[]>>(
+  {},
+);
+const loadingOptions = ref<Record<string, boolean>>({});
+
+const loadNodeOptions = async (propertyName: string) => {
+  if (!nodeType.value || !nodeType.value.methods) return;
+
+  const propDef = nodeType.value.description.properties.find(
+    (p) => p.name === propertyName,
+  );
+  if (!propDef?.typeOptions?.loadOptionsMethod) return;
+
+  const methodName = propDef.typeOptions.loadOptionsMethod;
+  const method = nodeType.value.methods[methodName];
+
+  if (!method) {
+    console.warn(`Method ${methodName} not found in node definition`);
+    return;
+  }
+
+  loadingOptions.value[propertyName] = true;
+
+  try {
+    // Mock execution context
+    const context: any = {
+      getNodeParameter: (paramName: string) => {
+        return props.node.data[paramName] ?? propDef.default;
+      },
+      getCredential: async (credentialType: string) => {
+        const credId = props.node.data.credentials?.[credentialType];
+        if (!credId) return null;
+        try {
+          return await CredentialService.getDecryptedCredential(credId);
+        } catch (e) {
+          console.error("Failed to get credential", e);
+          return null;
+        }
+      },
+    };
+
+    const result = await method.call(context);
+    if (result && Array.isArray(result.results)) {
+      dynamicOptions.value[propertyName] = result.results;
+    }
+  } catch (e) {
+    console.error("Failed to load dynamic options", e);
+  } finally {
+    loadingOptions.value[propertyName] = false;
+  }
+};
+
+// Watch for changes deeply in node data to trigger reload if dependencies change
+watch(
+  () => props.node.data,
+  (newData, oldData) => {
+    if (!nodeType.value) return;
+
+    nodeType.value.description.properties.forEach((prop) => {
+      const deps = prop.typeOptions?.loadOptionsDependsOn;
+      if (!deps || !deps.length) return;
+
+      const shouldReload = deps.some((dep) => {
+        // dep is like "credentials.gemini_api" or "someProp"
+        if (dep.startsWith("credentials.")) {
+          const credType = dep.split(".")[1];
+          return (
+            newData.credentials?.[credType] !==
+            oldData?.credentials?.[credType]
+          );
+        }
+        return newData[dep] !== oldData?.[dep];
+      });
+
+      if (shouldReload) {
+        loadNodeOptions(prop.name);
+      }
+    });
+  },
+  { deep: true },
+);
+
+// Initial load
+watch(
+  () => props.node?.id,
+  () => {
+    // Trigger load for all dynamic properties
+    if (nodeType.value) {
+      nodeType.value.description.properties.forEach((prop) => {
+        if (prop.typeOptions?.loadOptionsMethod) {
+          loadNodeOptions(prop.name);
+        }
+      });
+    }
+  },
+  { immediate: true },
+);
 
 // Update credential value in node data, stored as credentials[credType]
 const updateCredentialValue = (credType: string, credId: string) => {
@@ -294,7 +409,9 @@ const shouldShowProperty = (prop: any) => {
         <NodeInput
           :property="prop"
           :model-value="node.data[prop.name] ?? prop.default"
+          :loading="loadingOptions[prop.name]"
           @update:model-value="(val: any) => updateValue(prop.name, val)"
+          @refresh="loadNodeOptions(prop.name)"
         />
       </div>
     </div>

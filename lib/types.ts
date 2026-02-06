@@ -96,6 +96,10 @@ export interface INodeProperties {
   required?: boolean;
   noDataExpression?: boolean;
   displayOptions?: IDisplayOptions;
+  typeOptions?: {
+    loadOptionsMethod?: string;
+    loadOptionsDependsOn?: string[];
+  };
 }
 
 export interface INodePort {
@@ -159,6 +163,9 @@ export interface INodeType {
     this: ISupplyDataFunctions,
     itemIndex: number,
   ): Promise<SupplyData>;
+  methods?: {
+    [key: string]: (this: IExecuteFunctions) => Promise<any>;
+  };
 }
 
 // Workflow persistence model

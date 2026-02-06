@@ -28,12 +28,12 @@ export const GeminiModel: INodeType = {
         displayName: "Model Name",
         name: "modelName",
         type: "options",
+        typeOptions: {
+          loadOptionsMethod: "listModels",
+          loadOptionsDependsOn: ["credentials.gemini_api"],
+        },
         options: [
           { name: "Gemini 2.5 Flash Lite", value: "gemini-2.5-flash-lite" },
-          { name: "Gemini 2.5 Flash", value: "gemini-2.5-flash" },
-          { name: "Gemini 2.5 Pro", value: "gemini-2.5-pro" },
-          { name: "Gemini 3.0 Flash Preview", value: "gemini-3-flash-preview" },
-          { name: "Gemini 3.0 Pro Preview", value: "gemini-3-pro-preview" },
         ],
         default: "gemini-2.5-flash-lite",
       },
@@ -76,5 +76,39 @@ export const GeminiModel: INodeType = {
         modelName: modelName,
       },
     };
+  },
+  methods: {
+    async listModels(this: IExecuteFunctions): Promise<any> {
+      const credential = await this.getCredential?.("gemini_api");
+      if (!credential?.apiKey) {
+        return {
+          results: [],
+        };
+      }
+      const apiKey = credential.apiKey as string;
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+        );
+        const data = await response.json();
+        if (data.models) {
+          return {
+            results: data.models
+              .filter(
+                (m: any) =>
+                  m.name.includes("gemini") &&
+                  m.supportedGenerationMethods?.includes("generateContent"),
+              )
+              .map((m: any) => ({
+                name: m.displayName,
+                value: m.name.replace("models/", ""),
+              })),
+          };
+        }
+      } catch (e) {
+        console.error("Failed to list models", e);
+      }
+      return { results: [] };
+    },
   },
 };
