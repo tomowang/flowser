@@ -27,15 +27,12 @@ export const ClaudeModel: INodeType = {
         displayName: "Model Name",
         name: "modelName",
         type: "options",
-        options: [
-          { name: "Claude 4.5 Opus", value: "claude-4-5-opus" },
-          { name: "Claude 4.5 Sonnet", value: "claude-4-5-sonnet" },
-          { name: "Claude 4.5 Haiku", value: "claude-haiku-4-5-20251001" },
-          { name: "Claude 3.7 Sonnet", value: "claude-3-7-sonnet-20250224" },
-          { name: "Claude 3.5 Sonnet", value: "claude-3-5-sonnet-20240620" },
-          { name: "Claude 3.5 Haiku", value: "claude-3-5-haiku-20241022" },
-        ],
-        default: "claude-4-5-sonnet",
+        typeOptions: {
+          loadOptionsMethod: "listModels",
+          loadOptionsDependsOn: ["credentials.anthropic_api"],
+        },
+        options: [],
+        default: "claude-3-5-sonnet-20240620",
       },
     ],
   },
@@ -73,5 +70,36 @@ export const ClaudeModel: INodeType = {
         modelName: modelName,
       },
     };
+  },
+  methods: {
+    async listModels(this: IExecuteFunctions): Promise<any> {
+      const credential = await this.getCredential?.("anthropic_api");
+      if (!credential?.apiKey) {
+        return { results: [] };
+      }
+      const apiKey = credential.apiKey as string;
+
+      try {
+        const response = await fetch("https://api.anthropic.com/v1/models", {
+          headers: {
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+          },
+        });
+        const data = await response.json();
+        if (data.data) {
+          return {
+            results: data.data.map((m: any) => ({
+              name: m.display_name || m.id,
+              value: m.id,
+            })),
+          };
+        }
+      } catch (e) {
+        console.error("Failed to list Claude models", e);
+      }
+      return { results: [] };
+    },
   },
 };

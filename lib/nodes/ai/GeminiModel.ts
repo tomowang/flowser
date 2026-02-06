@@ -32,9 +32,7 @@ export const GeminiModel: INodeType = {
           loadOptionsMethod: "listModels",
           loadOptionsDependsOn: ["credentials.gemini_api"],
         },
-        options: [
-          { name: "Gemini 2.5 Flash Lite", value: "gemini-2.5-flash-lite" },
-        ],
+        options: [],
         default: "gemini-2.5-flash-lite",
       },
     ],

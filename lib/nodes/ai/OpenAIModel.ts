@@ -27,16 +27,12 @@ export const OpenAIModel: INodeType = {
         displayName: "Model Name",
         name: "modelName",
         type: "options",
-        options: [
-          { name: "GPT-5", value: "gpt-5" },
-          { name: "GPT-4.5 (Orion)", value: "gpt-4.5-preview" },
-          { name: "GPT-4o", value: "gpt-4o" },
-          { name: "GPT-4o Mini", value: "gpt-4o-mini" },
-          { name: "o3 (Reasoning)", value: "o3" },
-          { name: "o3 Mini", value: "o3-mini" },
-          { name: "GPT-4 Turbo", value: "gpt-4-turbo" },
-        ],
-        default: "gpt-5",
+        typeOptions: {
+          loadOptionsMethod: "listModels",
+          loadOptionsDependsOn: ["credentials.openai_api"],
+        },
+        options: [],
+        default: "gpt-4o",
       },
     ],
   },
@@ -50,7 +46,7 @@ export const OpenAIModel: INodeType = {
     const modelName = this.getNodeParameter(
       "modelName",
       itemIndex,
-      "gpt-4o-mini",
+      "gpt-4o",
     ) as string;
 
     // Get credential using new getCredential method
@@ -76,5 +72,43 @@ export const OpenAIModel: INodeType = {
         modelName: modelName,
       },
     };
+  },
+  methods: {
+    async listModels(this: IExecuteFunctions): Promise<any> {
+      const credential = await this.getCredential?.("openai_api");
+      if (!credential?.apiKey) {
+        return { results: [] };
+      }
+      const apiKey = credential.apiKey as string;
+      const baseUrl = (credential.baseUrl as string) || "https://api.openai.com/v1";
+
+      const url = `${baseUrl}/models`; // Helper to handle slash? simplified here
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        if (data.data) {
+          // Filter out non-chat models loosely
+          const chatModels = data.data.filter((m: any) =>
+            m.id.includes("gpt") || m.id.includes("o1") || m.id.includes("o3") // o1/o3 reasoning models
+          );
+
+          return {
+            results: chatModels.map((m: any) => ({
+              name: m.id,
+              value: m.id,
+            })),
+          };
+        }
+      } catch (e) {
+        console.error("Failed to list OpenAI models", e);
+      }
+      return { results: [] };
+    },
   },
 };

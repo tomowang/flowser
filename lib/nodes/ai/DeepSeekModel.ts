@@ -27,10 +27,11 @@ export const DeepSeekModel: INodeType = {
         displayName: "Model Name",
         name: "modelName",
         type: "options",
-        options: [
-          { name: "DeepSeek-V3 (Chat)", value: "deepseek-chat" },
-          { name: "DeepSeek-R1 (Reasoner)", value: "deepseek-reasoner" },
-        ],
+        typeOptions: {
+          loadOptionsMethod: "listModels",
+          loadOptionsDependsOn: ["credentials.deepseek_api"],
+        },
+        options: [],
         default: "deepseek-chat",
       },
     ],
@@ -72,5 +73,48 @@ export const DeepSeekModel: INodeType = {
         modelName: modelName,
       },
     };
+  },
+  methods: {
+    async listModels(this: IExecuteFunctions): Promise<any> {
+      const credential = await this.getCredential?.("deepseek_api");
+      if (!credential?.apiKey) {
+        return { results: [] };
+      }
+      const apiKey = credential.apiKey as string;
+      // DeepSeek uses standard OpenAI-like models endpoint
+      // Base URL might be v1 or not, usually https://api.deepseek.com/models or https://api.deepseek.com/v1/models
+      // The credential might have baseUrl.
+      let baseUrl = (credential.baseUrl as string) || "https://api.deepseek.com";
+      // Normalize baseUrl to remove /v1 suffix if present because we might append /models or /v1/models?
+      // Actually usually it's BASE_URL/models.
+      // If user typed https://api.deepseek.com/v1, we want https://api.deepseek.com/v1/models.
+      // If user typed https://api.deepseek.com, we want https://api.deepseek.com/models ??
+      // DeepSeek docs: https://api.deepseek.com/models
+      // Let's rely on standard fetch.
+      if (baseUrl.endsWith("/")) baseUrl = baseUrl.slice(0, -1);
+
+      const url = `${baseUrl}/models`;
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        if (data.data) {
+          return {
+            results: data.data.map((m: any) => ({
+              name: m.id, // DeepSeek displayName might be missing or same
+              value: m.id,
+            })),
+          };
+        }
+      } catch (e) {
+        console.error("Failed to list DeepSeek models", e);
+      }
+      return { results: [] };
+    },
   },
 };
