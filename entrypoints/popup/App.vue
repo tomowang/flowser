@@ -11,10 +11,25 @@ import { Input } from "@/components/ui/input";
 import { toast } from "vue-sonner";
 import { Toaster } from "@/components/ui/sonner";
 import logo from "@/assets/logo.svg";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 const workflows = ref<IWorkflow[]>([]);
 const searchQuery = ref("");
 const loading = ref(false);
+
+const showMasterKeyDialog = ref(false);
+const masterKeyInput = ref("");
+const pendingWorkflowId = ref<string | null>(null);
+const verifyingKey = ref(false);
 
 const filteredWorkflows = computed(() => {
   if (!searchQuery.value) return workflows.value;
@@ -38,6 +53,12 @@ const handleRun = async (id: string) => {
   const workflow = workflows.value.find((w) => w.id === id);
   if (!workflow) return;
 
+  if (!SecurityService.hasMasterKey()) {
+    pendingWorkflowId.value = id;
+    showMasterKeyDialog.value = true;
+    return;
+  }
+
   try {
     const runner = new WorkflowRunner(workflow);
     const result = await runner.run();
@@ -49,6 +70,35 @@ const handleRun = async (id: string) => {
     }
   } catch (e: any) {
     toast.error(`Error running workflow: ${e.message}`);
+  }
+};
+
+const handleMasterKeySubmit = async () => {
+  if (!masterKeyInput.value) return;
+
+  verifyingKey.value = true;
+  try {
+    const key = await SecurityService.deriveKey(masterKeyInput.value);
+    const isValid = await SecurityService.validateKey(key);
+
+    if (isValid) {
+      SecurityService.setMasterKey(key);
+      await SecurityService.saveToSession(key);
+      showMasterKeyDialog.value = false;
+      masterKeyInput.value = "";
+
+      if (pendingWorkflowId.value) {
+        handleRun(pendingWorkflowId.value);
+        pendingWorkflowId.value = null;
+      }
+    } else {
+      toast.error("Invalid master key");
+    }
+  } catch (e) {
+    console.error(e);
+    toast.error("Failed to verify master key");
+  } finally {
+    verifyingKey.value = false;
   }
 };
 
@@ -147,5 +197,35 @@ onMounted(async () => {
       close-button
       close-button-position="top-right"
     />
+
+    <Dialog v-model:open="showMasterKeyDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Enter Master Key</DialogTitle>
+          <DialogDescription>
+            This workflow requires encryption access. Please enter your master
+            key.
+          </DialogDescription>
+        </DialogHeader>
+        <div class="grid gap-4 py-4">
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label for="master-key" class="text-right"> Master Key </Label>
+            <Input
+              id="master-key"
+              v-model="masterKeyInput"
+              type="password"
+              class="col-span-3"
+              @keydown.enter="handleMasterKeySubmit"
+              auto-focus
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button @click="handleMasterKeySubmit" :disabled="verifyingKey">
+            {{ verifyingKey ? "Verifying..." : "Unlock & Run" }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
