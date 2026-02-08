@@ -30,9 +30,88 @@ export const EditFields: INodeType = {
       {
         displayName: "Fields",
         name: "fields",
-        type: "json",
-        default: "{}",
-        description: "JSON object mapping field names to values.",
+        type: "fixedCollection",
+        default: {},
+        options: [
+          {
+            name: "values",
+            displayName: "Values",
+            values: [
+              {
+                displayName: "Name",
+                name: "name",
+                type: "string",
+                default: "",
+                placeholder: "Field Name",
+                description: "The name of the field to set",
+              },
+              {
+                displayName: "Type",
+                name: "type",
+                type: "options",
+                options: [
+                  { name: "String", value: "string" },
+                  { name: "Number", value: "number" },
+                  { name: "Boolean", value: "boolean" },
+                  { name: "JSON", value: "json" },
+                ],
+                default: "string",
+                description: "The type of the field value",
+              },
+              {
+                displayName: "Value",
+                name: "stringValue",
+                type: "string",
+                default: "",
+                placeholder: "Field Value",
+                displayOptions: {
+                  show: {
+                    type: ["string"],
+                  },
+                },
+              },
+              {
+                displayName: "Value",
+                name: "numberValue",
+                type: "number",
+                default: 0,
+                placeholder: "Field Value",
+                displayOptions: {
+                  show: {
+                    type: ["number"],
+                  },
+                },
+              },
+              {
+                displayName: "Value",
+                name: "booleanValue",
+                type: "options",
+                options: [
+                  { name: "True", value: "true" },
+                  { name: "False", value: "false" },
+                ],
+                default: "false",
+                displayOptions: {
+                  show: {
+                    type: ["boolean"],
+                  },
+                },
+              },
+              {
+                displayName: "Value",
+                name: "jsonValue",
+                type: "json",
+                default: "{}",
+                displayOptions: {
+                  show: {
+                    type: ["json"],
+                  },
+                },
+              },
+            ],
+          },
+        ],
+        description: "The fields to set in the output item",
       },
     ],
   },
@@ -44,15 +123,31 @@ export const EditFields: INodeType = {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const mode = this.getNodeParameter("mode", i) as string;
-      const fieldsStr = this.getNodeParameter("fields", i) as string;
+      const fieldsArr = (this.getNodeParameter("fields", i) as any)
+        ?.values as any[];
 
       let fields: Record<string, any> = {};
-      try {
-        if (fieldsStr) {
-          fields = JSON.parse(fieldsStr);
+
+      if (fieldsArr) {
+        for (const field of fieldsArr) {
+          const name = field.name;
+          const type = field.type;
+
+          if (type === "string") {
+            fields[name] = field.stringValue;
+          } else if (type === "number") {
+            fields[name] = field.numberValue;
+          } else if (type === "boolean") {
+            fields[name] = field.booleanValue === "true";
+          } else if (type === "json") {
+            try {
+              fields[name] = JSON.parse(field.jsonValue);
+            } catch (e) {
+              console.warn("Invalid JSON in Edit Fields node", field.jsonValue);
+              fields[name] = field.jsonValue;
+            }
+          }
         }
-      } catch (e) {
-        console.warn("Invalid JSON in Edit Fields node", fieldsStr);
       }
 
       const existingJson = item.json;

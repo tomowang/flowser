@@ -14,7 +14,7 @@ import { json } from "@codemirror/lang-json";
 import { CronLight } from "@vue-js-cron/light";
 import "@vue-js-cron/light/dist/light.css";
 import { Button } from "@/components/ui/button";
-import { FunctionSquare, Type, RefreshCw, Loader2 } from "lucide-vue-next";
+import { FunctionSquare, Type, RefreshCw, Loader2, Trash2 } from "lucide-vue-next";
 
 const props = defineProps<{
   modelValue: any;
@@ -120,6 +120,33 @@ const toggleMode = (mode: "fixed" | "expression") => {
     }
   }
 };
+
+const checkDisplayOptions = (
+  options: any,
+  values: Record<string, any>,
+): boolean => {
+  if (!options) return true;
+  if (!values) return true;
+  if (options.show) {
+    for (const key in options.show) {
+      const showValues = options.show[key];
+      const actualValue = values[key];
+      if (Array.isArray(showValues) && !showValues.includes(actualValue)) {
+        return false;
+      }
+    }
+  }
+  if (options.hide) {
+    for (const key in options.hide) {
+      const hideValues = options.hide[key];
+      const actualValue = values[key];
+      if (Array.isArray(hideValues) && hideValues.includes(actualValue)) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
 </script>
 
 <template>
@@ -208,8 +235,8 @@ const toggleMode = (mode: "fixed" | "expression") => {
           <SelectContent>
             <SelectItem
               v-for="opt in property.options"
-              :key="opt.value"
-              :value="opt.value"
+              :key="opt.value ?? opt.name"
+              :value="opt.value ?? opt.name"
             >
               {{ opt.name }}
             </SelectItem>
@@ -258,6 +285,99 @@ const toggleMode = (mode: "fixed" | "expression") => {
           {{ displayValue }}
         </div>
         <CronLight v-model="displayValue" locale="en" />
+      </div>
+
+      <!-- Fixed Collection -->
+      <div
+        v-else-if="property.type === 'fixedCollection'"
+        class="flex flex-col gap-4"
+      >
+        <div
+          v-for="option in property.options"
+          :key="option.name"
+          class="flex flex-col gap-2"
+        >
+          <label class="text-sm font-medium">{{
+            option.displayName || option.name
+          }}</label>
+
+          <div class="flex flex-col gap-2">
+            <div
+              v-for="(item, index) in displayValue?.[option.name] || []"
+              :key="index"
+              class="relative rounded-md border p-4 pt-8 flex flex-col gap-2 group"
+            >
+              <!-- Remove Button -->
+              <button
+                class="absolute right-2 top-2 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
+                @click="
+                  () => {
+                    const newValue = { ...displayValue };
+                    newValue[option.name] = newValue[option.name].filter(
+                      (_: any, i: number) => i !== index,
+                    );
+                    emit('update:modelValue', newValue);
+                  }
+                "
+                title="Remove Item"
+              >
+                <Trash2 class="h-4 w-4" />
+              </button>
+
+              <div v-for="subProp in option.values" :key="subProp.name">
+                <NodeInput
+                  v-if="
+                    !subProp.displayOptions ||
+                    checkDisplayOptions(subProp.displayOptions, item)
+                  "
+                  :model-value="item[subProp.name] ?? subProp.default"
+                  :property="subProp"
+                  @update:model-value="
+                    (val) => {
+                      const newValue = { ...displayValue };
+                      if (!newValue[option.name]) newValue[option.name] = [];
+                      const newItems = [...(newValue[option.name] as any[])];
+                      newItems[index] = { ...newItems[index], [subProp.name]: val };
+                      newValue[option.name] = newItems;
+                      emit('update:modelValue', newValue);
+                    }
+                  "
+                  @refresh="$emit('refresh')"
+                />
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              class="w-full"
+              @click="
+                () => {
+                  const newValue = { ...(displayValue || {}) };
+                  if (!newValue[option.name]) newValue[option.name] = [];
+
+                  // Initialize new item with defaults
+                  const newItem: Record<string, any> = {};
+                  if (option.values) {
+                    for (const subProp of option.values) {
+                      if (subProp.default !== undefined) {
+                        newItem[subProp.name] = subProp.default;
+                      }
+                    }
+                  }
+
+                  newValue[option.name] = [
+                    ...newValue[option.name],
+                    newItem,
+                  ];
+                  emit('update:modelValue', newValue);
+                }
+              "
+            >
+              Add {{ option.displayName || option.name }}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
 

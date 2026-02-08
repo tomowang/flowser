@@ -88,9 +88,15 @@ export interface INodeProperties {
     | "json"
     | "code"
     | "cron"
-    | "password";
+    | "password"
+    | "fixedCollection";
   default?: any;
-  options?: { name: string; value: string }[];
+  options?: {
+    name: string;
+    value?: string;
+    displayName?: string;
+    values?: INodeProperties[];
+  }[];
   placeholder?: string;
   description?: string;
   required?: boolean;
