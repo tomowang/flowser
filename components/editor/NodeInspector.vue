@@ -403,8 +403,8 @@ const shouldShowProperty = (prop: any) => {
     <div class="space-y-3">
       <div
         v-for="prop in properties"
-        :key="prop.name"
         v-show="shouldShowProperty(prop)"
+        :key="prop.name"
       >
         <NodeInput
           :property="prop"

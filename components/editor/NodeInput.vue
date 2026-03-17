@@ -11,6 +11,8 @@ import {
 import { Codemirror } from "vue-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
+import { codeAutocompleteExtension, expressionAutocompleteExtension } from "@/lib/editor/autocomplete";
+import { EditorView } from "@codemirror/view";
 import { CronLight } from "@vue-js-cron/light";
 import "@vue-js-cron/light/dist/light.css";
 import { Button } from "@/components/ui/button";
@@ -147,6 +149,18 @@ const checkDisplayOptions = (
   }
   return true;
 };
+
+// Extension for making CodeMirror look like a single-line input
+const singleLineExtension = [
+  EditorView.theme({
+    "&": { backgroundColor: "transparent" },
+    ".cm-content": { padding: "0" },
+    ".cm-line": { padding: "0" },
+    "&.cm-focused": { outline: "none" },
+    ".cm-gutters": { display: "none", border: "none", backgroundColor: "transparent" }
+  }),
+  EditorView.lineWrapping
+];
 </script>
 
 <template>
@@ -156,12 +170,12 @@ const checkDisplayOptions = (
 
       <!-- Mode Toggle -->
       <div
-        class="flex items-center rounded-md border bg-muted p-0.5"
         v-if="
           property.type !== 'json' &&
           property.type !== 'code' &&
           !property.noDataExpression
         "
+        class="flex items-center rounded-md border bg-muted p-0.5"
       >
         <button
           class="flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium transition-colors"
@@ -191,18 +205,22 @@ const checkDisplayOptions = (
     </div>
 
     <!-- Expression Input -->
-    <div v-if="isExpression" class="flex items-center gap-1 relative">
+    <div v-if="isExpression" class="flex items-center gap-1 relative rounded-md border border-input shadow-sm focus-within:ring-1 focus-within:ring-ring bg-transparent min-h-9">
       <div
-        class="absolute left-2 top-2.5 text-muted-foreground font-mono text-xs select-none"
+        class="pl-2 pr-1 flex items-center mt-[1px] text-muted-foreground font-mono text-xs select-none"
       >
         =
       </div>
-      <input
-        type="text"
-        class="flex h-9 w-full rounded-md border border-input bg-transparent pl-6 pr-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-mono"
-        v-model="expressionValue"
-        placeholder="Expression..."
-      />
+      <div class="w-full relative flex-1 flex py-1 pr-2">
+        <Codemirror
+          v-model="expressionValue"
+          :style="{ width: '100%', minHeight: '20px' }"
+          :autofocus="true"
+          :extensions="[javascript(), expressionAutocompleteExtension, singleLineExtension]"
+          class="w-full text-sm font-mono overflow-hidden"
+          placeholder="Expression..."
+        />
+      </div>
     </div>
 
     <!-- Fixed Inputs -->
@@ -211,18 +229,18 @@ const checkDisplayOptions = (
       <!-- String Input -->
       <input
         v-if="property.type === 'string' || property.type === 'password'"
+        v-model="displayValue"
         :type="property.type === 'password' ? 'password' : 'text'"
         class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-        v-model="displayValue"
         :placeholder="property.placeholder"
       />
 
       <!-- Number Input -->
       <input
         v-else-if="property.type === 'number'"
+        v-model.number="displayValue"
         type="number"
         class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-        v-model.number="displayValue"
         :placeholder="property.placeholder"
       />
 
@@ -248,8 +266,8 @@ const checkDisplayOptions = (
           size="icon"
           class="shrink-0"
           :disabled="loading"
-          @click="$emit('refresh')"
           title="Refresh options"
+          @click="$emit('refresh')"
         >
           <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
           <RefreshCw v-else class="h-4 w-4" />
@@ -264,7 +282,10 @@ const checkDisplayOptions = (
         :autofocus="false"
         :indent-with-tab="true"
         :tab-size="2"
-        :extensions="[property.type === 'json' ? json() : javascript()]"
+        :extensions="[
+          property.type === 'json' ? json() : javascript(),
+          property.type === 'code' ? codeAutocompleteExtension : []
+        ]"
       />
 
       <!-- Boolean/Switch -->
@@ -273,8 +294,8 @@ const checkDisplayOptions = (
         class="flex items-center space-x-2"
       >
         <input
-          type="checkbox"
           v-model="displayValue"
+          type="checkbox"
           class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
         />
       </div>
@@ -310,6 +331,7 @@ const checkDisplayOptions = (
               <!-- Remove Button -->
               <button
                 class="absolute right-2 top-2 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
+                title="Remove Item"
                 @click="
                   () => {
                     const newValue = { ...displayValue };
@@ -319,7 +341,6 @@ const checkDisplayOptions = (
                     emit('update:modelValue', newValue);
                   }
                 "
-                title="Remove Item"
               >
                 <Trash2 class="h-4 w-4" />
               </button>

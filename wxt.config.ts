@@ -7,6 +7,9 @@ export default defineConfig({
   imports: false,
   vite: () => ({
     plugins: [tailwindcss()],
+    resolve: {
+      dedupe: ["@codemirror/state", "@codemirror/view"],
+    },
   }),
   webExt: {
     chromiumArgs: ["--user-data-dir=./.wxt/chrome-data"],
