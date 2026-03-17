@@ -141,7 +141,7 @@ export class WorkflowRunner {
           if (value.startsWith("=")) {
             return this.evaluateStringWithExpressions(
               value.slice(1),
-              itemIndex,
+              index,
               inputData,
             );
           }
