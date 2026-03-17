@@ -2,8 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { WorkflowRunner } from "../lib/engine/WorkflowRunner";
 import { IWorkflow, INodeType } from "../lib/types";
 import { Registry } from "../lib/nodes/registry";
-import { AgentNode } from "../lib/nodes/Agent";
-import { GeminiModel } from "../lib/nodes/ai/GeminiModel";
+import { AgentNode } from "../lib/nodes/Agent/Agent";
+
+import { GeminiModel } from "../lib/nodes/ai/GeminiModel/GeminiModel";
+
 // import { ManualTrigger } from "../lib/nodes/Trigger"; // Need a trigger
 import { CredentialService } from "../lib/services/credential-service";
 

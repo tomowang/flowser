@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ClickElement } from "../lib/nodes/ClickElement";
+import { ClickElement } from "../lib/nodes/ClickElement/ClickElement";
+
 import { IExecuteFunctions, INodeExecutionData } from "../lib/types";
 import { browser } from "#imports";
 
