@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { VueFlow, useVueFlow } from "@vue-flow/core";
+import { VueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import { MiniMap } from "@vue-flow/minimap";
@@ -24,7 +24,7 @@ import { useWorkflowHistory } from "@/lib/composables/useWorkflowHistory";
 import { toast } from "vue-sonner";
 // Remove NodeInspector import
 import NodePropertiesModal from "@/components/editor/NodePropertiesModal.vue";
-import { WorkflowRunner, ExecutionStatus } from "@/lib/engine/WorkflowRunner";
+import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
 import { IWorkflow, IWorkflowExecutionResult, INodeType } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
 import { ExecutionService } from "@/lib/services/execution-service";
@@ -40,6 +40,7 @@ import {
   Play,
   Save,
   Download,
+  FileUp,
   ChevronRight,
   ChevronDown,
   Undo2,
@@ -59,7 +60,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
@@ -70,6 +70,50 @@ import "@vue-flow/minimap/dist/style.css";
 
 const { t } = useI18n();
 const route = useRoute();
+
+const fileInput = ref<HTMLInputElement | null>(null);
+
+const triggerImport = () => {
+  fileInput.value?.click();
+};
+
+const handleImport = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const content = e.target?.result as string;
+      const importedData = JSON.parse(content);
+
+      if (!importedData.nodes || !importedData.edges) {
+        throw new Error("Invalid workflow format");
+      }
+
+      // Prepare as IWorkflow for loadWorkflow
+      const workflow: IWorkflow = {
+        id: currentWorkflowId.value || crypto.randomUUID(),
+        name: importedData.name || t("workflowEditor.untitledWorkflow"),
+        nodes: importedData.nodes,
+        edges: importedData.edges,
+        createdAt: importedData.createdAt || Date.now(),
+        updatedAt: Date.now(),
+        active: importedData.active || false,
+      };
+
+      loadWorkflow(workflow);
+      toast.success(t("workflows.importSuccess"));
+    } catch (error) {
+      console.error(error);
+      toast.error(t("workflows.importError"));
+    } finally {
+      target.value = ""; // Reset input
+    }
+  };
+  reader.readAsText(file);
+};
 
 // Initial state
 const collapsedGroups = ref<Record<string, boolean>>({
@@ -522,9 +566,6 @@ const loadWorkflow = (workflow: IWorkflow) => {
   currentWorkflowId.value = workflow.id;
   currentWorkflowName.value = workflow.name;
   originalWorkflowName.value = workflow.name;
-  currentWorkflowId.value = workflow.id;
-  currentWorkflowName.value = workflow.name;
-  originalWorkflowName.value = workflow.name;
 
   const loadedNodes = workflow.nodes.map((n) => ({
     id: n.id,
@@ -715,9 +756,6 @@ const onNameBlur = () => {
 };
 
 const createNewWorkflow = () => {
-  currentWorkflowId.value = null;
-  currentWorkflowName.value = t("workflowEditor.newWorkflow");
-  originalWorkflowName.value = currentWorkflowName.value;
   currentWorkflowId.value = null;
   currentWorkflowName.value = t("workflowEditor.newWorkflow");
   originalWorkflowName.value = currentWorkflowName.value;
@@ -936,6 +974,22 @@ const toggleExecutionPanel = () => {
       >
         <Download class="w-4 h-4 mr-1" />
         {{ t("common.download") }}
+      </Button>
+      <input
+        ref="fileInput"
+        type="file"
+        accept=".json"
+        class="hidden"
+        @change="handleImport"
+      />
+      <Button
+        size="sm"
+        variant="outline"
+        class="cursor-pointer"
+        @click="triggerImport"
+      >
+        <FileUp class="w-4 h-4 mr-1" />
+        {{ t("common.import") }}
       </Button>
       <Button
         size="sm"

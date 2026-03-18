@@ -11,7 +11,6 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
@@ -30,6 +29,7 @@ import {
   Calendar,
   GitCommitHorizontal,
   Clock,
+  FileUp,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import CardAction from "@/components/ui/card/CardAction.vue";
@@ -40,6 +40,7 @@ const workflows = ref<IWorkflow[]>([]);
 const searchQuery = ref("");
 const isDeleteDialogOpen = ref(false);
 const workflowToDeleteId = ref<string | null>(null);
+const fileInput = ref<HTMLInputElement | null>(null);
 
 const filteredWorkflows = computed(() => {
   if (!searchQuery.value) return workflows.value;
@@ -54,6 +55,48 @@ const loadWorkflows = async () => {
 onMounted(async () => {
   await loadWorkflows();
 });
+
+const triggerImport = () => {
+  fileInput.value?.click();
+};
+
+const handleImport = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const content = e.target?.result as string;
+      const importedData = JSON.parse(content);
+
+      if (!importedData.nodes || !importedData.edges) {
+        throw new Error("Invalid workflow format");
+      }
+
+      const newWorkflow: IWorkflow = {
+        id: crypto.randomUUID(),
+        name: importedData.name || t("workflowEditor.untitledWorkflow"),
+        nodes: importedData.nodes,
+        edges: importedData.edges,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        active: false,
+      };
+
+      await WorkflowService.saveWorkflow(newWorkflow);
+      await loadWorkflows();
+      toast.success(t("workflows.importSuccess"));
+    } catch (error) {
+      console.error(error);
+      toast.error(t("workflows.importError"));
+    } finally {
+      target.value = ""; // Reset input
+    }
+  };
+  reader.readAsText(file);
+};
 
 const openDeleteDialog = (e: Event, id: string) => {
   e.preventDefault(); // Prevent RouterLink navigation
@@ -101,12 +144,25 @@ const onToggleActive = async (checked: boolean, wf: IWorkflow) => {
           {{ t("workflows.description") }}
         </p>
       </div>
-      <RouterLink to="/workflows/new">
-        <Button>
-          <Plus class="mr-2 h-4 w-4" />
-          {{ t("workflows.newWorkflow") }}
+      <div class="flex items-center gap-2">
+        <input
+          ref="fileInput"
+          type="file"
+          accept=".json"
+          class="hidden"
+          @change="handleImport"
+        />
+        <Button variant="outline" @click="triggerImport">
+          <FileUp class="mr-2 h-4 w-4" />
+          {{ t("workflows.importWorkflow") }}
         </Button>
-      </RouterLink>
+        <RouterLink to="/workflows/new">
+          <Button>
+            <Plus class="mr-2 h-4 w-4" />
+            {{ t("workflows.newWorkflow") }}
+          </Button>
+        </RouterLink>
+      </div>
     </div>
 
     <!-- Search Bar -->

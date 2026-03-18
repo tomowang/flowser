@@ -14,6 +14,7 @@
     "value": "Value",
     "saveChanges": "Save changes",
     "download": "Download",
+    "import": "Import",
     "group": "Group",
     "error": "Something went wrong"
   },
@@ -43,7 +44,10 @@
     "searchPlaceholder": "Search workflows...",
     "noWorkflowsFound": "No workflows found. Create one to get started.",
     "noResults": "No results found matching your search.",
-    "deleted": "Workflow deleted"
+    "deleted": "Workflow deleted",
+    "importWorkflow": "Import Workflow",
+    "importSuccess": "Workflow imported successfully",
+    "importError": "Failed to import workflow: Invalid file format"
   },
   "credentials": {
     "title": "Credentials",

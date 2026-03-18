@@ -14,6 +14,7 @@
     "value": "值",
     "saveChanges": "保存更改",
     "download": "下载",
+    "import": "导入",
     "error": "出错了"
   },
   "sidebar": {
@@ -41,8 +42,11 @@
     "inactive": "未激活",
     "searchPlaceholder": "搜索工作流...",
     "noWorkflowsFound": "未找到工作流。创建一个开始吧。",
-    "noResults": "您确定要删除此工作流吗？",
-    "deleted": "工作流删除成功。"
+    "noResults": "未找到匹配搜索结果的工作流。",
+    "deleted": "工作流删除成功。",
+    "importWorkflow": "导入工作流",
+    "importSuccess": "工作流导入成功",
+    "importError": "导入工作流失败：无效的文件格式"
   },
   "credentials": {
     "title": "凭证",
