@@ -39,6 +39,7 @@ import {
   Plus,
   Play,
   Save,
+  Download,
   ChevronRight,
   ChevronDown,
   Undo2,
@@ -673,6 +674,40 @@ const saveWorkflow = async () => {
   }
 };
 
+const downloadWorkflow = () => {
+  const workflowData = {
+    name: currentWorkflowName.value,
+    nodes: nodes.value.map((n) => {
+      const { executionStatus, executionError, ...data } = n.data;
+      return {
+        id: n.id,
+        type: n.data.nodeType || n.type,
+        position: n.position,
+        data,
+      };
+    }),
+    edges: edges.value.map((e) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      sourceHandle: e.sourceHandle ?? undefined,
+      targetHandle: e.targetHandle ?? undefined,
+    })),
+  };
+
+  const blob = new Blob([JSON.stringify(workflowData, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${currentWorkflowName.value || "workflow"}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
 const onNameBlur = () => {
   if (currentWorkflowName.value !== originalWorkflowName.value) {
     saveWorkflow();
@@ -892,6 +927,15 @@ const toggleExecutionPanel = () => {
         <Spinner v-if="isSaving" class="w-4 h-4 mr-1" />
         <Save v-else class="w-4 h-4 mr-1" />
         {{ t("common.save") }}
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        class="cursor-pointer"
+        @click="downloadWorkflow"
+      >
+        <Download class="w-4 h-4 mr-1" />
+        {{ t("common.download") }}
       </Button>
       <Button
         size="sm"

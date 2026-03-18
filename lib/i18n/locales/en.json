@@ -13,6 +13,7 @@
     "type": "Type",
     "value": "Value",
     "saveChanges": "Save changes",
+    "download": "Download",
     "group": "Group",
     "error": "Something went wrong"
   },
