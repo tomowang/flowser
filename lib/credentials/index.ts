@@ -1,10 +1,10 @@
 import type { ICredentialType } from "../types";
 
-import { GeminiApiCredential } from "./GeminiApi";
-import { OpenAIApiCredential } from "./OpenAIApi";
-import { AnthropicApiCredential } from "./AnthropicApi";
-import { DeepSeekApiCredential } from "./DeepSeekApi";
-import { DemoCredential } from "./DemoCredential";
+import { GeminiApiCredential } from "./GeminiApi.credential";
+import { OpenAIApiCredential } from "./OpenAIApi.credential";
+import { AnthropicApiCredential } from "./AnthropicApi.credential";
+import { DeepSeekApiCredential } from "./DeepSeekApi.credential";
+import { DemoCredential } from "./Demo.credential";
 
 export {
   GeminiApiCredential,

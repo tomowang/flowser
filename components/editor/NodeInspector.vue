@@ -6,6 +6,8 @@ import { CredentialService } from "@/lib/services/credential-service";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-vue-next";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
+import CredentialIcon from "@/components/editor/CredentialIcon.vue";
+import { getCredentialType } from "@/lib/credentials";
 import {
   Select,
   SelectContent,
@@ -391,7 +393,15 @@ const shouldShowProperty = (prop: INodeProperties) => {
             "
           >
             <SelectTrigger class="w-full">
-              <SelectValue placeholder="Select a credential" />
+              <SelectValue placeholder="Select a credential">
+                <div v-if="getCredentialValue(cred.name)" class="flex items-center gap-2">
+                  <CredentialIcon
+                    :icon="getCredentialType(cred.name)?.icon"
+                    class="w-4 h-4 shrink-0"
+                  />
+                  <span>{{ credentialOptions[cred.name]?.find(opt => opt.value === getCredentialValue(cred.name))?.name }}</span>
+                </div>
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <template v-if="credentialOptions[cred.name]?.length">
@@ -400,7 +410,13 @@ const shouldShowProperty = (prop: INodeProperties) => {
                   :key="opt.value"
                   :value="opt.value"
                 >
-                  {{ opt.name }}
+                  <div class="flex items-center gap-2">
+                    <CredentialIcon
+                      :icon="getCredentialType(cred.name)?.icon"
+                      class="w-4 h-4 shrink-0"
+                    />
+                    <span>{{ opt.name }}</span>
+                  </div>
                 </SelectItem>
               </template>
               <SelectItem v-else value="no-credentials" disabled>

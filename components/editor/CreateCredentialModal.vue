@@ -23,6 +23,7 @@ import { CredentialService } from "@/lib/services/credential-service";
 import { SecurityService } from "@/lib/services/security-service";
 import { getAllCredentialTypes, getCredentialType } from "@/lib/credentials";
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
+import CredentialIcon from "@/components/editor/CredentialIcon.vue";
 import type { INodeProperties } from "@/lib/types";
 
 const props = defineProps<{
@@ -79,6 +80,7 @@ const availableCredentialTypes = computed(() => {
   return getAllCredentialTypes().map((ct) => ({
     label: ct.displayName,
     value: ct.name,
+    icon: ct.icon,
   }));
 });
 
@@ -223,7 +225,15 @@ const onUnlocked = () => {
           <div class="col-span-3">
             <Select v-model="formData.type">
               <SelectTrigger>
-                <SelectValue :placeholder="t('credentials.selectType')" />
+                <SelectValue :placeholder="t('credentials.selectType')">
+                  <div v-if="formData.type" class="flex items-center gap-2">
+                    <CredentialIcon
+                      :icon="availableCredentialTypes.find(t => t.value === formData.type)?.icon"
+                      class="w-4 h-4 shrink-0"
+                    />
+                    <span>{{ availableCredentialTypes.find(t => t.value === formData.type)?.label }}</span>
+                  </div>
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
@@ -231,7 +241,13 @@ const onUnlocked = () => {
                   :key="type.value"
                   :value="type.value"
                 >
-                  {{ type.label }}
+                  <div class="flex items-center gap-2">
+                    <CredentialIcon
+                      :icon="type.icon"
+                      class="w-4 h-4 shrink-0"
+                    />
+                    <span>{{ type.label }}</span>
+                  </div>
                 </SelectItem>
               </SelectContent>
             </Select>

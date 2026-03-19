@@ -3,6 +3,7 @@ import type { ICredentialType } from "../types";
 export const OpenAIApiCredential: ICredentialType = {
   name: "openai_api",
   displayName: "OpenAI API",
+  icon: "file:openai.svg",
   properties: [
     {
       displayName: "API Key",

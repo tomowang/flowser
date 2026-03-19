@@ -17,6 +17,7 @@ import { SecurityService } from "@/lib/services/security-service";
 import { ICredential } from "@/lib/types";
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
+import CredentialIcon from "@/components/editor/CredentialIcon.vue";
 import { getCredentialType } from "@/lib/credentials";
 
 const credentials = ref<Omit<ICredential, "encryptedData" | "iv">[]>([]);
@@ -102,9 +103,15 @@ const openAddDialog = () => {
         <TableBody>
           <TableRow v-for="cred in credentials" :key="cred.id">
             <TableCell class="font-medium">{{ cred.name }}</TableCell>
-            <TableCell>{{
-              getCredentialType(cred.type)?.displayName
-            }}</TableCell>
+            <TableCell>
+              <div class="flex items-center gap-2">
+                <CredentialIcon
+                  :icon="getCredentialType(cred.type)?.icon"
+                  class="w-4 h-4 shrink-0"
+                />
+                <span>{{ getCredentialType(cred.type)?.displayName }}</span>
+              </div>
+            </TableCell>
             <TableCell>{{
               new Date(cred.createdAt).toLocaleDateString()
             }}</TableCell>

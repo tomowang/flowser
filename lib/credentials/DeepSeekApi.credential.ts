@@ -3,6 +3,7 @@ import type { ICredentialType } from "../types";
 export const DeepSeekApiCredential: ICredentialType = {
   name: "deepseek_api",
   displayName: "DeepSeek API",
+  icon: "file:deepseek.svg",
   properties: [
     {
       displayName: "API Key",
