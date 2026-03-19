@@ -13,7 +13,8 @@
     "zip:firefox": "wxt zip -b firefox",
     "compile": "vue-tsc --noEmit",
     "lint": "eslint .",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "prepare": "husky"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.9",
@@ -62,11 +63,16 @@
     "@wxt-dev/module-vue": "^1.0.2",
     "eslint": "^9.39.2",
     "eslint-plugin-vue": "^10.7.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "3.6.2",
     "typescript": "^5.9.2",
     "vitest": "^4.0.16",
     "vue-tsc": "^3.0.6",
     "wxt": "^0.20.13"
+  },
+  "lint-staged": {
+    "*.{js,mjs,jsx,ts,tsx,vue}": "eslint --fix"
   },
   "pnpm": {
     "overrides": {
