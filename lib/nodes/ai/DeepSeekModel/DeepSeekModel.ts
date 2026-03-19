@@ -4,7 +4,6 @@ import {
   INodeExecutionData,
   SupplyData,
 } from "../../../types";
-import { Zap } from "lucide-vue-next";
 
 interface IDeepSeekModel {
   id: string;
@@ -14,7 +13,7 @@ export const DeepSeekModel: INodeType = {
   description: {
     displayName: "DeepSeek Chat Model",
     name: "deepSeekModel",
-    icon: Zap,
+    icon: "file:deepseek.svg",
     group: ["ai"],
     version: 1,
     description: "DeepSeek LLM Model",

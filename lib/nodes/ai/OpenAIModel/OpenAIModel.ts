@@ -4,7 +4,6 @@ import {
   INodeExecutionData,
   SupplyData,
 } from "../../../types";
-import { Bot } from "lucide-vue-next";
 
 interface IOpenAIModel {
   id: string;
@@ -14,7 +13,7 @@ export const OpenAIModel: INodeType = {
   description: {
     displayName: "OpenAI Chat Model",
     name: "openAIModel",
-    icon: Bot,
+    icon: "file:openai.svg",
     group: ["ai"],
     version: 1,
     description: "OpenAI LLM Model",

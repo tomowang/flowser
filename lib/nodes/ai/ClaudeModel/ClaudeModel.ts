@@ -4,7 +4,6 @@ import {
   INodeExecutionData,
   SupplyData,
 } from "../../../types";
-import { MessageCircle } from "lucide-vue-next";
 
 interface IAnthropicModel {
   id: string;
@@ -15,7 +14,7 @@ export const ClaudeModel: INodeType = {
   description: {
     displayName: "Claude Chat Model",
     name: "claudeModel",
-    icon: MessageCircle,
+    icon: "file:anthropic.svg",
     group: ["ai"],
     version: 1,
     description: "Anthropic Claude LLM Model",

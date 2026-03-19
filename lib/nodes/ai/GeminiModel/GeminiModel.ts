@@ -4,7 +4,6 @@ import {
   INodeExecutionData,
   SupplyData,
 } from "../../../types";
-import { Sparkles } from "lucide-vue-next";
 
 interface IGeminiModel {
   name: string;
@@ -16,7 +15,7 @@ export const GeminiModel: INodeType = {
   description: {
     displayName: "Gemini Chat Model",
     name: "geminiModel",
-    icon: Sparkles,
+    icon: "file:gemini.svg",
     group: ["ai"],
     version: 1,
     description: "Google Gemini LLM Model",

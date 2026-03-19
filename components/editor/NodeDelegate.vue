@@ -5,6 +5,7 @@ import { Registry } from "@/lib/nodes/registry";
 import { Trash2, AlertTriangle } from "lucide-vue-next";
 import { validateNode } from "@/lib/utils/validation";
 import { IWorkflowNode } from "@/lib/types";
+import NodeIcon from "./NodeIcon.vue";
 
 const props = defineProps<{
   id: string; // Add ID prop to identify the node for removal
@@ -96,9 +97,13 @@ const deleteNode = (e: Event) => {
     <div class="flex items-center gap-3 mb-2">
       <!-- Icon placeholder (could be dynamic based on node type) -->
       <div
-        class="flex h-8 w-8 items-center justify-center rounded bg-muted text-muted-foreground"
+        class="flex h-8 w-8 items-center justify-center rounded bg-muted text-muted-foreground p-1.5"
       >
-        <component :is="nodeType?.description.icon || 'div'" class="h-5 w-5" />
+        <NodeIcon
+          :icon="nodeType?.description.icon"
+          :node-name="nodeType?.description.name"
+          class="h-full w-full"
+        />
       </div>
 
       <div class="flex flex-col overflow-hidden">

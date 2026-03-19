@@ -14,6 +14,7 @@ import "vue-json-pretty/lib/styles.css";
 import type { IWorkflowExecutionResult } from "@/lib/types";
 import { Registry } from "@/lib/nodes/registry";
 import { Plus } from "lucide-vue-next";
+import NodeIcon from "./NodeIcon.vue";
 
 const props = defineProps<{
   node: Node;
@@ -62,9 +63,13 @@ const outputData = computed(() => {
       <DialogHeader class="p-4 border-b">
         <DialogTitle class="flex items-center gap-2">
           <div
-            class="flex h-6 w-6 items-center justify-center rounded bg-muted"
+            class="flex h-6 w-6 items-center justify-center rounded bg-muted p-1"
           >
-            <component :is="nodeIcon" class="h-4 w-4" />
+            <NodeIcon
+              :icon="nodeIcon"
+              :node-name="node?.data?.nodeType"
+              class="h-full w-full"
+            />
           </div>
           {{ node?.data?.label || "Node Properties" }}
         </DialogTitle>

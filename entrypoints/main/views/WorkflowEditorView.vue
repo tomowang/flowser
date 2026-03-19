@@ -24,6 +24,7 @@ import { useWorkflowHistory } from "@/lib/composables/useWorkflowHistory";
 import { toast } from "vue-sonner";
 // Remove NodeInspector import
 import NodePropertiesModal from "@/components/editor/NodePropertiesModal.vue";
+import NodeIcon from "@/components/editor/NodeIcon.vue";
 import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
 import { IWorkflow, IWorkflowExecutionResult, INodeType } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
@@ -36,7 +37,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Search,
-  Plus,
   Play,
   Save,
   Download,
@@ -1137,11 +1137,12 @@ const toggleExecutionPanel = () => {
                   "
                 >
                   <div
-                    class="flex h-8 w-8 items-center justify-center rounded bg-muted"
+                    class="flex h-8 w-8 items-center justify-center rounded bg-muted p-1.5"
                   >
-                    <component
-                      :is="node.description.icon || Plus"
-                      class="h-4 w-4 text-foreground/70"
+                    <NodeIcon
+                      :icon="node.description.icon"
+                      :node-name="node.description.name"
+                      class="h-full w-full text-foreground/70"
                     />
                   </div>
                   <div class="flex flex-col text-left">
