@@ -1,6 +1,15 @@
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
 import { Calculator } from "lucide-vue-next";
 
+interface IFieldDefinition {
+  name: string;
+  type: "string" | "number" | "boolean" | "json";
+  stringValue?: string;
+  numberValue?: number;
+  booleanValue?: string;
+  jsonValue?: string;
+}
+
 export const EditFields: INodeType = {
   description: {
     displayName: "Edit Fields",
@@ -123,10 +132,12 @@ export const EditFields: INodeType = {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const mode = this.getNodeParameter("mode", i) as string;
-      const fieldsArr = (this.getNodeParameter("fields", i) as any)
-        ?.values as any[];
+      const fieldsConfig = this.getNodeParameter("fields", i, {}) as {
+        values?: IFieldDefinition[];
+      };
+      const fieldsArr = fieldsConfig.values;
 
-      let fields: Record<string, any> = {};
+      const fields: Record<string, unknown> = {};
 
       if (fieldsArr) {
         for (const field of fieldsArr) {
@@ -141,8 +152,10 @@ export const EditFields: INodeType = {
             fields[name] = field.booleanValue === "true";
           } else if (type === "json") {
             try {
-              fields[name] = JSON.parse(field.jsonValue);
-            } catch (e) {
+              fields[name] = JSON.parse(
+                field.jsonValue || "{}",
+              ) as Record<string, unknown>;
+            } catch {
               console.warn("Invalid JSON in Edit Fields node", field.jsonValue);
               fields[name] = field.jsonValue;
             }
@@ -151,12 +164,12 @@ export const EditFields: INodeType = {
       }
 
       const existingJson = item.json;
-      let newJson: Record<string, any>;
+      let newJson: Record<string, unknown>;
 
       if (mode === "keepOnlySet") {
         newJson = { ...fields };
       } else {
-        newJson = { ...existingJson, ...fields };
+        newJson = { ...existingJson, ...fields } as Record<string, unknown>;
       }
 
       returnData.push({

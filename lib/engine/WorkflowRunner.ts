@@ -82,7 +82,7 @@ export class WorkflowRunner {
         status: "success",
         nodeExecutionResults: this.nodeExecutionResults,
       };
-    } catch (e: any) {
+    } catch {
       return {
         id: crypto.randomUUID(),
         workflowId: this.workflow.id,
@@ -120,12 +120,12 @@ export class WorkflowRunner {
     const itemIndex = 0;
     const executionFunctions: IExecuteFunctions = {
       getInputData: () => inputData,
-      getNodeParameter: (paramName: string, ...args: any[]) => {
+      getNodeParameter: (paramName: string, ...args: unknown[]) => {
         // Handle optional itemIndex argument
         // getNodeParameter(name, index, fallback)
         // getNodeParameter(name, fallback)
         let index = itemIndex;
-        let fallback: any = undefined;
+        let fallback: unknown = undefined;
 
         if (typeof args[0] === "number") {
           index = args[0];
@@ -169,7 +169,10 @@ export class WorkflowRunner {
       },
       getCredential: async (credentialType: string) => {
         // Credentials are stored in node.data.credentials[credentialType] as credential ID
-        const credentialId = node.data?.credentials?.[credentialType];
+        const credentialId =
+          (node.data?.credentials as Record<string, string> | undefined)?.[
+            credentialType
+          ];
         if (!credentialId) return null;
 
         const { CredentialService } = await import(
@@ -188,7 +191,7 @@ export class WorkflowRunner {
 
     // Execute
     let outputData: INodeExecutionData[][] = [[]];
-    let executeError: any = null;
+    let executeError: Error | null = null;
 
     try {
       // Validate node
@@ -207,10 +210,11 @@ export class WorkflowRunner {
       }
     } catch (e) {
       console.error("Node execution error", e);
+      const errorMessage = e instanceof Error ? e.message : String(e);
       toast.error("Node execution error", {
-        description: (e as any).message || String(e),
+        description: errorMessage,
       });
-      executeError = e;
+      executeError = e instanceof Error ? e : new Error(errorMessage);
       throw e;
     } finally {
       const endTime = Date.now();
@@ -229,6 +233,7 @@ export class WorkflowRunner {
       this.onStatusChange?.(node.id, executeError ? "error" : "success");
       this.onNodeCompleted?.(nodeResult);
     }
+
 
     // Store execution data
     this.executionData.set(node.id, outputData[0]);
@@ -357,7 +362,7 @@ export class WorkflowRunner {
     text: string,
     itemIndex: number,
     inputData: INodeExecutionData[],
-  ): any {
+  ): unknown {
     const rootRegex = /^\s*{{\s*([\s\S]+?)\s*}}\s*$/;
     const match = text.match(rootRegex);
     if (match) {
@@ -375,7 +380,7 @@ export class WorkflowRunner {
     expression: string,
     itemIndex: number,
     inputData: INodeExecutionData[],
-  ): any {
+  ): unknown {
     if (!this.context) return expression;
 
     try {
@@ -431,10 +436,11 @@ export class WorkflowRunner {
       const result = this.context.dump(resultHandle.value);
       resultHandle.value.dispose();
       return result;
-    } catch (e: any) {
+    } catch (e) {
       console.error("Expression evaluation error", e);
+      const errorMessage = e instanceof Error ? e.message : String(e);
       toast.error("Expression evaluation error", {
-        description: e.message || String(e),
+        description: errorMessage,
       });
       return expression;
     }

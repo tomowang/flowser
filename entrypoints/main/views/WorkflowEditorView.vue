@@ -189,7 +189,7 @@ const nodes = computed(() => workflowState.value.nodes);
 const edges = computed(() => workflowState.value.edges);
 
 const selectedNode = ref<Node | null>(null);
-const logs = ref<any[]>([]); // Keep for basic logs if needed, but mainly use executionResult
+const logs = ref<string[]>([]); // Keep for basic logs if needed, but mainly use executionResult
 const executionResult = ref<IWorkflowExecutionResult | null>(null);
 const currentWorkflowId = ref<string | null>(null);
 const currentWorkflowName = ref<string>(t("workflowEditor.untitledWorkflow"));
@@ -439,7 +439,7 @@ const onNodeDoubleClick = (event: NodeMouseEvent) => {
   isPropertiesModalOpen.value = true;
 };
 
-const onNodeDataUpdate = (newData: any) => {
+const onNodeDataUpdate = (newData: Record<string, unknown>) => {
   if (!selectedNode.value) return;
 
   const currentNodeId = selectedNode.value.id;
@@ -482,7 +482,7 @@ const onDrop = (event: DragEvent) => {
     y: event.clientY - 50,
   };
 
-  const defaultParams: Record<string, any> = {};
+  const defaultParams: Record<string, unknown> = {};
   for (const prop of nodeType.description.properties) {
     if (prop.default !== undefined) {
       defaultParams[prop.name] = prop.default;
@@ -525,15 +525,17 @@ const lastSavedSnapshot = ref<string>("");
 
 const getWorkflowSnapshot = (
   name: string,
-  currentNodes: any[],
-  currentEdges: any[],
+  currentNodes: Node[],
+  currentEdges: Edge[],
   isLiveState: boolean,
 ) => {
   const snapshot = {
     name: name,
     nodes: currentNodes.map((n) => {
       // Exclude execution stats from snapshot to avoid triggering "hasChanges" when running
-      const { executionStatus, executionError, ...data } = n.data || {};
+      const data = { ...(n.data as Record<string, unknown>) || {} };
+      delete data.executionStatus;
+      delete data.executionError;
       return {
         id: n.id,
         type: isLiveState ? n.data?.nodeType : n.type,
@@ -574,7 +576,7 @@ const loadWorkflow = (workflow: IWorkflow) => {
     data: n.data,
   }));
 
-  const loadedEdges = workflow.edges.map((e: any) => {
+  const loadedEdges = workflow.edges.map((e) => {
     // Determine if main connection to set marker
     let isMain = false;
     const sourceNode = workflow.nodes.find((n) => n.id === e.source);
@@ -582,12 +584,12 @@ const loadWorkflow = (workflow: IWorkflow) => {
 
     if (sourceNode && targetNode) {
       const sourceType = getPortType(
-        sourceNode.data.nodeType,
+        sourceNode.data.nodeType as string,
         e.sourceHandle || "",
         "outputs",
       );
       const targetType = getPortType(
-        targetNode.data.nodeType,
+        targetNode.data.nodeType as string,
         e.targetHandle || "",
         "inputs",
       );
@@ -615,8 +617,8 @@ const loadWorkflow = (workflow: IWorkflow) => {
   isWorkflowActive.value = workflow.active;
   lastSavedSnapshot.value = getWorkflowSnapshot(
     workflow.name,
-    workflow.nodes,
-    workflow.edges,
+    workflow.nodes as unknown as Node[],
+    workflow.edges as unknown as Edge[],
     false,
   );
   logs.value.push(t("workflowEditor.loadedWorkflow") + " " + workflow.name);
@@ -657,7 +659,9 @@ const saveWorkflow = async () => {
     id: workflowId,
     name: name,
     nodes: nodes.value.map((n) => {
-      const { executionStatus, executionError, ...data } = n.data;
+      const data = { ...n.data };
+      delete data.executionStatus;
+      delete data.executionError;
       return {
         id: n.id,
         type: n.data.nodeType,
@@ -719,7 +723,9 @@ const downloadWorkflow = () => {
   const workflowData = {
     name: currentWorkflowName.value,
     nodes: nodes.value.map((n) => {
-      const { executionStatus, executionError, ...data } = n.data;
+      const data = { ...n.data };
+      delete data.executionStatus;
+      delete data.executionError;
       return {
         id: n.id,
         type: n.data.nodeType || n.type,
@@ -869,12 +875,13 @@ const runWorkflow = async () => {
     executionResult.value = result;
     await ExecutionService.saveExecution(result);
     logs.value.push(t("workflowEditor.executionFinished"));
-  } catch (e: any) {
+  } catch (e) {
     console.error(e);
-    if (e.message === "No trigger node found") {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    if (errorMessage === "No trigger node found") {
       toast.warning(t("workflowEditor.noTriggerNode"));
     }
-    logs.value.push(`Error: ${e.message}`);
+    logs.value.push(`Error: ${errorMessage}`);
   } finally {
     isExecuting.value = false;
   }
@@ -1097,7 +1104,7 @@ const toggleExecutionPanel = () => {
 
           <div class="flex-1 overflow-y-auto p-4 space-y-2">
             <div
-              v-for="(nodes, groupName) in groupedNodes"
+              v-for="(groupNodes, groupName) in groupedNodes"
               :key="groupName"
               class="space-y-1"
             >
@@ -1117,7 +1124,7 @@ const toggleExecutionPanel = () => {
               <!-- Group Content -->
               <div v-show="!collapsedGroups[groupName]" class="space-y-2 pl-2">
                 <div
-                  v-for="node in nodes"
+                  v-for="node in groupNodes"
                   :key="node.description.name"
                   class="cursor-grab flex items-center gap-3 rounded-md border bg-popover p-3 hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm"
                   draggable="true"

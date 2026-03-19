@@ -45,7 +45,7 @@ export const WindowQuery: INodeType = {
     const populate = this.getNodeParameter("populate", false) as boolean;
     const windowType = this.getNodeParameter("windowTypes", "any") as string;
 
-    const queryOptions: any = {
+    const queryOptions: Record<string, unknown> = {
       populate,
     };
 
@@ -53,8 +53,8 @@ export const WindowQuery: INodeType = {
       queryOptions.windowTypes = [windowType];
     }
 
-    const windows = await browser.windows.getAll(queryOptions);
+    const windows = await browser.windows.getAll(queryOptions as unknown as Parameters<typeof browser.windows.getAll>[0]);
 
-    return [windows.map((window) => ({ json: window }))];
+    return [windows.map((window) => ({ json: window as unknown as Record<string, unknown> }))];
   },
 };

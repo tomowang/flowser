@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import type { INodeProperties } from "@/lib/types";
+import type { IDisplayOptions, INodeProperties } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -11,15 +11,24 @@ import {
 import { Codemirror } from "vue-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
-import { codeAutocompleteExtension, expressionAutocompleteExtension } from "@/lib/editor/autocomplete";
+import {
+  codeAutocompleteExtension,
+  expressionAutocompleteExtension,
+} from "@/lib/editor/autocomplete";
 import { EditorView } from "@codemirror/view";
 import { CronLight } from "@vue-js-cron/light";
 import "@vue-js-cron/light/dist/light.css";
 import { Button } from "@/components/ui/button";
-import { FunctionSquare, Type, RefreshCw, Loader2, Trash2 } from "lucide-vue-next";
+import {
+  FunctionSquare,
+  Type,
+  RefreshCw,
+  Loader2,
+  Trash2,
+} from "lucide-vue-next";
 
 const props = defineProps<{
-  modelValue: any;
+  modelValue: unknown;
   property: INodeProperties;
   loading?: boolean;
 }>();
@@ -35,12 +44,6 @@ watch(
     if (typeof val === "string" && val.startsWith("=")) {
       isExpression.value = true;
     } else {
-      // If we are already in expression mode and value clears or changes, stay in expression mode
-      // unless it was explicitly switched. But here we are syncing from props.
-      // If the value doesn't start with =, it strictly isn't an expression by new definition.
-      // However, typing in expression mode might temporarily have no = if user deleted it?
-      // No, we will enforce = in expression inputs or handle it.
-      // Actually, standard n8n behavior: if it starts with =, it's expression.
       isExpression.value = false;
     }
   },
@@ -50,9 +53,7 @@ watch(
 const displayValue = computed({
   get: () => {
     if (isExpression.value) {
-      // In expression mode, show raw value (which should start with =)
-      // If somehow it doesn't, we show it as is.
-      return props.modelValue ?? "";
+      return (props.modelValue as string) ?? "";
     }
     return props.modelValue;
   },
@@ -63,13 +64,6 @@ const displayValue = computed({
 
 const expressionValue = computed({
   get: () => {
-    // Strip correct prefix for editing if we wanted to hide `=`, but n8n shows it.
-    // The screenshot shows `{{ $json.content }}` with `fx` icon.
-    // n8n actually hides the `=` in the UI input often but adds it in data.
-    // But strictly speaking, for "Fixed | Expression" toggle:
-    // If Expression mode, we expect value to start with `=`.
-    // If the user types `{{ foo }}`, we save `={{ foo }}`.
-
     const val = props.modelValue as string;
     if (val && val.startsWith("=")) {
       return val.slice(1);
@@ -104,10 +98,6 @@ const toggleMode = (mode: "fixed" | "expression") => {
         strVal = strVal.slice(1);
       }
 
-      // Attempt to restore type if needed?
-      // For now, keep as string or try to parse if property type is not string?
-      // Simplest is just keep as string for inputs, but for boolean/options we might need checks.
-
       if (props.property.type === "boolean") {
         if (strVal === "true") emit("update:modelValue", true);
         else if (strVal === "false") emit("update:modelValue", false);
@@ -124,8 +114,8 @@ const toggleMode = (mode: "fixed" | "expression") => {
 };
 
 const checkDisplayOptions = (
-  options: any,
-  values: Record<string, any>,
+  options: IDisplayOptions,
+  values: Record<string, unknown>,
 ): boolean => {
   if (!options) return true;
   if (!values) return true;
@@ -133,7 +123,7 @@ const checkDisplayOptions = (
     for (const key in options.show) {
       const showValues = options.show[key];
       const actualValue = values[key];
-      if (Array.isArray(showValues) && !showValues.includes(actualValue)) {
+      if (Array.isArray(showValues) && !(showValues as unknown[]).includes(actualValue)) {
         return false;
       }
     }
@@ -142,7 +132,7 @@ const checkDisplayOptions = (
     for (const key in options.hide) {
       const hideValues = options.hide[key];
       const actualValue = values[key];
-      if (Array.isArray(hideValues) && hideValues.includes(actualValue)) {
+      if (Array.isArray(hideValues) && (hideValues as unknown[]).includes(actualValue)) {
         return false;
       }
     }
@@ -157,9 +147,13 @@ const singleLineExtension = [
     ".cm-content": { padding: "0" },
     ".cm-line": { padding: "0" },
     "&.cm-focused": { outline: "none" },
-    ".cm-gutters": { display: "none", border: "none", backgroundColor: "transparent" }
+    ".cm-gutters": {
+      display: "none",
+      border: "none",
+      backgroundColor: "transparent",
+    },
   }),
-  EditorView.lineWrapping
+  EditorView.lineWrapping,
 ];
 </script>
 
@@ -205,7 +199,10 @@ const singleLineExtension = [
     </div>
 
     <!-- Expression Input -->
-    <div v-if="isExpression" class="flex items-center gap-1 relative rounded-md border border-input shadow-sm focus-within:ring-1 focus-within:ring-ring bg-transparent min-h-9">
+    <div
+      v-if="isExpression"
+      class="flex items-center gap-1 relative rounded-md border border-input shadow-sm focus-within:ring-1 focus-within:ring-ring bg-transparent min-h-9"
+    >
       <div
         class="pl-2 pr-1 flex items-center mt-[1px] text-muted-foreground font-mono text-xs select-none"
       >
@@ -213,10 +210,14 @@ const singleLineExtension = [
       </div>
       <div class="w-full relative flex-1 flex py-1 pr-2">
         <Codemirror
-          v-model="expressionValue"
+          v-model="expressionValue as string"
           :style="{ width: '100%', minHeight: '20px' }"
           :autofocus="true"
-          :extensions="[javascript(), expressionAutocompleteExtension, singleLineExtension]"
+          :extensions="[
+            javascript(),
+            expressionAutocompleteExtension,
+            singleLineExtension,
+          ]"
           class="w-full text-sm font-mono overflow-hidden"
           placeholder="Expression..."
         />
@@ -226,10 +227,9 @@ const singleLineExtension = [
     <!-- Fixed Inputs -->
     <div v-else>
       <!-- String Input -->
-      <!-- String Input -->
       <input
         v-if="property.type === 'string' || property.type === 'password'"
-        v-model="displayValue"
+        v-model="displayValue as string"
         :type="property.type === 'password' ? 'password' : 'text'"
         class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         :placeholder="property.placeholder"
@@ -238,7 +238,7 @@ const singleLineExtension = [
       <!-- Number Input -->
       <input
         v-else-if="property.type === 'number'"
-        v-model.number="displayValue"
+        v-model.number="displayValue as number"
         type="number"
         class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         :placeholder="property.placeholder"
@@ -246,7 +246,7 @@ const singleLineExtension = [
 
       <!-- Options Select -->
       <div v-else-if="property.type === 'options'" class="flex gap-2">
-        <Select v-model="displayValue">
+        <Select v-model="displayValue as string">
           <SelectTrigger class="w-full">
             <SelectValue :placeholder="property.placeholder" />
           </SelectTrigger>
@@ -277,14 +277,14 @@ const singleLineExtension = [
       <!-- JSON/Code Editor -->
       <Codemirror
         v-else-if="property.type === 'json' || property.type === 'code'"
-        v-model="displayValue"
+        v-model="displayValue as string"
         :style="{ height: '100px' }"
         :autofocus="false"
         :indent-with-tab="true"
         :tab-size="2"
         :extensions="[
           property.type === 'json' ? json() : javascript(),
-          property.type === 'code' ? codeAutocompleteExtension : []
+          property.type === 'code' ? codeAutocompleteExtension : [],
         ]"
       />
 
@@ -294,7 +294,7 @@ const singleLineExtension = [
         class="flex items-center space-x-2"
       >
         <input
-          v-model="displayValue"
+          v-model="displayValue as boolean"
           type="checkbox"
           class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
         />
@@ -305,7 +305,7 @@ const singleLineExtension = [
         <div class="text-xs font-mono bg-muted p-2 rounded">
           {{ displayValue }}
         </div>
-        <CronLight v-model="displayValue" locale="en" />
+        <CronLight v-model="displayValue as string" locale="en" />
       </div>
 
       <!-- Fixed Collection -->
@@ -324,7 +324,7 @@ const singleLineExtension = [
 
           <div class="flex flex-col gap-2">
             <div
-              v-for="(item, index) in displayValue?.[option.name] || []"
+              v-for="(item, index) in (displayValue as Record<string, unknown[]>)?.[option.name] || []"
               :key="index"
               class="relative rounded-md border p-4 pt-8 flex flex-col gap-2 group"
             >
@@ -334,9 +334,9 @@ const singleLineExtension = [
                 title="Remove Item"
                 @click="
                   () => {
-                    const newValue = { ...displayValue };
+                    const newValue = { ...(displayValue as Record<string, unknown[]>) };
                     newValue[option.name] = newValue[option.name].filter(
-                      (_: any, i: number) => i !== index,
+                      (_, i: number) => i !== index,
                     );
                     emit('update:modelValue', newValue);
                   }
@@ -349,16 +349,16 @@ const singleLineExtension = [
                 <NodeInput
                   v-if="
                     !subProp.displayOptions ||
-                    checkDisplayOptions(subProp.displayOptions, item)
+                    checkDisplayOptions(subProp.displayOptions, item as Record<string, unknown>)
                   "
-                  :model-value="item[subProp.name] ?? subProp.default"
+                  :model-value="(item as Record<string, unknown>)[subProp.name] ?? subProp.default"
                   :property="subProp"
                   @update:model-value="
                     (val) => {
-                      const newValue = { ...displayValue };
+                      const newValue = { ...(displayValue as Record<string, unknown[]>) };
                       if (!newValue[option.name]) newValue[option.name] = [];
-                      const newItems = [...(newValue[option.name] as any[])];
-                      newItems[index] = { ...newItems[index], [subProp.name]: val };
+                      const newItems = [...(newValue[option.name])];
+                      newItems[index] = { ...(newItems[index] as Record<string, unknown>), [subProp.name]: val };
                       newValue[option.name] = newItems;
                       emit('update:modelValue', newValue);
                     }
@@ -374,11 +374,11 @@ const singleLineExtension = [
               class="w-full"
               @click="
                 () => {
-                  const newValue = { ...(displayValue || {}) };
+                  const newValue = { ...(displayValue as Record<string, unknown[]> || {}) };
                   if (!newValue[option.name]) newValue[option.name] = [];
 
                   // Initialize new item with defaults
-                  const newItem: Record<string, any> = {};
+                  const newItem: Record<string, unknown> = {};
                   if (option.values) {
                     for (const subProp of option.values) {
                       if (subProp.default !== undefined) {

@@ -6,6 +6,10 @@ import {
 } from "../../../types";
 import { Zap } from "lucide-vue-next";
 
+interface IDeepSeekModel {
+  id: string;
+}
+
 export const DeepSeekModel: INodeType = {
   description: {
     displayName: "DeepSeek Chat Model",
@@ -75,7 +79,7 @@ export const DeepSeekModel: INodeType = {
     };
   },
   methods: {
-    async listModels(this: IExecuteFunctions): Promise<any> {
+    async listModels(this: IExecuteFunctions): Promise<unknown> {
       const credential = await this.getCredential?.("deepseek_api");
       if (!credential?.apiKey) {
         return { results: [] };
@@ -102,10 +106,10 @@ export const DeepSeekModel: INodeType = {
             "Content-Type": "application/json",
           },
         });
-        const data = await response.json();
+        const data = (await response.json()) as { data: IDeepSeekModel[] };
         if (data.data) {
           return {
-            results: data.data.map((m: any) => ({
+            results: data.data.map((m) => ({
               name: m.id, // DeepSeek displayName might be missing or same
               value: m.id,
             })),

@@ -1,4 +1,4 @@
-import { Database, Filter } from "lucide-vue-next";
+import { Database } from "lucide-vue-next";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
 import { DataTableService } from "../../services/data-table-service";
 
@@ -43,13 +43,13 @@ export const DataTable: INodeType = {
   },
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const tableIdentifier = this.getNodeParameter("table", "") as string;
-    let filter = this.getNodeParameter("filter", {}) as Record<string, any>;
+    let filter = this.getNodeParameter("filter", {}) as Record<string, unknown>;
     const limit = this.getNodeParameter("limit", 0) as number;
 
     if (typeof filter === "string") {
       try {
-        filter = JSON.parse(filter);
-      } catch (e) {
+        filter = JSON.parse(filter) as Record<string, unknown>;
+      } catch {
         filter = {};
       }
     }
@@ -70,12 +70,13 @@ export const DataTable: INodeType = {
       tableId = id;
     }
 
-    let rows = await DataTableService.getRows(tableId, filter);
+    const rows = await DataTableService.getRows(tableId, filter);
 
+    let resultRows = rows;
     if (limit > 0) {
-      rows = rows.slice(0, limit);
+      resultRows = rows.slice(0, limit);
     }
 
-    return [rows.map((row) => ({ json: row.data }))];
+    return [resultRows.map((row) => ({ json: row.data }))];
   },
 };

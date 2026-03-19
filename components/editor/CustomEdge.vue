@@ -15,7 +15,7 @@ const props = defineProps<EdgeProps>();
 const { removeEdges } = useVueFlow();
 
 const isHovered = ref(false);
-let hoverTimeout: any = null;
+let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const setHover = (value: boolean) => {
   if (hoverTimeout) clearTimeout(hoverTimeout);

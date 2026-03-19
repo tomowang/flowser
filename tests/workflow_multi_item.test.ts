@@ -78,7 +78,12 @@ Registry.register(PerItemParamNode);
 let _currentItemIndex = 0;
 let _currentInputData: Array<{ json: Record<string, unknown> }> = [];
 
-function makeHandle(value: unknown) {
+interface MockHandle {
+  __value: unknown;
+  dispose: () => void;
+}
+
+function makeHandle(value: unknown): MockHandle {
   return { __value: value, dispose: vi.fn() };
 }
 
@@ -93,14 +98,14 @@ const mockContext = {
     return makeHandle(null);
   }),
   setProp: vi.fn((_owner: unknown, key: string, val: unknown) => {
-    if (key === "$itemIndex" && typeof (val as any).__value === "number") {
-      _currentItemIndex = (val as any).__value;
+    if (key === "$itemIndex" && typeof (val as MockHandle).__value === "number") {
+      _currentItemIndex = (val as MockHandle).__value as number;
     }
   }),
   callFunction: vi.fn(
     (_fn: unknown, _thisArg: unknown, jsonStringHandle: unknown) => {
       try {
-        const str = (jsonStringHandle as any).__value as string;
+        const str = (jsonStringHandle as MockHandle).__value as string;
         return { value: makeHandle(JSON.parse(str)), error: undefined };
       } catch {
         return { value: makeHandle(null), error: undefined };
@@ -109,7 +114,7 @@ const mockContext = {
   ),
   newString: vi.fn((s: string) => makeHandle(s)),
   getNumber: vi.fn((handle: unknown) => {
-    const v = (handle as any).__value;
+    const v = (handle as MockHandle).__value;
     return typeof v === "number" ? v : _currentItemIndex;
   }),
   newNumber: vi.fn((n: number) => {
@@ -127,7 +132,6 @@ const mockContext = {
     let result: unknown = expr;
     try {
       const safeExpr = expr.replace(/\$json\./g, "__json.");
-      // eslint-disable-next-line no-new-func
       result = new Function("__json", `"use strict"; return (${safeExpr})`)(
         jsonData,
       );
@@ -136,7 +140,7 @@ const mockContext = {
     }
     return { value: makeHandle(result), error: undefined };
   }),
-  dump: vi.fn((handle: unknown) => (handle as any).__value ?? handle),
+  dump: vi.fn((handle: unknown) => (handle as MockHandle).__value ?? handle),
   dispose: vi.fn(),
   global: makeHandle(null),
   undefined: makeHandle(undefined),

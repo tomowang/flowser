@@ -72,8 +72,8 @@ export const ClickElement: INodeType = {
         await browser.scripting.executeScript({
           target: { tabId: tabId },
           func: (selectorType: string, selector: string, multiple: boolean) => {
-            function getElementsByXPath(xpath: string, parent = document) {
-              const results = [];
+            function getElementsByXPath(xpath: string, parent: Node = document) {
+              const results: (Node | null)[] = [];
               const query = document.evaluate(
                 xpath,
                 parent,
@@ -87,7 +87,7 @@ export const ClickElement: INodeType = {
               return results;
             }
 
-            let elements: any[] = [];
+            let elements: (Element | Node | null)[] = [];
             if (selectorType === "css") {
               elements = Array.from(document.querySelectorAll(selector));
             } else {
@@ -96,9 +96,12 @@ export const ClickElement: INodeType = {
 
             if (elements.length > 0) {
               if (multiple) {
-                elements.forEach((el: any) => el.click());
+                elements.forEach((el) => {
+                  if (el instanceof HTMLElement) el.click();
+                });
               } else {
-                elements[0].click();
+                const el = elements[0];
+                if (el instanceof HTMLElement) el.click();
               }
             }
           },

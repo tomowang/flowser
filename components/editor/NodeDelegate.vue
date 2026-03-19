@@ -8,7 +8,7 @@ import { IWorkflowNode } from "@/lib/types";
 
 const props = defineProps<{
   id: string; // Add ID prop to identify the node for removal
-  data: any;
+  data: Record<string, unknown>;
   selected?: boolean;
 }>();
 
@@ -16,7 +16,7 @@ const { removeNodes } = useVueFlow();
 const isHovered = ref(false);
 
 const nodeType = computed(() => {
-  return Registry.get(props.data.nodeType);
+  return Registry.get(props.data.nodeType as string);
 });
 
 // Construct a temporary IWorkflowNode object for validation
@@ -24,7 +24,7 @@ const nodeType = computed(() => {
 const validationResult = computed(() => {
   const nodeForValidation: IWorkflowNode = {
     id: props.id,
-    type: props.data.nodeType,
+    type: props.data.nodeType as string,
     data: props.data,
     position: { x: 0, y: 0 }, // Dummy position
   };

@@ -99,7 +99,10 @@ export const Code: INodeType = {
 
       const resultHandle = context.evalCode(wrappedCode);
       if (resultHandle.error) {
-        const error = context.dump(resultHandle.error);
+        const error = context.dump(resultHandle.error) as {
+          name: string;
+          message: string;
+        };
         resultHandle.error.dispose();
         // Try to get stack trace if available?
         throw new Error(
@@ -119,7 +122,10 @@ export const Code: INodeType = {
       itemsObjHandle.value.dispose(); // Done with inputs
 
       if (executionResultHandle.error) {
-        const error = context.dump(executionResultHandle.error);
+        const error = context.dump(executionResultHandle.error) as {
+          name: string;
+          message: string;
+        };
         executionResultHandle.error.dispose();
         throw new Error(
           `Runtime error in script: ${error.name}: ${error.message}`,
@@ -138,7 +144,7 @@ export const Code: INodeType = {
       }
 
       return [output as INodeExecutionData[]];
-    } catch (e: any) {
+    } catch (e) {
       throw e;
     } finally {
       context.dispose();

@@ -53,7 +53,7 @@ export const If: INodeType = {
     const returnDataFalse: INodeExecutionData[] = [];
 
     // Helper to evaluate expressions if available
-    const evaluate = (expr: any, index: number): any => {
+    const evaluate = (expr: unknown, index: number): unknown => {
       if (typeof expr === "string" && this.evaluateExpression) {
         return this.evaluateExpression(expr, index);
       }
@@ -67,11 +67,11 @@ export const If: INodeType = {
       let conditions: Condition[] = [];
       try {
         if (typeof conditionsStr === "string") {
-          conditions = JSON.parse(conditionsStr);
+          conditions = JSON.parse(conditionsStr) as Condition[];
         } else {
-          conditions = conditionsStr;
+          conditions = conditionsStr as Condition[];
         }
-      } catch (e) {
+      } catch {
         console.warn("Invalid conditions JSON", conditionsStr);
       }
 
@@ -120,9 +120,9 @@ export const If: INodeType = {
 };
 
 function evaluateConditionResult(
-  key: any,
+  key: unknown,
   operator: string,
-  value: any,
+  value: unknown,
 ): boolean {
   // Simple type coercion comparison
   const valueNum = Number(value);
@@ -141,13 +141,17 @@ function evaluateConditionResult(
     case "!=":
       return key != value;
     case ">":
-      return isNum ? keyNum > valueNum : key > value;
+      if (isNum) return keyNum > valueNum;
+      return String(key) > String(value);
     case "<":
-      return isNum ? keyNum < valueNum : key < value;
+      if (isNum) return keyNum < valueNum;
+      return String(key) < String(value);
     case ">=":
-      return isNum ? keyNum >= valueNum : key >= value;
+      if (isNum) return keyNum >= valueNum;
+      return String(key) >= String(value);
     case "<=":
-      return isNum ? keyNum <= valueNum : key <= value;
+      if (isNum) return keyNum <= valueNum;
+      return String(key) <= String(value);
     case "contains":
       return String(key).includes(String(value));
     case "startsWith":

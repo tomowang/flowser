@@ -1,13 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { WorkflowRunner } from "../lib/engine/WorkflowRunner";
 import { IWorkflow, INodeType } from "../lib/types";
 import { Registry } from "../lib/nodes/registry";
 import { AgentNode } from "../lib/nodes/Agent/Agent";
 
 import { GeminiModel } from "../lib/nodes/ai/GeminiModel/GeminiModel";
-
-// import { ManualTrigger } from "../lib/nodes/Trigger"; // Need a trigger
-import { CredentialService } from "../lib/services/credential-service";
 
 // Register nodes
 Registry.register(AgentNode);
@@ -47,7 +44,7 @@ vi.mock("@ai-sdk/google", () => ({
 }));
 
 vi.mock("ai", () => ({
-  generateText: async (params: any) => {
+  generateText: async (params: { prompt: string }) => {
     return {
       text: `Mock response for prompt: ${params.prompt}`,
       usage: { totalTokens: 10 },
@@ -88,7 +85,7 @@ const mockContext = {
     error: undefined,
     dispose: () => {}, // handle handle dispose
   }),
-  dump: (val: any) => val,
+  dump: (val: unknown) => val,
   dispose: () => {},
   global: {},
   undefined: undefined,

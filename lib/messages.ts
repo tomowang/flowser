@@ -7,15 +7,15 @@ export interface ExecuteHttpRequestPayload {
   url: string;
   method: string;
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
 }
 
-export interface RuntimeMessage<T = any> {
+export interface RuntimeMessage<T = unknown> {
   type: MessageType;
   payload: T;
 }
 
-export interface RuntimeResponse<T = any> {
+export interface RuntimeResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

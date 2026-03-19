@@ -67,7 +67,7 @@ export const TabQuery: INodeType = {
     const active = this.getNodeParameter("active", "any") as string;
     const tabStatus = this.getNodeParameter("tabStatus", "any") as string;
 
-    const queryInfo: any = {};
+    const queryInfo: Record<string, unknown> = {};
 
     if (title) {
       queryInfo.title = title;
@@ -87,8 +87,8 @@ export const TabQuery: INodeType = {
       queryInfo.status = tabStatus;
     }
 
-    const tabs = await browser.tabs.query(queryInfo);
+    const tabs = await browser.tabs.query(queryInfo as unknown as Parameters<typeof browser.tabs.query>[0]);
 
-    return [tabs.map((tab) => ({ json: tab }))];
+    return [tabs.map((tab) => ({ json: tab as unknown as Record<string, unknown> }))];
   },
 };

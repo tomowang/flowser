@@ -49,7 +49,7 @@ const createTable = async () => {
     isCreateDialogOpen.value = false;
     newTableName.value = "";
     toast.success(t("datatables.tableCreated"));
-  } catch (error) {
+  } catch {
     toast.error(t("datatables.createTableError"));
   }
 };
@@ -66,7 +66,7 @@ const confirmDelete = async () => {
     await DataTableService.deleteTable(tableToDeleteId.value);
     await loadTables();
     toast.success(t("datatables.tableDeleted"));
-  } catch (error) {
+  } catch {
     toast.error(t("datatables.deleteTableError"));
   } finally {
     isDeleteDialogOpen.value = false;

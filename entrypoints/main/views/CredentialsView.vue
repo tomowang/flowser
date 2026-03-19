@@ -15,7 +15,6 @@ import { Plus, Trash2, Edit } from "lucide-vue-next";
 import { CredentialService } from "@/lib/services/credential-service";
 import { SecurityService } from "@/lib/services/security-service";
 import { ICredential } from "@/lib/types";
-import { computed } from "vue";
 import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
 import { getCredentialType } from "@/lib/credentials";
@@ -30,8 +29,8 @@ const { t } = useI18n();
 const loadCredentials = async () => {
   try {
     credentials.value = await CredentialService.getCredentials();
-  } catch (e) {
-    console.error("Failed to load credentials", e);
+  } catch {
+    console.error("Failed to load credentials");
   }
 };
 

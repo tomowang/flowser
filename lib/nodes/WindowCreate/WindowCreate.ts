@@ -82,7 +82,7 @@ export const WindowCreate: INodeType = {
       const focused = this.getNodeParameter("focused", i) as boolean;
       const incognito = this.getNodeParameter("incognito", i) as boolean;
 
-      const createData: any = {
+      const createData: Record<string, unknown> = {
         type,
         state,
         focused,
@@ -94,10 +94,10 @@ export const WindowCreate: INodeType = {
       }
 
       try {
-        const window = await browser.windows.create(createData);
+        const window = await browser.windows.create(createData as unknown as Parameters<typeof browser.windows.create>[0]);
         returnData.push({
           json: {
-            ...window,
+            ...(window as unknown as Record<string, unknown>),
           },
         });
       } catch (error) {

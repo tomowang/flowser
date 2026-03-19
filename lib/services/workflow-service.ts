@@ -11,7 +11,7 @@ export class WorkflowService {
         type: "WORKFLOW:UPDATED",
         payload: workflow,
       });
-    } catch (e) {
+    } catch {
       // Ignore errors if background is not listening yet
     }
     return workflow.id;
@@ -48,7 +48,7 @@ export class WorkflowService {
           type: "WORKFLOW:UPDATED",
           payload: workflow,
         });
-      } catch (e) {
+      } catch {
         // Ignore errors if background is not listening yet
       }
     }

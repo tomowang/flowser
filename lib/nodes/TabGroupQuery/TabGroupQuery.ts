@@ -30,14 +30,14 @@ export const TabGroupQuery: INodeType = {
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const title = this.getNodeParameter("title", "") as string;
 
-    const queryInfo: any = {};
+    const queryInfo: Record<string, unknown> = {};
 
     if (title) {
       queryInfo.title = title;
     }
 
-    const groups = await browser.tabGroups.query(queryInfo);
+    const groups = await browser.tabGroups.query(queryInfo as unknown as Parameters<typeof browser.tabGroups.query>[0]);
 
-    return [groups.map((group) => ({ json: group }))];
+    return [groups.map((group) => ({ json: group as unknown as Record<string, unknown> }))];
   },
 };

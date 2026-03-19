@@ -71,7 +71,7 @@ const mockContext = {
     error: undefined,
     dispose: () => {},
   }),
-  dump: (val: any) => val,
+  dump: (val: unknown) => val,
   dispose: () => {},
   global: {},
   undefined: undefined,

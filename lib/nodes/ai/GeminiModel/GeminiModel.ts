@@ -4,8 +4,13 @@ import {
   INodeExecutionData,
   SupplyData,
 } from "../../../types";
-import { CredentialService } from "../../../services/credential-service";
 import { Sparkles } from "lucide-vue-next";
+
+interface IGeminiModel {
+  name: string;
+  displayName: string;
+  supportedGenerationMethods: string[];
+}
 
 export const GeminiModel: INodeType = {
   description: {
@@ -76,7 +81,7 @@ export const GeminiModel: INodeType = {
     };
   },
   methods: {
-    async listModels(this: IExecuteFunctions): Promise<any> {
+    async listModels(this: IExecuteFunctions): Promise<unknown> {
       const credential = await this.getCredential?.("gemini_api");
       if (!credential?.apiKey) {
         return {
@@ -88,16 +93,16 @@ export const GeminiModel: INodeType = {
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
         );
-        const data = await response.json();
+        const data = (await response.json()) as { models: IGeminiModel[] };
         if (data.models) {
           return {
             results: data.models
               .filter(
-                (m: any) =>
+                (m) =>
                   m.name.includes("gemini") &&
                   m.supportedGenerationMethods?.includes("generateContent"),
               )
-              .map((m: any) => ({
+              .map((m) => ({
                 name: m.displayName,
                 value: m.name.replace("models/", ""),
               })),

@@ -2,14 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ClickElement } from "../lib/nodes/ClickElement/ClickElement";
 
 import { IExecuteFunctions, INodeExecutionData } from "../lib/types";
-import { browser } from "#imports";
 
 // Mock browser.scripting
 const mockExecuteScript = vi.fn();
 vi.mock("#imports", () => ({
   browser: {
     scripting: {
-      executeScript: (...args: any[]) => mockExecuteScript(...args),
+      executeScript: (...args: unknown[]) => mockExecuteScript(...args),
     },
   },
 }));
@@ -21,11 +20,11 @@ describe("ClickElement Node", () => {
 
   const executeNode = async (
     inputs: INodeExecutionData[],
-    params: Record<string, any>,
+    params: Record<string, unknown>,
   ) => {
     const context = {
       getInputData: () => inputs,
-      getNodeParameter: (name: string, arg2: any, arg3?: any) => {
+      getNodeParameter: (name: string, arg2: unknown, arg3?: unknown) => {
         if (params[name] !== undefined) return params[name];
         // Special handling for tabId which is called with (name, index, fallback)
         if (name === "tabId") return arg3;

@@ -96,96 +96,102 @@ export const HttpRequest: INodeType = {
     const returnData: INodeExecutionData[] = [];
 
     for (let i = 0; i < items.length; i++) {
-        const urlStr = this.getNodeParameter("url", i) as string;
-        const method = this.getNodeParameter("method", i) as string;
-        const parametersStr = this.getNodeParameter("parameters", i) as string;
-        const headersStr = this.getNodeParameter("headers", i) as string;
-        const specifyBody = this.getNodeParameter("specifyBody", i) as string;
+      const urlStr = this.getNodeParameter("url", i) as string;
+      const method = this.getNodeParameter("method", i) as string;
+      const parametersStr = this.getNodeParameter("parameters", i) as string;
+      const headersStr = this.getNodeParameter("headers", i) as string;
+      const specifyBody = this.getNodeParameter("specifyBody", i) as string;
 
-        // Construct URL with query parameters
-        let url = urlStr;
-        if (parametersStr) {
-            try {
-                const urlObj = new URL(urlStr);
-                const params = JSON.parse(parametersStr);
-                Object.keys(params).forEach((key) => {
-                    urlObj.searchParams.append(key, String(params[key]));
-                });
-                url = urlObj.toString();
-            } catch (e) {
-                console.warn("Invalid parameters JSON", parametersStr);
-            }
-        }
-
-        // Prepare Headers
-        let headers: Record<string, string> = {};
-        if (headersStr) {
-            try {
-                const parsed = JSON.parse(headersStr);
-                Object.keys(parsed).forEach(key => {
-                    headers[key] = String(parsed[key]);
-                });
-            } catch (e) {
-                console.warn("Invalid headers JSON", headersStr);
-            }
-        }
-
-        // Prepare Body
-        let body: any = undefined;
-        if (method !== "GET" && method !== "HEAD" && specifyBody !== "none") {
-            if (specifyBody === "json") {
-                const bodyStr = this.getNodeParameter("body", i) as string;
-                try {
-                    body = bodyStr ? JSON.parse(bodyStr) : undefined;
-                    if (!headers["Content-Type"]) {
-                        headers["Content-Type"] = "application/json";
-                    }
-                } catch (e) {
-                    console.warn("Invalid JSON body", bodyStr);
-                }
-            } else if (specifyBody === "form") {
-                const bodyStr = this.getNodeParameter("bodyForm", i) as string;
-                try {
-                   const parsed = bodyStr ? JSON.parse(bodyStr) : {};
-                   // Convert to x-www-form-urlencoded string
-                   const formData = new URLSearchParams();
-                   Object.keys(parsed).forEach(key => formData.append(key, String(parsed[key])));
-                   body = formData.toString();
-                   
-                   if (!headers["Content-Type"]) {
-                        headers["Content-Type"] = "application/x-www-form-urlencoded";
-                   }
-                } catch (e) {
-                    console.warn("Invalid Form body", bodyStr);
-                }
-            }
-        }
-
+      // Construct URL with query parameters
+      let url = urlStr;
+      if (parametersStr) {
         try {
-            const response = await browser.runtime.sendMessage({
-                type: MessageType.HTTP_EXECUTE_REQUEST,
-                payload: {
-                    url,
-                    method,
-                    headers,
-                    body,
-                },
-            });
-
-            if (!response.success) {
-                throw new Error(response.error);
-            }
-
-            returnData.push({
-                json: response.data,
-            });
-        } catch (error: any) {
-            returnData.push({
-                json: {
-                    error: error.message,
-                },
-            });
+          const urlObj = new URL(urlStr);
+          const params = JSON.parse(parametersStr) as Record<string, unknown>;
+          Object.keys(params).forEach((key) => {
+            urlObj.searchParams.append(key, String(params[key]));
+          });
+          url = urlObj.toString();
+        } catch {
+          console.warn("Invalid parameters JSON", parametersStr);
         }
+      }
+
+      // Prepare Headers
+      const headers: Record<string, string> = {};
+      if (headersStr) {
+        try {
+          const parsed = JSON.parse(headersStr) as Record<string, unknown>;
+          Object.keys(parsed).forEach((key) => {
+            headers[key] = String(parsed[key]);
+          });
+        } catch {
+          console.warn("Invalid headers JSON", headersStr);
+        }
+      }
+
+      // Prepare Body
+      let body: unknown = undefined;
+      if (method !== "GET" && method !== "HEAD" && specifyBody !== "none") {
+        if (specifyBody === "json") {
+          const bodyStr = this.getNodeParameter("body", i) as string;
+          try {
+            body = bodyStr
+              ? (JSON.parse(bodyStr) as Record<string, unknown>)
+              : undefined;
+            if (!headers["Content-Type"]) {
+              headers["Content-Type"] = "application/json";
+            }
+          } catch {
+            console.warn("Invalid JSON body", bodyStr);
+          }
+        } else if (specifyBody === "form") {
+          const bodyStr = this.getNodeParameter("bodyForm", i) as string;
+          try {
+            const parsed = bodyStr
+              ? (JSON.parse(bodyStr) as Record<string, unknown>)
+              : {};
+            // Convert to x-www-form-urlencoded string
+            const formData = new URLSearchParams();
+            Object.keys(parsed).forEach((key) =>
+              formData.append(key, String(parsed[key])),
+            );
+            body = formData.toString();
+
+            if (!headers["Content-Type"]) {
+              headers["Content-Type"] = "application/x-www-form-urlencoded";
+            }
+          } catch {
+            console.warn("Invalid Form body", bodyStr);
+          }
+        }
+      }
+
+      try {
+        const response = (await browser.runtime.sendMessage({
+          type: MessageType.HTTP_EXECUTE_REQUEST,
+          payload: {
+            url,
+            method,
+            headers,
+            body,
+          },
+        })) as { success: boolean; data: Record<string, unknown>; error?: string };
+
+        if (!response.success) {
+          throw new Error(response.error);
+        }
+
+        returnData.push({
+          json: response.data,
+        });
+      } catch (error) {
+        returnData.push({
+          json: {
+            error: error instanceof Error ? error.message : String(error),
+          },
+        });
+      }
     }
     return [returnData];
   },

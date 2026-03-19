@@ -6,6 +6,11 @@ import {
 } from "../../../types";
 import { MessageCircle } from "lucide-vue-next";
 
+interface IAnthropicModel {
+  id: string;
+  display_name?: string;
+}
+
 export const ClaudeModel: INodeType = {
   description: {
     displayName: "Claude Chat Model",
@@ -72,7 +77,7 @@ export const ClaudeModel: INodeType = {
     };
   },
   methods: {
-    async listModels(this: IExecuteFunctions): Promise<any> {
+    async listModels(this: IExecuteFunctions): Promise<unknown> {
       const credential = await this.getCredential?.("anthropic_api");
       if (!credential?.apiKey) {
         return { results: [] };
@@ -87,10 +92,10 @@ export const ClaudeModel: INodeType = {
             "content-type": "application/json",
           },
         });
-        const data = await response.json();
+        const data = (await response.json()) as { data: IAnthropicModel[] };
         if (data.data) {
           return {
-            results: data.data.map((m: any) => ({
+            results: data.data.map((m) => ({
               name: m.display_name || m.id,
               value: m.id,
             })),

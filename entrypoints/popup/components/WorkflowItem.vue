@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const props = defineProps<{
+defineProps<{
   workflow: IWorkflow;
 }>();
 

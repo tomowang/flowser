@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, toRaw } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { DataTableService } from "@/lib/services/data-table-service";
@@ -43,7 +43,7 @@ const newColumnType = ref<"string" | "number" | "boolean" | "json">("string");
 // State for Add/Edit Row
 const isRowDialogOpen = ref(false);
 const editingRowId = ref<number | null>(null);
-const localRowData = ref<Record<string, any>>({});
+const localRowData = ref<Record<string, unknown>>({});
 
 const loadData = async () => {
   table.value = await DataTableService.getTable(tableId);
@@ -93,8 +93,8 @@ const saveColumns = async () => {
     await loadData();
     isColumnsDialogOpen.value = false;
     toast.success(t("datatables.columnsUpdated"));
-  } catch (error) {
-    console.error(error);
+  } catch {
+    console.error("Error");
     toast.error(t("datatables.updateColumnsError"));
   }
 };
@@ -121,7 +121,7 @@ const saveRow = async () => {
     // Process types
     const dataToSave = { ...localRowData.value };
     columns.value.forEach((col) => {
-      let val = dataToSave[col.name];
+      const val = dataToSave[col.name];
       if (col.type === "number") {
         dataToSave[col.name] = Number(val);
       } else if (col.type === "boolean") {
@@ -129,9 +129,9 @@ const saveRow = async () => {
       } else if (col.type === "json") {
         try {
           if (typeof val === "string") {
-            dataToSave[col.name] = JSON.parse(val);
+            dataToSave[col.name] = JSON.parse(val) as Record<string, unknown>;
           }
-        } catch (e) {
+        } catch {
           // Keep as string if invalid JSON? Or error?
           // For now let's assume valid JSON or simple handling
         }
@@ -147,7 +147,7 @@ const saveRow = async () => {
     }
     await loadData();
     isRowDialogOpen.value = false;
-  } catch (error) {
+  } catch {
     toast.error(t("datatables.saveRowError"));
   }
 };
@@ -157,7 +157,7 @@ const deleteRow = async (rowId: number) => {
     await DataTableService.deleteRow(tableId, rowId);
     await loadData();
     toast.success(t("datatables.rowDeleted"));
-  } catch (error) {
+  } catch {
     toast.error(t("datatables.deleteRowError"));
   }
 };
@@ -396,8 +396,8 @@ const deleteRow = async (rowId: number) => {
             />
             <Input
               v-else-if="col.type === 'number'"
-              type="number"
               v-model="localRowData[col.name]"
+              type="number"
             />
             <select
               v-else-if="col.type === 'boolean'"

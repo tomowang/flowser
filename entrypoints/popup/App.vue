@@ -68,8 +68,9 @@ const handleRun = async (id: string) => {
     } else {
       toast.error(`Execution failed: ${workflow.name}`);
     }
-  } catch (e: any) {
-    toast.error(`Error running workflow: ${e.message}`);
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    toast.error(`Error running workflow: ${errorMessage}`);
   }
 };
 
@@ -108,7 +109,7 @@ const handleDelete = async (id: string) => {
     await WorkflowService.deleteWorkflow(id);
     await loadWorkflows();
     toast.success("Workflow deleted");
-  } catch (e) {
+  } catch {
     toast.error("Failed to delete workflow");
   }
 };
@@ -118,7 +119,7 @@ const handleToggle = async (id: string, active: boolean) => {
     await WorkflowService.updateWorkflowStatus(id, active);
     await loadWorkflows();
     toast.success(`Workflow ${active ? "activated" : "deactivated"}`);
-  } catch (e) {
+  } catch {
     toast.error("Failed to update status");
   }
 };
@@ -215,13 +216,13 @@ onMounted(async () => {
               v-model="masterKeyInput"
               type="password"
               class="col-span-3"
-              @keydown.enter="handleMasterKeySubmit"
               auto-focus
+              @keydown.enter="handleMasterKeySubmit"
             />
           </div>
         </div>
         <DialogFooter>
-          <Button @click="handleMasterKeySubmit" :disabled="verifyingKey">
+          <Button :disabled="verifyingKey" @click="handleMasterKeySubmit">
             {{ verifyingKey ? "Verifying..." : "Unlock & Run" }}
           </Button>
         </DialogFooter>

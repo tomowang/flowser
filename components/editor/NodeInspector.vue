@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useVueFlow } from "@vue-flow/core";
+import { useVueFlow, type Node } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
 import { CredentialService } from "@/lib/services/credential-service";
-import { Codemirror } from "vue-codemirror";
-import { javascript } from "@codemirror/lang-javascript";
-import { json } from "@codemirror/lang-json";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-vue-next";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
@@ -16,21 +13,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { INodeCredentialDescription } from "@/lib/types";
-import { CronLight } from "@vue-js-cron/light";
+import type {
+  INodeCredentialDescription,
+  INodeProperties,
+  IExecuteFunctions,
+} from "@/lib/types";
 import "@vue-js-cron/light/dist/light.css";
 import NodeInput from "./NodeInput.vue";
 
 const props = defineProps<{
-  node: any; // The selected node object from Vue Flow
+  node: Node; // The selected node object from Vue Flow
 }>();
 
 const emit = defineEmits(["update:data"]);
 
 // Credential options: keyed by credential type name
-const credentialOptions = ref<
-  Record<string, { name: string; value: string }[]>
->({});
+const credentialOptions = ref<Record<string, { name: string; value: string }[]>>(
+  {},
+);
 
 // Get node type definition
 const nodeType = computed(() => {
@@ -161,7 +161,7 @@ const properties = computed(() => {
   });
 });
 
-const updateValue = (key: string, value: any) => {
+const updateValue = (key: string, value: unknown) => {
   const newData = { ...props.node.data, [key]: value };
   emit("update:data", newData);
 };
@@ -192,12 +192,17 @@ const loadNodeOptions = async (propertyName: string) => {
 
   try {
     // Mock execution context
-    const context: any = {
+    const context: Partial<IExecuteFunctions> = {
       getNodeParameter: (paramName: string) => {
-        return props.node.data[paramName] ?? propDef.default;
+        return (
+          (props.node.data as Record<string, unknown>)[paramName] ??
+          propDef.default
+        );
       },
       getCredential: async (credentialType: string) => {
-        const credId = props.node.data.credentials?.[credentialType];
+        const credId = (
+          props.node.data.credentials as Record<string, string> | undefined
+        )?.[credentialType];
         if (!credId) return null;
         try {
           return await CredentialService.getDecryptedCredential(credId);
@@ -208,9 +213,17 @@ const loadNodeOptions = async (propertyName: string) => {
       },
     };
 
-    const result = await method.call(context);
-    if (result && Array.isArray(result.results)) {
-      dynamicOptions.value[propertyName] = result.results;
+    const result = await method.call(context as IExecuteFunctions);
+    if (
+      result &&
+      typeof result === "object" &&
+      "results" in result &&
+      Array.isArray(result.results)
+    ) {
+      dynamicOptions.value[propertyName] = result.results as {
+        name: string;
+        value: string;
+      }[];
     }
   } catch (e) {
     console.error("Failed to load dynamic options", e);
@@ -234,11 +247,18 @@ watch(
         if (dep.startsWith("credentials.")) {
           const credType = dep.split(".")[1];
           return (
-            newData.credentials?.[credType] !==
-            oldData?.credentials?.[credType]
+            (newData.credentials as Record<string, string> | undefined)?.[
+              credType
+            ] !==
+            (oldData?.credentials as Record<string, string> | undefined)?.[
+              credType
+            ]
           );
         }
-        return newData[dep] !== oldData?.[dep];
+        return (
+          (newData as Record<string, unknown>)[dep] !==
+          (oldData as Record<string, unknown>)?.[dep]
+        );
       });
 
       if (shouldReload) {
@@ -267,7 +287,8 @@ watch(
 
 // Update credential value in node data, stored as credentials[credType]
 const updateCredentialValue = (credType: string, credId: string) => {
-  const currentCredentials = props.node.data.credentials || {};
+  const currentCredentials =
+    (props.node.data.credentials as Record<string, string>) || {};
   const newData = {
     ...props.node.data,
     credentials: {
@@ -279,47 +300,48 @@ const updateCredentialValue = (credType: string, credId: string) => {
 };
 
 const getCredentialValue = (credType: string): string => {
-  return props.node.data.credentials?.[credType] || "";
+  return (
+    (props.node.data.credentials as Record<string, string> | undefined)?.[
+      credType
+    ] || ""
+  );
 };
 
-const shouldShowProperty = (prop: any) => {
+const shouldShowProperty = (prop: INodeProperties) => {
   if (!prop.displayOptions) return true;
 
   const { show, hide } = prop.displayOptions;
 
   // Helper to check conditions
-  const checkConditions = (conditions: any) => {
-    return Object.entries(conditions).every(
-      ([key, validValues]: [string, any]) => {
-        const propertyDef = properties.value.find((p) => p.name === key);
-        const currentValue = props.node.data[key] ?? propertyDef?.default;
+  const checkConditions = (conditions: Record<string, unknown>) => {
+    return Object.entries(conditions).every(([key, validValues]) => {
+      const propertyDef = properties.value.find((p) => p.name === key);
+      const currentValue =
+        (props.node.data as Record<string, unknown>)[key] ??
+        propertyDef?.default;
 
-        if (Array.isArray(validValues)) {
-          return validValues.some((val) => {
-            if (typeof val === "object" && val !== null) {
-              // TODO: Handle DisplayCondition object if needed (complex conditions)
-              // For now assuming simple values or simple object match?
-              // n8n supports { propertyName: value } inside array?
-              // The types say: Array<NodeParameterValue | DisplayCondition>
-              // For simplicity, let's just handle simple values first as per request
-              return false;
-            }
-            return val === currentValue;
-          });
-        }
-        return validValues === currentValue;
-      },
-    );
+      if (Array.isArray(validValues)) {
+        return (validValues as unknown[]).some((val) => {
+          if (typeof val === "object" && val !== null) {
+            // TODO: Handle DisplayCondition object if needed (complex conditions)
+            // For now assuming simple values or simple object match?
+            return false;
+          }
+          return val === currentValue;
+        });
+      }
+      return validValues === currentValue;
+    });
   };
 
   let isVisible = true;
 
   if (show) {
-    isVisible = isVisible && checkConditions(show);
+    isVisible = isVisible && checkConditions(show as Record<string, unknown>);
   }
 
   if (hide) {
-    isVisible = isVisible && !checkConditions(hide);
+    isVisible = isVisible && !checkConditions(hide as Record<string, unknown>);
   }
 
   return isVisible;
@@ -408,9 +430,11 @@ const shouldShowProperty = (prop: any) => {
       >
         <NodeInput
           :property="prop"
-          :model-value="node.data[prop.name] ?? prop.default"
+          :model-value="
+            (node.data as Record<string, unknown>)[prop.name] ?? prop.default
+          "
           :loading="loadingOptions[prop.name]"
-          @update:model-value="(val: any) => updateValue(prop.name, val)"
+          @update:model-value="(val: unknown) => updateValue(prop.name, val)"
           @refresh="loadNodeOptions(prop.name)"
         />
       </div>

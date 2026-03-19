@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { IWorkflowExecutionResult, IExecutionNodeResult } from "@/lib/types";
-import { ref, computed } from "vue";
+import { IWorkflowExecutionResult } from "@/lib/types";
+import { ref, computed, watch } from "vue";
 import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
 import ExecutionNodeList from "./ExecutionNodeList.vue";
 import ExecutionNodeDetail from "./ExecutionNodeDetail.vue";
@@ -43,8 +43,6 @@ const initSelection = () => {
 
 // Initialize selection when component mounts or result changes
 // Using a watcher might be better if the result prop changes
-import { watch, onMounted } from "vue";
-
 watch(
   () => props.executionResult,
   () => {

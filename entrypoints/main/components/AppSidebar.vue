@@ -20,10 +20,9 @@ import {
   Key,
   History,
   Settings,
-  GalleryVerticalEnd,
   Database,
 } from "lucide-vue-next";
-import { RouterLink, useRoute } from "vue-router";
+import { RouterLink } from "vue-router";
 import { computed } from "vue";
 
 import logo from "@/assets/logo.svg";
@@ -74,8 +73,8 @@ const items = computed(() => [
                   <img :src="logo" />
                 </div>
                 <div
-                  class="grid flex-1 text-left text-sm leading-tight"
                   v-if="state === 'expanded'"
+                  class="grid flex-1 text-left text-sm leading-tight"
                 >
                   <span class="truncate font-semibold">Flowser</span>
                 </div>

@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { SecurityService } from "@/lib/services/security-service";
 
-const props = defineProps<{
+defineProps<{
   isOpen: boolean;
 }>();
 
@@ -42,8 +42,9 @@ const unlock = async () => {
     emit("unlocked");
     emit("close");
     password.value = ""; // clear
-  } catch (e: any) {
-    error.value = t("masterKey.failedToDeriveKey") + " " + e.message;
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    error.value = t("masterKey.failedToDeriveKey") + " " + errorMessage;
   } finally {
     isLoading.value = false;
   }

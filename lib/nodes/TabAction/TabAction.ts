@@ -135,7 +135,7 @@ export const TabAction: INodeType = {
         const pinned = this.getNodeParameter("pinned", i) as boolean;
         const windowId = this.getNodeParameter("windowId", i) as number;
 
-        const createProperties: any = {
+        const createProperties: Record<string, unknown> = {
           active,
           pinned,
         };
@@ -149,10 +149,10 @@ export const TabAction: INodeType = {
         }
 
         try {
-          const tab = await browser.tabs.create(createProperties);
+          const tab = await browser.tabs.create(createProperties as unknown as Parameters<typeof browser.tabs.create>[0]);
           returnData.push({
             json: {
-              ...tab,
+              ...(tab as unknown as Record<string, unknown>),
             },
           });
         } catch (error) {
@@ -182,14 +182,10 @@ export const TabAction: INodeType = {
             throw new Error(`Failed to close tab ${tabId}`);
           }
         } else {
-          // If tabId is invalid or not provided, we might want to return something or error
-          // The original code pushed a result even if invalid id?
-          // "if (tabId && !isNaN(tabId)) { ... } else { returnData.push(...) }"
-          // Let's match original behavior.
           returnData.push({
             json: {
               closed: false,
-              tabIdInput,
+              tabIdInput: tabIdInput as string,
               error: "Invalid Tab ID",
             },
           });
@@ -213,7 +209,7 @@ export const TabAction: INodeType = {
         }
 
         if (tabIds.length > 0) {
-          const groupOptions: any = {
+          const groupOptions: Record<string, unknown> = {
             tabIds,
           };
 
@@ -228,7 +224,7 @@ export const TabAction: INodeType = {
           }
 
           try {
-            const newGroupId = await browser.tabs.group(groupOptions);
+            const newGroupId = await browser.tabs.group(groupOptions as unknown as Parameters<typeof browser.tabs.group>[0]);
             returnData.push({
               json: {
                 groupId: newGroupId,

@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import type { Node } from "@vue-flow/core";
 import NodeInspector from "@/components/editor/NodeInspector.vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
@@ -15,7 +16,7 @@ import { Registry } from "@/lib/nodes/registry";
 import { Plus } from "lucide-vue-next";
 
 const props = defineProps<{
-  node: any;
+  node: Node;
   isOpen: boolean;
   executionResult: IWorkflowExecutionResult | null;
 }>();

@@ -20,10 +20,12 @@ export async function getQuickJS(): Promise<QuickJSWASMModule> {
       importModuleLoader: async () => {
         const moduleLoader = await ReleaseSync.importModuleLoader();
         const defaultFactory =
-          "default" in moduleLoader ? moduleLoader.default : moduleLoader;
-        return async (options: any = {}) => {
+          "default" in moduleLoader
+            ? (moduleLoader.default as (options?: unknown) => Promise<unknown>)
+            : (moduleLoader as (options?: unknown) => Promise<unknown>);
+        return async (options: Record<string, unknown> = {}) => {
           const wasmBinary = await fetch(wasmUrl).then((r) => r.arrayBuffer());
-          return (defaultFactory as any)({
+          return defaultFactory({
             ...options,
             wasmBinary,
           });

@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { IExecutionNodeResult } from "@/lib/types";
-import { computed } from "vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 
-const props = defineProps<{
+defineProps<{
   nodeResult: IExecutionNodeResult | null;
 }>();
 </script>

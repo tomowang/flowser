@@ -1,5 +1,14 @@
+export type IDataValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | IDataObject
+  | IDataValue[];
+
 export interface IDataObject {
-  [key: string]: any;
+  [key: string]: IDataValue;
 }
 
 export interface IBinaryData {
@@ -57,7 +66,7 @@ export interface INodeCredentialDescription {
 export interface ICredentialType {
   name: string; // e.g., 'gemini_api'
   displayName: string; // e.g., 'Gemini API'
-  icon?: any;
+  icon?: string | object;
   properties: INodeProperties[]; // Fields to collect (e.g., apiKey)
   documentationUrl?: string;
 }
@@ -90,7 +99,7 @@ export interface INodeProperties {
     | "cron"
     | "password"
     | "fixedCollection";
-  default?: any;
+  default?: unknown;
   options?: {
     name: string;
     value?: string;
@@ -118,13 +127,13 @@ export interface INodePort {
 export interface INodeTypeDescription {
   displayName: string;
   name: string;
-  icon: any; // Icon name e.g. 'f7:bolt' or svg string or Component
+  icon: string | object; // Icon name e.g. 'f7:bolt' or svg string or Component
   group: string[];
   version: number;
   description: string;
   defaults: {
     name: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   inputs: INodePort[];
   outputs: INodePort[];
@@ -135,18 +144,20 @@ export interface INodeTypeDescription {
 export interface IExecuteFunctions {
   // Methods available to nodes during execution
   getInputData(): INodeExecutionData[];
-  getNodeParameter(paramName: string, fallback?: any): any;
-  getNodeParameter(paramName: string, itemIndex: number, fallback?: any): any;
-  getConnectedNodes?(inputName: string): any[];
+  getNodeParameter(paramName: string, fallback?: unknown): unknown;
+  getNodeParameter(
+    paramName: string,
+    itemIndex: number,
+    fallback?: unknown,
+  ): unknown;
+  getConnectedNodes?(inputName: string): unknown[];
   getCredential?(
     credentialType: string,
   ): Promise<Record<string, unknown> | null>;
-  evaluateExpression?(expression: string, itemIndex: number): any;
+  evaluateExpression?(expression: string, itemIndex: number): unknown;
 }
 
-export interface ISupplyDataFunctions extends IExecuteFunctions {
-  // Methods available to nodes during supplyData execution
-}
+export type ISupplyDataFunctions = IExecuteFunctions;
 
 // Output interface for supplyData
 export type CloseFunction = () => Promise<void>;
@@ -170,7 +181,7 @@ export interface INodeType {
     itemIndex: number,
   ): Promise<SupplyData>;
   methods?: {
-    [key: string]: (this: IExecuteFunctions) => Promise<any>;
+    [key: string]: (this: IExecuteFunctions) => Promise<unknown>;
   };
 }
 
@@ -181,8 +192,8 @@ export interface IWorkflowNode {
   position: { x: number; y: number };
   data: {
     label?: string; // User defined name
-  } & Record<string, any>; // Parameter values
-  parameters?: Record<string, any>; // Store actual param values here to separate from UI state?
+  } & Record<string, unknown>; // Parameter values
+  parameters?: Record<string, unknown>; // Store actual param values here to separate from UI state?
   // For simplicity, let's keep everything in 'data' or a specific 'parameters' field.
   // n8n puts parameters in 'parameters' key usually.
 }
@@ -223,5 +234,6 @@ export interface IDataTable {
 export interface IDataTableRow {
   tableId: string;
   rowId: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
+

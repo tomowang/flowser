@@ -6,6 +6,10 @@ import {
 } from "../../../types";
 import { Bot } from "lucide-vue-next";
 
+interface IOpenAIModel {
+  id: string;
+}
+
 export const OpenAIModel: INodeType = {
   description: {
     displayName: "OpenAI Chat Model",
@@ -74,32 +78,34 @@ export const OpenAIModel: INodeType = {
     };
   },
   methods: {
-    async listModels(this: IExecuteFunctions): Promise<any> {
+    async listModels(this: IExecuteFunctions): Promise<unknown> {
       const credential = await this.getCredential?.("openai_api");
       if (!credential?.apiKey) {
         return { results: [] };
       }
       const apiKey = credential.apiKey as string;
-      const baseUrl = (credential.baseUrl as string) || "https://api.openai.com/v1";
+      const baseUrl =
+        (credential.baseUrl as string) || "https://api.openai.com/v1";
 
       const url = `${baseUrl}/models`; // Helper to handle slash? simplified here
 
       try {
         const response = await fetch(url, {
           headers: {
-            "Authorization": `Bearer ${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
         });
-        const data = await response.json();
+        const data = (await response.json()) as { data: IOpenAIModel[] };
         if (data.data) {
           // Filter out non-chat models loosely
-          const chatModels = data.data.filter((m: any) =>
-            m.id.includes("gpt") || m.id.includes("o1") || m.id.includes("o3") // o1/o3 reasoning models
+          const chatModels = data.data.filter(
+            (m) =>
+              m.id.includes("gpt") || m.id.includes("o1") || m.id.includes("o3"), // o1/o3 reasoning models
           );
 
           return {
-            results: chatModels.map((m: any) => ({
+            results: chatModels.map((m) => ({
               name: m.id,
               value: m.id,
             })),

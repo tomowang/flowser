@@ -69,7 +69,7 @@ export class SecurityService {
     const encryptedContent = await crypto.subtle.encrypt(
       {
         name: "AES-GCM",
-        iv: iv as any,
+        iv: iv,
       },
       this.masterKey,
       encoded,
@@ -93,10 +93,10 @@ export class SecurityService {
     const decryptedContent = await crypto.subtle.decrypt(
       {
         name: "AES-GCM",
-        iv: iv as any,
+        iv: iv,
       },
       this.masterKey,
-      data as any,
+      data,
     );
 
     const decoder = new TextDecoder();
@@ -117,10 +117,10 @@ export class SecurityService {
     const decryptedContent = await crypto.subtle.decrypt(
       {
         name: "AES-GCM",
-        iv: iv as any,
+        iv: iv,
       },
       key,
-      data as any,
+      data,
     );
 
     const decoder = new TextDecoder();
@@ -141,10 +141,11 @@ export class SecurityService {
     try {
       await this.decryptWithKey(cred.encryptedData, cred.iv, key);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
+
 
   // --- Helpers ---
 

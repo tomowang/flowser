@@ -1,7 +1,11 @@
 import { openDB, DBSchema } from "idb";
-import { IWorkflow, ICredential } from "./types";
-
-import { IWorkflowExecutionResult, IDataTable, IDataTableRow } from "./types";
+import {
+  IWorkflow,
+  ICredential,
+  IWorkflowExecutionResult,
+  IDataTable,
+  IDataTableRow,
+} from "./types";
 
 interface FlowserDB extends DBSchema {
   workflows: {
@@ -28,7 +32,7 @@ interface FlowserDB extends DBSchema {
 }
 
 export const dbPromise = openDB<FlowserDB>("flowser-db", 4, {
-  upgrade(db, oldVersion, newVersion, transaction) {
+  upgrade(db) {
     if (!db.objectStoreNames.contains("workflows")) {
       db.createObjectStore("workflows", { keyPath: "id" });
     }
