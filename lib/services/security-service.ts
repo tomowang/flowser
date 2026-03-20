@@ -6,14 +6,14 @@ export class SecurityService {
 
   /**
    * Derives a master key from the password using PBKDF2.
-   * Uses SHA-256(password) as the deterministic salt.
+   * Uses a random salt stored in the local storage.
    */
   static async deriveKey(password: string): Promise<CryptoKey> {
     const encoder = new TextEncoder();
     const rawKey = encoder.encode(password);
 
-    // 1. Generate deterministic salt: SHA-256(password)
-    const saltBuffer = await crypto.subtle.digest("SHA-256", rawKey);
+    // 1. Get or create random salt
+    const saltBuffer = await this.getOrCreateSalt();
 
     // 2. Import password as key material
     const baseKey = await crypto.subtle.importKey(
@@ -37,6 +37,16 @@ export class SecurityService {
       true, // extractable (required for session storage)
       ["encrypt", "decrypt"],
     );
+  }
+
+  private static async getOrCreateSalt(): Promise<Uint8Array> {
+    let saltBase64 = await storage.getItem<string>("local:flowser_salt");
+    if (!saltBase64) {
+      const newSalt = crypto.getRandomValues(new Uint8Array(16));
+      saltBase64 = this.bufferToBase64(newSalt);
+      await storage.setItem("local:flowser_salt", saltBase64);
+    }
+    return this.base64ToBuffer(saltBase64);
   }
 
   static setMasterKey(key: CryptoKey) {
