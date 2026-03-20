@@ -8,6 +8,7 @@ import "../lib/nodes/register";
 import { dbPromise } from "../lib/db";
 import { WorkflowRunner } from "../lib/engine/WorkflowRunner";
 import { ExecutionService } from "../lib/services/execution-service";
+import { SecurityService } from "../lib/services/security-service";
 import parser from "cron-parser";
 import { IWorkflow } from "../lib/types";
 
@@ -52,6 +53,13 @@ async function scheduleWorkflow(workflow: IWorkflow) {
 export default defineBackground(() => {
   console.log("Hello background!", { id: browser.runtime.id });
 
+  // Restore master key on startup if session exists
+  SecurityService.restoreFromSession().then((restored) => {
+    if (restored) {
+      console.log("Master key restored in background context.");
+    }
+  });
+
   // Reschedule all active workflows on startup
   dbPromise.then(async (db) => {
     const workflows = await db.getAll("workflows");
@@ -62,6 +70,13 @@ export default defineBackground(() => {
 
   browser.runtime.onMessage.addListener(
     (message: RuntimeMessage, sender, sendResponse) => {
+      // 1. Security check: Only allow requests from our extension's pages
+      const extensionUrl = browser.runtime.getURL("");
+      if (!sender.url?.startsWith(extensionUrl)) {
+        console.warn("Blocked message from untrusted sender:", sender.url);
+        return;
+      }
+
       if (message.type === MessageType.HTTP_EXECUTE_REQUEST) {
         const payload = message.payload as ExecuteHttpRequestPayload;
         fetch(payload.url, {
