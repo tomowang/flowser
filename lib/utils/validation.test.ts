@@ -1,9 +1,9 @@
 
 import { describe, it, expect, vi } from "vitest";
-import { WorkflowRunner } from "../lib/engine/WorkflowRunner";
-import { IWorkflow, INodeType } from "../lib/types";
-import { Registry } from "../lib/nodes/registry";
-import { validateNode } from "../lib/utils/validation";
+import { WorkflowRunner } from "../engine/WorkflowRunner";
+import { IWorkflow, INodeType } from "../types";
+import { Registry } from "../nodes/registry";
+import { validateNode } from "./validation";
 
 // Define a test node type with required properties
 const TestNode: INodeType = {
@@ -82,7 +82,7 @@ const mockRuntime = {
   dispose: () => {},
 };
 
-vi.mock("../lib/services/quickjs", () => ({
+vi.mock("../services/quickjs", () => ({
   getQuickJS: async () => ({
     newRuntime: () => mockRuntime,
   }),
