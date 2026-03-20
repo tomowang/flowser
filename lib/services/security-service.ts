@@ -1,4 +1,5 @@
-import { storage } from "#imports";
+import { browser, storage } from "#imports";
+import { MessageType } from "../messages";
 import { dbPromise } from "../db";
 
 export class SecurityService {
@@ -186,9 +187,6 @@ export class SecurityService {
     // Use background script to securely wrap and store the key in storage.session
     // This provides "Double Wrapping" protection.
     try {
-      const { browser } = await import("#imports");
-      const { MessageType } = await import("../messages");
-      
       const response = await browser.runtime.sendMessage({
         type: MessageType.SECURITY_SAVE_MK,
         payload: exported,
@@ -207,9 +205,6 @@ export class SecurityService {
 
   static async restoreFromSession(): Promise<boolean> {
     try {
-      const { browser } = await import("#imports");
-      const { MessageType } = await import("../messages");
-
       const response = await browser.runtime.sendMessage({
         type: MessageType.SECURITY_GET_MK,
       });
