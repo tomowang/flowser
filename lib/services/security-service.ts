@@ -180,25 +180,52 @@ export class SecurityService {
   /* --- Session Persistence --- */
 
   static async saveToSession(key: CryptoKey) {
+    // Export key to JWK
     const exported = await crypto.subtle.exportKey("jwk", key);
-    await storage.setItem("session:flowser_mk", exported);
-    this.masterKey = key;
+    
+    // Use background script to securely wrap and store the key in storage.session
+    // This provides "Double Wrapping" protection.
+    try {
+      const { browser } = await import("#imports");
+      const { MessageType } = await import("../messages");
+      
+      const response = await browser.runtime.sendMessage({
+        type: MessageType.SECURITY_SAVE_MK,
+        payload: exported,
+      });
+
+      if (!response?.success) {
+        throw new Error(response?.error || "Failed to save master key to session");
+      }
+      
+      this.masterKey = key;
+    } catch (e) {
+      console.warn("Could not save to session via background, falling back to local memory only", e);
+      this.masterKey = key;
+    }
   }
 
   static async restoreFromSession(): Promise<boolean> {
-    const saved = await storage.getItem<JsonWebKey>("session:flowser_mk");
-    if (!saved) return false;
-
     try {
-      const key = await crypto.subtle.importKey(
-        "jwk",
-        saved,
-        { name: "AES-GCM", length: 256 },
-        true, // extractable
-        ["encrypt", "decrypt"],
-      );
-      this.masterKey = key;
-      return true;
+      const { browser } = await import("#imports");
+      const { MessageType } = await import("../messages");
+
+      const response = await browser.runtime.sendMessage({
+        type: MessageType.SECURITY_GET_MK,
+      });
+
+      if (response?.success && response.data) {
+        const key = await crypto.subtle.importKey(
+          "jwk",
+          response.data,
+          { name: "AES-GCM", length: 256 },
+          true, // extractable (still needed for UI access, but "Double Wrapped" in transit)
+          ["encrypt", "decrypt"],
+        );
+        this.masterKey = key;
+        return true;
+      }
+      return false;
     } catch (e) {
       console.warn("Failed to restore master key from session", e);
       return false;

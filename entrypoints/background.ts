@@ -1,4 +1,4 @@
-import { browser, defineBackground } from "#imports";
+import { browser, defineBackground, storage } from "#imports";
 import {
   MessageType,
   type RuntimeMessage,
@@ -11,6 +11,66 @@ import { ExecutionService } from "../lib/services/execution-service";
 import { SecurityService } from "../lib/services/security-service";
 import parser from "cron-parser";
 import { IWorkflow } from "../lib/types";
+
+// Transient session encryption key (memory-only)
+// This key encrypts the Master Key when it's saved in session storage
+// If the background script is completely killed, we lose this key and 
+// the user will need to re-enter their password (secure-by-default)
+let transientSessionKey: CryptoKey | null = null;
+
+async function getTransientKey() {
+  if (transientSessionKey) return transientSessionKey;
+  transientSessionKey = await crypto.subtle.generateKey(
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt", "decrypt"],
+  );
+  return transientSessionKey;
+}
+
+/**
+ * Wraps (encrypts) the Master Key JWK with the transient session key.
+ */
+async function wrapMasterKey(jwk: JsonWebKey): Promise<string> {
+  const key = await getTransientKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(JSON.stringify(jwk));
+  
+  const encrypted = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    encoded
+  );
+
+  // Return formatted blob: iv:encryptedData (base64)
+  const ivBase64 = btoa(String.fromCharCode(...iv));
+  const encryptedBase64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+  return `${ivBase64}:${encryptedBase64}`;
+}
+
+/**
+ * Unwraps (decrypts) the Master Key JWK using the transient session key.
+ */
+async function unwrapMasterKey(blob: string): Promise<JsonWebKey | null> {
+  try {
+    const key = await getTransientKey();
+    const [ivBase64, encryptedBase64] = blob.split(":");
+    
+    const iv = new Uint8Array(atob(ivBase64).split("").map(c => c.charCodeAt(0)));
+    const encrypted = new Uint8Array(atob(encryptedBase64).split("").map(c => c.charCodeAt(0)));
+    
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv },
+      key,
+      encrypted
+    );
+    
+    return JSON.parse(new TextDecoder().decode(decrypted));
+  } catch (e) {
+    console.error("Failed to unwrap master key", e);
+    return null;
+  }
+}
 
 async function scheduleWorkflow(workflow: IWorkflow) {
   // Clear existing alarm for this workflow
@@ -53,6 +113,12 @@ async function scheduleWorkflow(workflow: IWorkflow) {
 export default defineBackground(() => {
   console.log("Hello background!", { id: browser.runtime.id });
 
+  // 1. Set storage session access level to TRUSTED_CONTEXTS (prevents content script access)
+  // This is a browser-native security hardening.
+  if (typeof (browser.storage as any)?.session?.setAccessLevel === "function") {
+    (browser.storage as any).session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
+  }
+
   // Restore master key on startup if session exists
   SecurityService.restoreFromSession().then((restored) => {
     if (restored) {
@@ -72,7 +138,9 @@ export default defineBackground(() => {
     (message: RuntimeMessage, sender, sendResponse) => {
       // 1. Security check: Only allow requests from our extension's pages
       const extensionUrl = browser.runtime.getURL("");
-      if (!sender.url?.startsWith(extensionUrl)) {
+      const isInternal = sender.url?.startsWith(extensionUrl) || sender.id === browser.runtime.id;
+
+      if (!isInternal) {
         console.warn("Blocked message from untrusted sender:", sender.url);
         return;
       }
@@ -93,6 +161,33 @@ export default defineBackground(() => {
           });
 
         return true; // Keep the message channel open for async response
+      } else if (message.type === MessageType.SECURITY_SAVE_MK) {
+        // Double-wrapping: Encrypt Master Key JWK with transient session key
+        wrapMasterKey(message.payload as JsonWebKey)
+          .then(async (wrapped) => {
+            await storage.setItem("session:flowser_wrapped_mk", wrapped);
+            // Also sync the masterKey in the background service's memory
+            const key = await crypto.subtle.importKey(
+              "jwk",
+              message.payload as JsonWebKey,
+              { name: "AES-GCM", length: 256 },
+              true,
+              ["encrypt", "decrypt"]
+            );
+            SecurityService.setMasterKey(key);
+            sendResponse({ success: true });
+          })
+          .catch((err) => sendResponse({ success: false, error: err.message }));
+        return true;
+      } else if (message.type === MessageType.SECURITY_GET_MK) {
+        storage.getItem<string>("session:flowser_wrapped_mk")
+          .then(async (wrapped) => {
+            if (!wrapped) return sendResponse({ success: true, data: null });
+            const jwk = await unwrapMasterKey(wrapped);
+            sendResponse({ success: true, data: jwk });
+          })
+          .catch((err) => sendResponse({ success: false, error: err.message }));
+        return true;
       } else if (message.type === MessageType.WORKFLOW_UPDATED) {
         const workflow = message.payload as IWorkflow;
         scheduleWorkflow(workflow);
