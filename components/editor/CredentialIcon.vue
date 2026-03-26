@@ -4,7 +4,7 @@ import { Key } from "lucide-vue-next";
 import { getCredentialIconContent } from "@/lib/credentials/icons";
 
 interface Props {
-  icon?: string | object;
+  icon?: string | object | Function;
 }
 
 const props = defineProps<Props>();

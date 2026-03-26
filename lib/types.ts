@@ -66,7 +66,7 @@ export interface INodeCredentialDescription {
 export interface ICredentialType {
   name: string; // e.g., 'gemini_api'
   displayName: string; // e.g., 'Gemini API'
-  icon?: string | object;
+  icon?: string | object | Function;
   properties: INodeProperties[]; // Fields to collect (e.g., apiKey)
   documentationUrl?: string;
 }
@@ -127,7 +127,7 @@ export interface INodePort {
 export interface INodeTypeDescription {
   displayName: string;
   name: string;
-  icon: string | object; // Icon name e.g. 'f7:bolt' or svg string or Component
+  icon: string | object | Function; // Icon name e.g. 'f7:bolt' or svg string or Component
   group: string[];
   version: number;
   description: string;

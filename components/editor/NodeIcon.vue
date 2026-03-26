@@ -4,7 +4,7 @@ import { Plus } from "lucide-vue-next";
 import { getNodeIconContent } from "@/lib/nodes/icons";
 
 interface Props {
-  icon?: string | object;
+  icon?: string | object | Function;
   nodeName: string;
 }
 
