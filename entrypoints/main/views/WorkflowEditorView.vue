@@ -961,6 +961,7 @@ const toggleExecutionPanel = () => {
           <Redo2 class="h-4 w-4" />
         </Button>
       </div>
+
       <div class="h-4 w-px bg-border mx-2"></div>
       <Button
         size="sm"
@@ -1052,6 +1053,8 @@ const toggleExecutionPanel = () => {
             :nodes-draggable="!space"
             :nodes-connectable="!space"
             :elements-selectable="!space"
+            :snap-to-grid="true"
+            :snap-grid="[16, 16]"
             :class="{ 'panning-mode': space }"
             @pane-ready="onPaneReady"
             @nodes-change="onNodesChange"
