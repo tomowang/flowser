@@ -1,4 +1,4 @@
-import { browser, defineBackground } from "#imports";
+import { browser, defineBackground, storage } from "#imports";
 import {
   MessageType,
   type RuntimeMessage,
@@ -115,11 +115,11 @@ export default defineBackground(() => {
 
   // 1. Set storage session access level to TRUSTED_CONTEXTS (prevents content script access)
   // This is a browser-native security hardening.
-  const storage = browser.storage as typeof browser.storage & {
+  const browserStorage = browser.storage as typeof browser.storage & {
     session?: { setAccessLevel?: (arg: { accessLevel: string }) => Promise<void> };
   };
-  if (typeof storage.session?.setAccessLevel === "function") {
-    storage.session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
+  if (typeof browserStorage.session?.setAccessLevel === "function") {
+    browserStorage.session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
   }
 
   // Reschedule all active workflows on startup
