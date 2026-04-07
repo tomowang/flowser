@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { If } from './If';
 import { IExecuteFunctions, INodeExecutionData } from '../../types';
 
 describe('If Node', () => {
-  const executeNode = async (inputs: INodeExecutionData[], params: Record<string, any>) => {
+  const executeNode = async (inputs: INodeExecutionData[], params: Record<string, unknown>) => {
     const context = {
       getInputData: () => inputs,
-      getNodeParameter: (name: string, index: number, fallback?: any) => {
+      getNodeParameter: (name: string, _index: number, fallback?: unknown) => {
         return params[name] !== undefined ? params[name] : fallback;
       },
       evaluateExpression: (expr: string, index: number) => {

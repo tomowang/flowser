@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { WorkflowRunner } from './WorkflowRunner';
 import { Registry } from '../nodes/registry';
+import type { INodeType, IWorkflow } from '../types';
 
 vi.mock('../services/quickjs', () => ({
   getQuickJS: async () => ({
@@ -23,7 +24,7 @@ describe('WorkflowRunner', () => {
       description: { name: 'errorNode', inputs: [], outputs: [{name: 'main', type: 'main'}], properties: [] },
       execute: async () => { throw new Error('Execution Failed'); }
     };
-    Registry.register(errorNode as any);
+    Registry.register(errorNode as unknown as INodeType);
 
     const workflow = {
       id: 'wf-err',
@@ -34,7 +35,7 @@ describe('WorkflowRunner', () => {
       previewSvg: ''
     };
 
-    const runner = new WorkflowRunner(workflow as any);
+    const runner = new WorkflowRunner(workflow as unknown as IWorkflow);
     const result = await runner.run('n1');
     expect(result.status).toBe('error');
   });

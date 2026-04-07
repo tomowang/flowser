@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WorkflowService } from './workflow-service';
 import { dbPromise } from '../db';
+import { IWorkflow } from '../types';
 
 vi.mock('../db', () => ({
   dbPromise: Promise.resolve({
@@ -15,7 +16,7 @@ const mockSendMessage = vi.fn();
 vi.mock('wxt/browser', () => ({
   browser: {
     runtime: {
-      sendMessage: (...args: any[]) => mockSendMessage(...args),
+      sendMessage: (...args: unknown[]) => mockSendMessage(...args),
     },
   },
 }));
@@ -26,7 +27,7 @@ describe('WorkflowService', () => {
   });
 
   it('should save workflow and send message', async () => {
-    const workflow = { id: 'wf1', name: 'Test' } as any;
+    const workflow = { id: 'wf1', name: 'Test' } as unknown as IWorkflow;
     await WorkflowService.saveWorkflow(workflow);
     
     const db = await dbPromise;
@@ -39,8 +40,8 @@ describe('WorkflowService', () => {
 
   it('should update workflow status', async () => {
     const db = await dbPromise;
-    const workflow = { id: 'wf1', active: false } as any;
-    (db.get as any).mockResolvedValue(workflow);
+    const workflow = { id: 'wf1', active: false } as unknown as IWorkflow;
+    vi.mocked(db.get).mockResolvedValue(workflow);
     
     await WorkflowService.updateWorkflowStatus('wf1', true);
     

@@ -78,7 +78,7 @@ describe('SecurityService', () => {
   });
 
   it('should throw error if master key not set during encrypt', async () => {
-    SecurityService.setMasterKey(null as any);
+    SecurityService.setMasterKey(null as unknown as CryptoKey);
     await expect(SecurityService.encrypt('test')).rejects.toThrow('Master key not set');
   });
 });

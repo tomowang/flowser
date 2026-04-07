@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Code } from './Code';
-import { IExecuteFunctions } from '../../types';
+import { IExecuteFunctions, INodeExecutionData } from '../../types';
 
 const mockContext = {
   newFunction: vi.fn(() => ({ dispose: () => {} })),
@@ -8,7 +8,7 @@ const mockContext = {
   setProp: vi.fn(),
   newString: vi.fn((s: string) => ({ value: s, dispose: () => {} })),
   getProp: vi.fn(() => ({ dispose: () => {} })),
-  callFunction: vi.fn((fn: any) => {
+  callFunction: vi.fn((fn: { type: string }) => {
     if (fn.type === 'parse') {
       return { value: { type: 'itemsObj', dispose: () => {} }, error: undefined };
     }
@@ -16,7 +16,7 @@ const mockContext = {
     return { value: { type: 'result', dispose: () => {} }, error: undefined };
   }),
   evalCode: vi.fn(() => ({ value: { type: 'func', dispose: () => {} }, error: undefined })),
-  dump: vi.fn((h: any) => {
+  dump: vi.fn((h: { type?: string }) => {
     if (h.type === 'result') return [{ json: { transformed: true } }];
     return h;
   }),
@@ -26,9 +26,9 @@ const mockContext = {
 };
 
 // Add internal identifiers for callFunction logic
-(mockContext.getProp as any).mockImplementation((obj: any, prop: string) => {
-  if (prop === 'parse') return { type: 'parse', dispose: () => {} };
-  return { dispose: () => {} };
+vi.mocked(mockContext.getProp).mockImplementation((_obj: unknown, prop: string) => {
+  if (prop === 'parse') return { type: 'parse', dispose: () => { } } as unknown as { type: string; dispose: () => void };
+  return { dispose: () => { } } as unknown as { type: string; dispose: () => void };
 });
 
 const mockRuntime = {
@@ -47,10 +47,10 @@ describe('Code Node', () => {
     vi.clearAllMocks();
   });
 
-  const executeNode = async (inputs: any[], params: Record<string, any>) => {
+  const executeNode = async (inputs: INodeExecutionData[], params: Record<string, unknown>) => {
     const context = {
       getInputData: () => inputs,
-      getNodeParameter: (name: string, index: number, fallback?: any) => {
+      getNodeParameter: (name: string, _index: number, fallback?: unknown) => {
         return params[name] !== undefined ? params[name] : fallback;
       }
     } as unknown as IExecuteFunctions;

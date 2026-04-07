@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, type Component } from "vue";
 import { Plus } from "lucide-vue-next";
 import { getNodeIconContent } from "@/lib/nodes/icons";
 
 interface Props {
-  icon?: string | object | Function;
+  icon?: string | Component;
   nodeName: string;
 }
 
@@ -26,6 +26,13 @@ const svgContent = computed(() => {
   return undefined;
 });
 
+const svgDataUrl = computed(() => {
+  if (svgContent.value) {
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgContent.value)}`;
+  }
+  return undefined;
+});
+
 const isLucideIcon = computed(() => {
   return typeof props.icon === "object" || (typeof props.icon === "function");
 });
@@ -33,8 +40,7 @@ const isLucideIcon = computed(() => {
 
 <template>
   <div class="flex items-center justify-center h-full w-full overflow-hidden">
-    <!-- eslint-disable-next-line vue/no-v-html -->
-    <div v-if="svgContent" class="h-full w-full flex items-center justify-center [&>svg]:h-full [&>svg]:w-full" v-html="svgContent" />
+    <img v-if="svgDataUrl" :src="svgDataUrl" class="h-full w-full object-contain" aria-hidden="true" />
     <component
       :is="icon"
       v-else-if="isLucideIcon"

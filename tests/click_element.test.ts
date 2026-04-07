@@ -18,13 +18,13 @@ describe('ClickElement Node', () => {
 
   const executeNode = async (
     inputs: INodeExecutionData[],
-    params: Record<string, any>,
+    params: Record<string, unknown>,
   ) => {
     const context = {
       getInputData: () => inputs,
-      getNodeParameter: (name: string, indexOrFallback: any, arg3?: any) => {
+      getNodeParameter: (name: string, indexOrFallback: unknown, arg3?: unknown) => {
         let index = 0;
-        let fallback: any;
+        let fallback: unknown;
         if (typeof indexOrFallback === 'number') {
           index = indexOrFallback;
           fallback = arg3;

@@ -11,10 +11,10 @@ describe('Wait Node', () => {
     vi.useRealTimers();
   });
 
-  const executeNode = async (inputs: any[], params: Record<string, any>) => {
+  const executeNode = async (inputs: unknown[], params: Record<string, unknown>) => {
     const context = {
       getInputData: () => inputs,
-      getNodeParameter: (name: string, index: number, fallback?: any) => {
+      getNodeParameter: (name: string, _index: number, fallback?: unknown) => {
         return params[name] !== undefined ? params[name] : fallback;
       }
     } as unknown as IExecuteFunctions;

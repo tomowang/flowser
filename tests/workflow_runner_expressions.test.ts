@@ -12,6 +12,13 @@ const ManualTriggerNode: INodeType = {
 };
 Registry.register(ParamNode);
 Registry.register(ManualTriggerNode);
+interface MockHandle {
+  _isHandle: boolean;
+  value?: unknown;
+  code?: string;
+  dispose: () => void;
+}
+
 const mockContext = {
   newFunction: vi.fn(() => ({ dispose: () => { } })),
   getString: vi.fn((h) => h),
@@ -23,12 +30,14 @@ const mockContext = {
   getNumber: vi.fn((h) => h.value),
   newNumber: vi.fn((n) => ({ _isHandle: true, value: n, dispose: () => { } })),
   evalCode: vi.fn((code) => ({ value: { _isHandle: true, code, dispose: () => { } }, error: undefined, dispose: () => { } })),
-  dump: vi.fn((handle) => {
-    if (handle && (handle as any)._isHandle) {
-      const c = (handle as any).code?.trim(); console.log("DUMP CODE: [" + c + "]");
+  dump: vi.fn((handle: unknown) => {
+    if (handle && (handle as MockHandle)._isHandle) {
+      const mockHandle = handle as MockHandle;
+      const c = mockHandle.code?.trim();
+      console.log("DUMP CODE: [" + c + "]");
       if (c === '$json.name' || c === '\$json.name') return 'World';
       if (c === '1 + 1') return 2;
-      return (handle as any).value !== undefined ? (handle as any).value : (handle as any).code;
+      return mockHandle.value !== undefined ? mockHandle.value : mockHandle.code;
     }
     return handle;
   }),

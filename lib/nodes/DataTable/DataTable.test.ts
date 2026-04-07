@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DataTable } from './DataTable';
-import { IExecuteFunctions } from '../../types';
+import { IExecuteFunctions, INodeExecutionData } from '../../types';
 
 vi.mock('../../services/data-table-service', () => ({
   DataTableService: {
@@ -16,14 +16,12 @@ describe('DataTable Node', () => {
     vi.clearAllMocks();
   });
 
-  const executeNode = async (inputs: any[], params: Record<string, any>) => {
+  const executeNode = async (inputs: INodeExecutionData[], params: Record<string, unknown>) => {
     const context = {
       getInputData: () => inputs,
-      getNodeParameter: (name: string, indexOrFallback: any, arg3?: any) => {
-        let index = 0;
-        let fallback: any;
+      getNodeParameter: (name: string, indexOrFallback: unknown, arg3?: unknown) => {
+        let fallback: unknown;
         if (typeof indexOrFallback === 'number') {
-          index = indexOrFallback;
           fallback = arg3;
         } else {
           fallback = indexOrFallback;

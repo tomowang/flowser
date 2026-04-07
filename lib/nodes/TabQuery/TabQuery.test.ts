@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TabQuery } from './TabQuery';
 import { IExecuteFunctions } from '../../types';
-import { browser } from 'wxt/browser';
+import { browser, type Tabs } from 'wxt/browser';
 
 vi.mock('wxt/browser', () => ({
   browser: {
@@ -16,14 +16,12 @@ describe('TabQuery Node', () => {
     vi.clearAllMocks();
   });
 
-  const executeNode = async (inputs: any[], params: Record<string, any>) => {
+  const executeNode = async (inputs: unknown[], params: Record<string, unknown>) => {
     const context = {
       getInputData: () => inputs,
-      getNodeParameter: (name: string, indexOrFallback: any, arg3?: any) => {
-        let index = 0;
-        let fallback: any;
+      getNodeParameter: (name: string, indexOrFallback: unknown, arg3?: unknown) => {
+        let fallback: unknown;
         if (typeof indexOrFallback === 'number') {
-          index = indexOrFallback;
           fallback = arg3;
         } else {
           fallback = indexOrFallback;
@@ -36,7 +34,7 @@ describe('TabQuery Node', () => {
 
   it('should query tabs with correct parameters', async () => {
     const mockTabs = [{ id: 1, title: 'Google' }];
-    vi.mocked(browser.tabs.query).mockResolvedValue(mockTabs as any);
+    vi.mocked(browser.tabs.query).mockResolvedValue(mockTabs as unknown as Tabs.Tab[]);
     
     const params = {
       title: '*Google*',
@@ -57,7 +55,7 @@ describe('TabQuery Node', () => {
   });
 
   it('should handle any active status', async () => {
-    vi.mocked(browser.tabs.query).mockResolvedValue([] as any);
+    vi.mocked(browser.tabs.query).mockResolvedValue([] as unknown as Tabs.Tab[]);
     await executeNode([], { active: 'any' });
     expect(browser.tabs.query).toHaveBeenCalledWith({});
   });

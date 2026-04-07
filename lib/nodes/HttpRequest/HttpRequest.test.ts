@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { HttpRequest } from './HttpRequest';
-import { IExecuteFunctions } from '../../types';
+import { IExecuteFunctions, INodeExecutionData } from '../../types';
 import { browser } from 'wxt/browser';
 
 vi.mock('wxt/browser', () => ({
@@ -16,10 +16,10 @@ describe('HttpRequest Node', () => {
     vi.clearAllMocks();
   });
 
-  const executeNode = async (inputs: any[], params: Record<string, any>) => {
+  const executeNode = async (inputs: INodeExecutionData[], params: Record<string, unknown>) => {
     const context = {
       getInputData: () => inputs,
-      getNodeParameter: (name: string, index: number, fallback?: any) => {
+      getNodeParameter: (name: string, _index: number, fallback?: unknown) => {
         return params[name] !== undefined ? params[name] : fallback;
       }
     } as unknown as IExecuteFunctions;
@@ -27,7 +27,7 @@ describe('HttpRequest Node', () => {
   };
 
   it('should send correct parameters to browser.runtime.sendMessage', async () => {
-    vi.mocked(browser.runtime.sendMessage).mockResolvedValue({ success: true, data: { result: 'ok' } } as any);
+    vi.mocked(browser.runtime.sendMessage).mockResolvedValue({ success: true, data: { result: 'ok' } } as unknown as { success: boolean; data: unknown });
     
     const inputs = [{ json: {} }];
     const params = {
@@ -53,7 +53,7 @@ describe('HttpRequest Node', () => {
   });
 
   it('should handle error response from sendMessage', async () => {
-    vi.mocked(browser.runtime.sendMessage).mockResolvedValue({ success: false, error: 'Network Error' } as any);
+    vi.mocked(browser.runtime.sendMessage).mockResolvedValue({ success: false, error: 'Network Error' } as unknown as { success: boolean; error: string });
     const inputs = [{ json: {} }];
     const result = await executeNode(inputs, { url: 'http://fail.com', method: 'GET' });
 
