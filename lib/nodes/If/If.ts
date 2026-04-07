@@ -2,9 +2,9 @@ import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
 import { Split } from "lucide-vue-next";
 
 interface Condition {
-  key: string;
-  operator: string;
   value: string;
+  operator: string;
+  targetValue: string;
 }
 
 export const If: INodeType = {
@@ -38,12 +38,58 @@ export const If: INodeType = {
       {
         displayName: "Conditions",
         name: "conditions",
-        type: "json",
-        default: "[]",
-        description:
-          'Array of conditions. Example: [{"key": "{{$json.value}}", "operator": "==", "value": "test"}]',
-        // Note: Ideally this would be a 'collection' or 'fixed' custom UI type if available,
-        // but based on current types we use JSON as fallback.
+        type: "fixedCollection",
+        default: {
+          items: [
+            {
+              value: "",
+              operator: "==",
+              targetValue: "",
+            },
+          ],
+        },
+        options: [
+          {
+            name: "items",
+            displayName: "Condition",
+            values: [
+              {
+                displayName: "Value",
+                name: "value",
+                type: "string",
+                default: "",
+                colSpan: 2,
+              },
+              {
+                displayName: "Operator",
+                name: "operator",
+                type: "options",
+                noDataExpression: true,
+                options: [
+                  { name: "==", value: "==" },
+                  { name: "!=", value: "!=" },
+                  { name: ">", value: ">" },
+                  { name: "<", value: "<" },
+                  { name: ">=", value: ">=" },
+                  { name: "<=", value: "<=" },
+                  { name: "Contains", value: "contains" },
+                  { name: "Starts With", value: "startsWith" },
+                  { name: "Ends With", value: "endsWith" },
+                ],
+                default: "==",
+                colSpan: 1,
+              },
+              {
+                displayName: "Target Value",
+                name: "targetValue",
+                type: "string",
+                default: "",
+                colSpan: 3,
+              },
+            ],
+          },
+        ],
+        description: "The conditions to evaluate",
       },
     ],
   },
@@ -62,22 +108,10 @@ export const If: INodeType = {
 
     for (let i = 0; i < items.length; i++) {
       const combinator = this.getNodeParameter("combinator", i) as string;
-      const conditionsStr = this.getNodeParameter("conditions", i) as string;
-
-      let conditions: Condition[] = [];
-      try {
-        if (typeof conditionsStr === "string") {
-          conditions = JSON.parse(conditionsStr) as Condition[];
-        } else {
-          conditions = conditionsStr as Condition[];
-        }
-      } catch {
-        console.warn("Invalid conditions JSON", conditionsStr);
-      }
-
-      if (!Array.isArray(conditions)) {
-        conditions = [];
-      }
+      const conditionsConfig = this.getNodeParameter("conditions", i, {}) as {
+        items?: Condition[];
+      };
+      const conditions = conditionsConfig.items || [];
 
       let result = true;
 
@@ -87,9 +121,9 @@ export const If: INodeType = {
         if (combinator === "all") {
           result = true;
           for (const cond of conditions) {
-            const key = evaluate(cond.key, i);
-            const value = evaluate(cond.value, i);
-            if (!evaluateConditionResult(key, cond.operator, value)) {
+            const val1 = evaluate(cond.value, i);
+            const val2 = evaluate(cond.targetValue, i);
+            if (!evaluateConditionResult(val1, cond.operator, val2)) {
               result = false;
               break;
             }
@@ -98,9 +132,9 @@ export const If: INodeType = {
           // any
           result = false;
           for (const cond of conditions) {
-            const key = evaluate(cond.key, i);
-            const value = evaluate(cond.value, i);
-            if (evaluateConditionResult(key, cond.operator, value)) {
+            const val1 = evaluate(cond.value, i);
+            const val2 = evaluate(cond.targetValue, i);
+            if (evaluateConditionResult(val1, cond.operator, val2)) {
               result = true;
               break;
             }

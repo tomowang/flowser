@@ -111,6 +111,7 @@ export interface INodeProperties {
   required?: boolean;
   noDataExpression?: boolean;
   displayOptions?: IDisplayOptions;
+  colSpan?: number; // Optional: for grid layout (e.g., 1 or 2)
   typeOptions?: {
     loadOptionsMethod?: string;
     loadOptionsDependsOn?: string[];

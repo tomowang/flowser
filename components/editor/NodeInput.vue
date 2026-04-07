@@ -41,7 +41,11 @@ const isExpression = ref(false);
 watch(
   () => props.modelValue,
   (val) => {
-    if (typeof val === "string" && val.startsWith("=")) {
+    if (
+      !props.property.noDataExpression &&
+      typeof val === "string" &&
+      val.startsWith("=")
+    ) {
       isExpression.value = true;
     } else {
       isExpression.value = false;
@@ -159,7 +163,7 @@ const singleLineExtension = [
 
 <template>
   <div class="flex flex-col gap-1">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between h-6">
       <label class="text-sm font-medium">{{ property.displayName }}</label>
 
       <!-- Mode Toggle -->
@@ -169,10 +173,10 @@ const singleLineExtension = [
           property.type !== 'code' &&
           !property.noDataExpression
         "
-        class="flex items-center rounded-md border bg-muted p-0.5"
+        class="flex items-center rounded-md border bg-muted p-0.25 origin-right"
       >
         <button
-          class="flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium transition-colors"
+          class="flex items-center gap-1 rounded-sm px-1.5 py-0 text-[10px] font-medium transition-colors"
           :class="
             !isExpression
               ? 'bg-background shadow-sm'
@@ -180,11 +184,11 @@ const singleLineExtension = [
           "
           @click="toggleMode('fixed')"
         >
-          <Type class="h-3 w-3" />
+          <Type class="h-2.5 w-2.5" />
           Fixed
         </button>
         <button
-          class="flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium transition-colors"
+          class="flex items-center gap-1 rounded-sm px-1.5 py-0 text-[10px] font-medium transition-colors"
           :class="
             isExpression
               ? 'bg-background shadow-sm'
@@ -192,7 +196,7 @@ const singleLineExtension = [
           "
           @click="toggleMode('expression')"
         >
-          <FunctionSquare class="h-3 w-3" />
+          <FunctionSquare class="h-2.5 w-2.5" />
           Expression
         </button>
       </div>
@@ -324,7 +328,7 @@ const singleLineExtension = [
 
           <div class="flex flex-col gap-2">
             <div
-              v-for="(item, index) in (displayValue as Record<string, unknown[]>)?.[option.name] || []"
+              v-for="(item, index) in (displayValue as Record<string, unknown[]>)?. [option.name] || []"
               :key="index"
               class="relative rounded-md border p-4 pt-8 flex flex-col gap-2 group"
             >
@@ -345,28 +349,39 @@ const singleLineExtension = [
                 <Trash2 class="h-4 w-4" />
               </button>
 
-              <div v-for="subProp in option.values" :key="subProp.name">
-                <NodeInput
-                  v-if="
-                    !subProp.displayOptions ||
-                    checkDisplayOptions(subProp.displayOptions, item as Record<string, unknown>)
-                  "
-                  :model-value="(item as Record<string, unknown>)[subProp.name] ?? subProp.default"
-                  :property="subProp"
-                  @update:model-value="
-                    (val) => {
-                      const newValue = { ...(displayValue as Record<string, unknown[]>) };
-                      if (!newValue[option.name]) newValue[option.name] = [];
-                      const newItems = [...(newValue[option.name])];
-                      newItems[index] = { ...(newItems[index] as Record<string, unknown>), [subProp.name]: val };
-                      newValue[option.name] = newItems;
-                      emit('update:modelValue', newValue);
-                    }
-                  "
-                  @refresh="$emit('refresh')"
-                />
+              <div class="grid grid-cols-3 gap-2">
+                <div
+                  v-for="subProp in option.values"
+                  :key="subProp.name"
+                  :class="{
+                    'col-span-1': subProp.colSpan === 1,
+                    'col-span-2': subProp.colSpan === 2,
+                    'col-span-3': subProp.colSpan === 3 || !subProp.colSpan,
+                  }"
+                >
+                  <NodeInput
+                    v-if="
+                      !subProp.displayOptions ||
+                      checkDisplayOptions(subProp.displayOptions, item as Record<string, unknown>)
+                    "
+                    :model-value="(item as Record<string, unknown>)[subProp.name] ?? subProp.default"
+                    :property="subProp"
+                    @update:model-value="
+                      (val) => {
+                        const newValue = { ...(displayValue as Record<string, unknown[]>) };
+                        if (!newValue[option.name]) newValue[option.name] = [];
+                        const newItems = [...(newValue[option.name])];
+                        newItems[index] = { ...(newItems[index] as Record<string, unknown>), [subProp.name]: val };
+                        newValue[option.name] = newItems;
+                        emit('update:modelValue', newValue);
+                      }
+                    "
+                    @refresh="$emit('refresh')"
+                  />
+                </div>
               </div>
             </div>
+
 
             <Button
               variant="outline"
