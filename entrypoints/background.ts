@@ -10,7 +10,7 @@ import { WorkflowRunner } from "../lib/engine/WorkflowRunner";
 import { ExecutionService } from "../lib/services/execution-service";
 import { SecurityService } from "../lib/services/security-service";
 import parser from "cron-parser";
-import { IWorkflow } from "../lib/types";
+import { IWorkflow, IDataObject } from "../lib/types";
 
 // Transient session encryption key (memory-only)
 // This key encrypts the Master Key when it's saved in session storage
@@ -238,8 +238,33 @@ export default defineBackground(() => {
       if (triggerNode && workflow.active) {
         console.log("Executing workflow", workflow.name);
         const runner = new WorkflowRunner(workflow);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const triggerData = [{ json: tab as unknown as Record<string, any> }];
+        const triggerData = [{ json: tab as unknown as IDataObject }];
+        const result = await runner.run(triggerNode.id, triggerData);
+        await ExecutionService.saveExecution(result);
+      }
+    }
+  });
+
+  browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    console.log("Tab updated", tabId, changeInfo, tab);
+
+    const db = await dbPromise;
+    const workflows = await db.getAll("workflows");
+
+    for (const workflow of workflows) {
+      const triggerNode = workflow.nodes.find((n) => n.type === "tabUpdated");
+      if (triggerNode && workflow.active) {
+        console.log("Executing workflow", workflow.name);
+        const runner = new WorkflowRunner(workflow);
+        const triggerData = [
+          {
+            json: {
+              tabId,
+              changeInfo,
+              tab: tab as unknown as IDataObject,
+            },
+          },
+        ];
         const result = await runner.run(triggerNode.id, triggerData);
         await ExecutionService.saveExecution(result);
       }

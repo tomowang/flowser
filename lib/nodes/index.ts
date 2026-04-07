@@ -9,6 +9,7 @@ export * from "./Code/Code";
 export * from "./TabQuery/TabQuery";
 export * from "./TabAction/TabAction";
 export * from "./TabCreated/TabCreated";
+export * from "./TabUpdated/TabUpdated";
 export * from "./ClickElement/ClickElement";
 export * from "./WindowCreate/WindowCreate";
 export * from "./WindowQuery/WindowQuery";
