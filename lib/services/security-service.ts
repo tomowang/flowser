@@ -197,8 +197,16 @@ export class SecurityService {
       }
       
       this.masterKey = key;
-    } catch (e) {
-      console.warn("Could not save to session via background, falling back to local memory only", e);
+    } catch (e: unknown) {
+      const error = e as Error;
+      const isExpectedError =
+        error?.message?.includes("Could not establish connection") ||
+        error?.message?.includes("Receiving end does not exist") ||
+        error?.message?.includes("Extension context invalidated");
+
+      if (!isExpectedError) {
+        console.warn("Could not save to session via background, falling back to local memory only", e);
+      }
       this.masterKey = key;
     }
   }
@@ -221,8 +229,18 @@ export class SecurityService {
         return true;
       }
       return false;
-    } catch (e) {
-      console.warn("Failed to restore master key from session", e);
+    } catch (e: unknown) {
+      const error = e as Error;
+      // Only warn if it's not a common expected connection error
+      // This error is common when the background script is starting up, suspended, or the extension has been reloaded.
+      const isExpectedError =
+        error?.message?.includes("Could not establish connection") ||
+        error?.message?.includes("Receiving end does not exist") ||
+        error?.message?.includes("Extension context invalidated");
+
+      if (!isExpectedError) {
+        console.warn("Failed to restore master key from session", e);
+      }
       return false;
     }
   }

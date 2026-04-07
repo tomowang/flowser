@@ -1,4 +1,4 @@
-import { browser, defineBackground, storage } from "#imports";
+import { browser, defineBackground } from "#imports";
 import {
   MessageType,
   type RuntimeMessage,
@@ -115,16 +115,12 @@ export default defineBackground(() => {
 
   // 1. Set storage session access level to TRUSTED_CONTEXTS (prevents content script access)
   // This is a browser-native security hardening.
-  if (typeof (browser.storage as any)?.session?.setAccessLevel === "function") {
-    (browser.storage as any).session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
+  const storage = browser.storage as typeof browser.storage & {
+    session?: { setAccessLevel?: (arg: { accessLevel: string }) => Promise<void> };
+  };
+  if (typeof storage.session?.setAccessLevel === "function") {
+    storage.session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
   }
-
-  // Restore master key on startup if session exists
-  SecurityService.restoreFromSession().then((restored) => {
-    if (restored) {
-      console.log("Master key restored in background context.");
-    }
-  });
 
   // Reschedule all active workflows on startup
   dbPromise.then(async (db) => {
