@@ -5,10 +5,13 @@ import { getNodeIconContent } from "@/lib/nodes/icons";
 
 interface Props {
   icon?: string | Component;
-  nodeName: string;
+  nodeName?: string;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  icon: undefined,
+  nodeName: "",
+});
 
 const isSvgFile = computed(() => {
   return typeof props.icon === "string" && props.icon.startsWith("file:");

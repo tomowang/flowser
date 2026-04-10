@@ -12,7 +12,18 @@ import { Trash2 } from "lucide-vue-next";
 
 const props = defineProps<EdgeProps>();
 
-const { removeEdges } = useVueFlow();
+const { removeEdges, findNode } = useVueFlow();
+
+const label = computed(() => {
+  const sourceNode = props.sourceNode || findNode(props.source);
+  const nodeType = sourceNode?.data?.nodeType;
+  
+  if (nodeType === "if") {
+    if (props.sourceHandleId === "true") return "True";
+    if (props.sourceHandleId === "false") return "False";
+  }
+  return null;
+});
 
 const isHovered = ref(false);
 let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -64,6 +75,18 @@ const onEdgeClick = (e: MouseEvent) => {
 
     <!-- The actual visible edge path -->
     <BaseEdge :path="path[0]" :style="edgeStyle" :marker-end="markerEnd" />
+
+    <!-- Branch Label -->
+    <EdgeLabelRenderer v-if="label">
+      <div
+        :style="{
+          transform: `translate(-50%, -50%) translate(${sourceX + 24}px, ${sourceY}px)`,
+        }"
+        class="nodrag nopan absolute text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/70 z-10 pointer-events-none"
+      >
+        {{ label }}
+      </div>
+    </EdgeLabelRenderer>
 
     <!-- Delete Button -->
     <EdgeLabelRenderer>
