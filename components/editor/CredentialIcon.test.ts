@@ -23,11 +23,14 @@ describe('CredentialIcon Component', () => {
     expect(wrapper.findComponent(User).exists()).toBe(true);
   });
 
-  it('should render SVG content when file: icon is provided', () => {
+  it('should render SVG as data URL when file: icon is provided', () => {
     const wrapper = mount(CredentialIcon, {
       props: { icon: 'file:test' }
     });
-    expect(wrapper.html()).toContain('id="test-svg"');
-    expect(wrapper.html()).toContain('preserveAspectRatio="xMidYMid meet"');
+    const img = wrapper.find('img');
+    expect(img.exists()).toBe(true);
+    expect(img.attributes('src')).toContain('data:image/svg+xml');
+    expect(img.attributes('src')).toContain('id%3D%22test-svg%22');
+    expect(img.attributes('src')).toContain('preserveAspectRatio%3D%22xMidYMid%20meet%22');
   });
 });

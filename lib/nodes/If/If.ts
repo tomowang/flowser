@@ -98,14 +98,6 @@ export const If: INodeType = {
     const returnDataTrue: INodeExecutionData[] = [];
     const returnDataFalse: INodeExecutionData[] = [];
 
-    // Helper to evaluate expressions if available
-    const evaluate = (expr: unknown, index: number): unknown => {
-      if (typeof expr === "string" && this.evaluateExpression) {
-        return this.evaluateExpression(expr, index);
-      }
-      return expr;
-    };
-
     for (let i = 0; i < items.length; i++) {
       const combinator = this.getNodeParameter("combinator", i) as string;
       const conditionsConfig = this.getNodeParameter("conditions", i, {}) as {
@@ -121,8 +113,8 @@ export const If: INodeType = {
         if (combinator === "all") {
           result = true;
           for (const cond of conditions) {
-            const val1 = evaluate(cond.value, i);
-            const val2 = evaluate(cond.targetValue, i);
+            const val1 = cond.value;
+            const val2 = cond.targetValue;
             if (!evaluateConditionResult(val1, cond.operator, val2)) {
               result = false;
               break;
@@ -132,8 +124,8 @@ export const If: INodeType = {
           // any
           result = false;
           for (const cond of conditions) {
-            const val1 = evaluate(cond.value, i);
-            const val2 = evaluate(cond.targetValue, i);
+            const val1 = cond.value;
+            const val2 = cond.targetValue;
             if (evaluateConditionResult(val1, cond.operator, val2)) {
               result = true;
               break;

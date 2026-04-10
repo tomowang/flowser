@@ -10,6 +10,7 @@ import { Registry } from "../nodes/registry";
 import { getQuickJS } from "../services/quickjs";
 import { QuickJSContext, QuickJSRuntime } from "quickjs-emscripten";
 import { toast } from "vue-sonner";
+import { evaluateParameters } from "./parameter-evaluator";
 
 export type ExecutionStatus = "running" | "success" | "error";
 
@@ -137,16 +138,8 @@ export class WorkflowRunner {
         // Retrieve from node.data or node.parameters
         // Vue Flow stores custom data in .data
         const value = node.data?.[paramName] ?? fallback;
-        if (typeof value === "string") {
-          if (value.startsWith("=")) {
-            return this.evaluateStringWithExpressions(
-              value.slice(1),
-              index,
-              inputData,
-            );
-          }
-        }
-        return value;
+
+        return evaluateParameters.call(this, value, index, inputData);
       },
       getConnectedNodes: (inputName: string) => {
         // Find edges connected to this node's targetHandle == inputName
@@ -367,6 +360,10 @@ export class WorkflowRunner {
     const match = text.match(rootRegex);
     if (match) {
       return this.evaluateExpression(match[1], itemIndex, inputData);
+    }
+
+    if (!text.includes("{{")) {
+      return this.evaluateExpression(text, itemIndex, inputData);
     }
 
     return text.replace(/{{\s*([\s\S]+?)\s*}}/g, (_, expr) => {

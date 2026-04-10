@@ -1,21 +1,38 @@
 import { describe, it, expect } from 'vitest';
 import { If } from './If';
 import { IExecuteFunctions, INodeExecutionData } from '../../types';
+import { evaluateParameters } from '../../engine/parameter-evaluator';
 
 describe('If Node', () => {
   const executeNode = async (inputs: INodeExecutionData[], params: Record<string, unknown>) => {
     const context = {
       getInputData: () => inputs,
-      getNodeParameter: (name: string, _index: number, fallback?: unknown) => {
-        return params[name] !== undefined ? params[name] : fallback;
-      },
-      evaluateExpression: (expr: string, index: number) => {
-        if (expr.startsWith('$json.')) {
-          const key = expr.replace('$json.', '');
+      evaluateStringWithExpressions: function (text: string, index: number) {
+        if (text.startsWith("$json.")) {
+          const key = text.replace("$json.", "");
           return inputs[index].json[key];
         }
-        return expr;
-      }
+        return text;
+      },
+      getNodeParameter: function (
+        name: string,
+        index: number,
+        fallback?: unknown,
+      ) {
+        const value = params[name] !== undefined ? params[name] : fallback;
+        return evaluateParameters.call(
+          this as unknown as {
+            evaluateStringWithExpressions(
+              text: string,
+              index: number,
+              inputData: INodeExecutionData[],
+            ): unknown;
+          },
+          value,
+          index,
+          inputs,
+        );
+      },
     } as unknown as IExecuteFunctions;
     return If.execute!.call(context);
   };
@@ -23,7 +40,7 @@ describe('If Node', () => {
   it("should route items to true branch when conditions match (all)", async () => {
     const inputs = [{ json: { value: 10 } }, { json: { value: 5 } }];
     const conditions = {
-      items: [{ value: "$json.value", operator: ">", targetValue: "7" }],
+      items: [{ value: "=$json.value", operator: ">", targetValue: "7" }],
     };
     const result = await executeNode(inputs, {
       combinator: "all",
@@ -39,8 +56,8 @@ describe('If Node', () => {
     const inputs = [{ json: { v: 1 } }, { json: { v: 10 } }];
     const conditions = {
       items: [
-        { value: "$json.v", operator: "==", targetValue: "1" },
-        { value: "$json.v", operator: "==", targetValue: "2" },
+        { value: "=$json.v", operator: "==", targetValue: "1" },
+        { value: "=$json.v", operator: "==", targetValue: "2" },
       ],
     };
     const result = await executeNode(inputs, { combinator: "any", conditions });
@@ -52,7 +69,7 @@ describe('If Node', () => {
   it("should handle string operations (contains)", async () => {
     const inputs = [{ json: { s: "hello world" } }, { json: { s: "foo" } }];
     const conditions = {
-      items: [{ value: "$json.s", operator: "contains", targetValue: "hello" }],
+      items: [{ value: "=$json.s", operator: "contains", targetValue: "hello" }],
     };
     const result = await executeNode(inputs, {
       combinator: "all",
@@ -61,5 +78,14 @@ describe('If Node', () => {
 
     expect(result[0]).toHaveLength(1);
     expect(result[0][0].json.s).toBe("hello world");
+  });
+
+  it("should handle plain values correctly", async () => {
+    const inputs = [{ json: {} }];
+    const conditions = {
+      items: [{ value: "1", operator: "==", targetValue: "1" }],
+    };
+    const result = await executeNode(inputs, { combinator: "all", conditions });
+    expect(result[0]).toHaveLength(1);
   });
 });
