@@ -180,6 +180,13 @@ export class WorkflowRunner {
           inputData,
         );
       },
+      getNodeOutputData: (nodeName: string) => {
+        const targetNode = this.workflow.nodes.find(
+          (n) => (n.data?.label || n.id) === nodeName,
+        );
+        if (!targetNode) return [];
+        return this.executionData.get(targetNode.id) || [];
+      },
     };
 
     // Execute

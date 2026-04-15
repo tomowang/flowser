@@ -47,17 +47,29 @@ export const Code: INodeType = {
     const runtime = quickJS.newRuntime();
     const context = runtime.newContext();
 
+    const parseJsonSafe = (jsonString: string) => {
+      const jsonHandle = context.newString(jsonString);
+      const parseHandle = context.getProp(context.global, "JSON");
+      const parseFunc = context.getProp(parseHandle, "parse");
+      const result = context.callFunction(parseFunc, parseHandle, jsonHandle);
+
+      jsonHandle.dispose();
+      parseHandle.dispose();
+      parseFunc.dispose();
+
+      if (result.error) {
+        result.error.dispose();
+        return context.undefined;
+      }
+      return result.value;
+    };
+
     try {
       // 1. Serialize input data to pass into VM
       const inputJson = JSON.stringify(items);
 
-      // 2. Define a helper in VM to get the input
-      // We'll wrap the user code in a function: function(items) { user_code }
-      // But standard QuickJS eval is easier if we set a global variable `items`
-      // OR we can pass it as an argument to a wrapped function.
-      // Let's use a wrapped function approach for cleaner scope.
-
-      // Inject console.log support (optional, but helpful)
+      // 2. Define helpers in VM
+      // Inject console.log support
       const logHandle = context.newFunction("log", (...args) => {
         const nativeArgs = args.map(context.dump);
         console.log("QuickJS:", ...nativeArgs);
@@ -65,28 +77,41 @@ export const Code: INodeType = {
       const consoleHandle = context.newObject();
       context.setProp(consoleHandle, "log", logHandle);
       context.setProp(context.global, "console", consoleHandle);
-
-      // Dispose handles to prevent leak
       logHandle.dispose();
       consoleHandle.dispose();
 
+      // Inject $(...) support
+      const nodeFunc = context.newFunction("$", (nodeNameHandle) => {
+        const nodeName = context.getString(nodeNameHandle);
+        const data = this.getNodeOutputData?.(nodeName) || [];
+        const obj = context.newObject();
+
+        // .all()
+        const allFunc = context.newFunction("all", () => {
+          const jsonString = JSON.stringify(data);
+          return parseJsonSafe(jsonString);
+        });
+        context.setProp(obj, "all", allFunc);
+        allFunc.dispose();
+
+        // .item (default to first item for Code node)
+        const itemData = data[0];
+        if (itemData) {
+          const itemJson = JSON.stringify(itemData);
+          const itemValue = parseJsonSafe(itemJson);
+          context.setProp(obj, "item", itemValue);
+          itemValue.dispose();
+        }
+
+        return obj;
+      });
+      context.setProp(context.global, "$", nodeFunc);
+      nodeFunc.dispose();
+
       // Prepare input 'items'
-      const itemsHandle = context.newString(inputJson);
-      const parseHandle = context.getProp(context.global, "JSON");
-      const parseFunc = context.getProp(parseHandle, "parse");
-      const itemsObjHandle = context.callFunction(
-        parseFunc,
-        parseHandle,
-        itemsHandle,
-      );
+      const itemsObjHandle = parseJsonSafe(inputJson);
 
-      // Cleanup intermediate handles
-      itemsHandle.dispose();
-      parseHandle.dispose();
-      parseFunc.dispose();
-
-      if (itemsObjHandle.error) {
-        itemsObjHandle.error.dispose();
+      if (!itemsObjHandle || itemsObjHandle === context.undefined) {
         throw new Error(
           "Internal error: could not serialize input for QuickJS",
         );
@@ -115,11 +140,11 @@ export const Code: INodeType = {
       const executionResultHandle = context.callFunction(
         funcHandle,
         context.undefined,
-        itemsObjHandle.value,
+        itemsObjHandle,
       );
 
       funcHandle.dispose(); // Done with the function itself
-      itemsObjHandle.value.dispose(); // Done with inputs
+      itemsObjHandle.dispose(); // Done with inputs
 
       if (executionResultHandle.error) {
         const error = context.dump(executionResultHandle.error) as {

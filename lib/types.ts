@@ -156,6 +156,7 @@ export interface IExecuteFunctions {
     credentialType: string,
   ): Promise<Record<string, unknown> | null>;
   evaluateExpression?(expression: string, itemIndex: number): unknown;
+  getNodeOutputData?(nodeName: string): INodeExecutionData[];
 }
 
 export type ISupplyDataFunctions = IExecuteFunctions;

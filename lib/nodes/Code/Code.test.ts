@@ -47,11 +47,14 @@ describe('Code Node', () => {
     vi.clearAllMocks();
   });
 
-  const executeNode = async (inputs: INodeExecutionData[], params: Record<string, unknown>) => {
+  const executeNode = async (inputs: INodeExecutionData[], params: Record<string, unknown>, nodeOutputData: Record<string, INodeExecutionData[]> = {}) => {
     const context = {
       getInputData: () => inputs,
       getNodeParameter: (name: string, _index: number, fallback?: unknown) => {
         return params[name] !== undefined ? params[name] : fallback;
+      },
+      getNodeOutputData: (name: string) => {
+        return nodeOutputData[name] || [];
       }
     } as unknown as IExecuteFunctions;
     return Code.execute!.call(context);
@@ -64,6 +67,25 @@ describe('Code Node', () => {
     expect(result[0]).toHaveLength(1);
     expect(result[0][0].json.transformed).toBe(true);
     expect(mockContext.evalCode).toHaveBeenCalled();
+  });
+
+  it('should support $(...) syntax to access other node data', async () => {
+    const inputs = [{ json: { val: 1 } }];
+    const otherNodeData = [{ json: { external: 'data' } }];
+    
+    // In real execution, context.dump would be called on the result of $('Other').all()
+    // Our mock dump returns what we tell it.
+    mockContext.dump.mockImplementation((h: { type?: string }) => {
+      if (h.type === 'result') return [{ json: { accessed: 'data' } }];
+      return h;
+    });
+
+    const code = "const other = $('Other').all(); return [{ json: { accessed: other[0].json.external } }];";
+    // This is hard to test purely with mocks because we aren't running real QuickJS here.
+    // But we can check if $ was set.
+    
+    await executeNode(inputs, { code }, { 'Other': otherNodeData });
+    expect(mockContext.newFunction).toHaveBeenCalledWith('$', expect.any(Function));
   });
 
   it('should throw error if script does not return an array', async () => {
