@@ -90,7 +90,7 @@ const outputData = computed(() => {
             <div v-if="inputData && inputData.length > 0">
               <vue-json-pretty
                 :data="inputData"
-                :deep="1"
+                :deep="3"
                 :show-length="true"
               />
             </div>
@@ -125,7 +125,7 @@ const outputData = computed(() => {
             <div v-if="outputData && outputData.length > 0">
               <vue-json-pretty
                 :data="outputData"
-                :deep="1"
+                :deep="3"
                 :show-length="true"
               />
             </div>

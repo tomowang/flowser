@@ -39,7 +39,7 @@ defineProps<{
             <div class="p-2 text-xs">
               <VueJsonPretty
                 :data="item.json"
-                :deep="1"
+                :deep="3"
                 :show-length="true"
                 :show-line="true"
                 :show-double-quotes="false"
@@ -85,7 +85,7 @@ defineProps<{
             <div class="p-2 text-xs">
               <VueJsonPretty
                 :data="item.json"
-                :deep="1"
+                :deep="3"
                 :show-length="true"
                 :show-line="true"
                 :show-double-quotes="false"
