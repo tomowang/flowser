@@ -239,6 +239,15 @@ const singleLineExtension = [
         :placeholder="property.placeholder"
       />
 
+      <!-- Textarea Input -->
+      <textarea
+        v-else-if="property.type === 'textarea'"
+        v-model="displayValue as string"
+        :rows="property.typeOptions?.rows || 3"
+        class="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        :placeholder="property.placeholder"
+      />
+
       <!-- Number Input -->
       <input
         v-else-if="property.type === 'number'"
@@ -282,7 +291,7 @@ const singleLineExtension = [
       <Codemirror
         v-else-if="property.type === 'json' || property.type === 'code'"
         v-model="displayValue as string"
-        :style="{ height: '100px' }"
+        :style="{ height: property.typeOptions?.rows ? (property.typeOptions.rows * 20) + 'px' : (property.type === 'code' ? '300px' : '200px') }"
         :autofocus="false"
         :indent-with-tab="true"
         :tab-size="2"

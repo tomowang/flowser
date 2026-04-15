@@ -20,6 +20,9 @@ export const Code: INodeType = {
         displayName: "Code",
         name: "code",
         type: "code", // Uses Monaco editor in UI
+        typeOptions: {
+          rows: 20,
+        },
         default:
           "// Use 'items' to access input data\n// Return an array of objects\nreturn items;",
         description: "The JavaScript code to execute.",

@@ -34,14 +34,20 @@ export const AgentNode: INodeType = {
       {
         displayName: "Prompt",
         name: "prompt",
-        type: "string", // text area
+        type: "textarea",
+        typeOptions: {
+          rows: 10,
+        },
         default: "You are a helpful assistant.",
         description: "System prompt for the agent",
       },
       {
         displayName: "User Message",
         name: "message",
-        type: "string",
+        type: "textarea",
+        typeOptions: {
+          rows: 5,
+        },
         default: "",
         description: "Input message",
       },

@@ -91,6 +91,7 @@ export interface INodeProperties {
   name: string;
   type:
     | "string"
+    | "textarea"
     | "number"
     | "boolean"
     | "options"
@@ -115,6 +116,7 @@ export interface INodeProperties {
   typeOptions?: {
     loadOptionsMethod?: string;
     loadOptionsDependsOn?: string[];
+    rows?: number;
   };
 }
 
