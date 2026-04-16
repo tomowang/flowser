@@ -1297,6 +1297,8 @@ const toggleExecutionPanel = () => {
       v-if="selectedNode"
       :is-open="isPropertiesModalOpen"
       :node="selectedNode"
+      :nodes="nodes"
+      :edges="edges"
       :execution-result="executionResult"
       @close="isPropertiesModalOpen = false"
       @update:data="onNodeDataUpdate"
