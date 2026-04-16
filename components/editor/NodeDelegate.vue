@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, inject } from "vue";
 import { Handle, Position, useVueFlow } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
-import { Trash2, AlertTriangle } from "lucide-vue-next";
+import { Trash2, AlertTriangle, Plus } from "lucide-vue-next";
 import { validateNode } from "@/lib/utils/validation";
 import { IWorkflowNode } from "@/lib/types";
 import NodeIcon from "./NodeIcon.vue";
@@ -13,8 +13,20 @@ const props = defineProps<{
   selected?: boolean;
 }>();
 
-const { removeNodes } = useVueFlow();
+const { removeNodes, getEdges, project } = useVueFlow();
 const isHovered = ref(false);
+
+const openQuickAdd = inject<(nodeId: string, handleId: string, position: { x: number; y: number }, screenPosition: { x: number; y: number }) => void>("openQuickAdd");
+
+const isHandleConnected = (handleId: string, type: "source" | "target") => {
+  return getEdges.value.some((e) => {
+    if (type === "source") {
+      return e.source === props.id && e.sourceHandle === handleId;
+    } else {
+      return e.target === props.id && e.targetHandle === handleId;
+    }
+  });
+};
 
 const nodeType = computed(() => {
   return Registry.get(props.data.nodeType as string);
@@ -75,6 +87,16 @@ const deleteNode = (e: Event) => {
   e.stopPropagation(); // Prevent selecting the node when clicking delete
   removeNodes([props.id]);
 };
+
+const onPlusClick = (handleId: string, event: MouseEvent) => {
+  event.stopPropagation();
+  if (openQuickAdd) {
+    // Project the mouse coordinates to the flow coordinate system for node placement
+    const position = project({ x: event.clientX + 100, y: event.clientY - 25 });
+    // Pass screen coordinates for panel positioning
+    openQuickAdd(props.id, handleId, position, { x: event.clientX, y: event.clientY });
+  }
+};
 </script>
 
 <template>
@@ -129,18 +151,36 @@ const deleteNode = (e: Event) => {
     />
 
     <!-- Main Outputs (Right) -->
-    <Handle
+    <div
       v-for="(port, index) in mainOutputs"
-      :id="port.name"
       :key="port.name"
-      type="source"
-      :position="Position.Right"
-      class="transition-colors !w-3 !h-3"
+      class="absolute !-right-1.5"
       :style="{
-        ...getHandleStyle(port.type),
         top: `${((index + 1) * 100) / (mainOutputs.length + 1)}%`,
+        transform: 'translateY(-50%)',
       }"
-    />
+    >
+      <Handle
+        :id="port.name"
+        type="source"
+        :position="Position.Right"
+        class="transition-colors !w-3 !h-3 !static !transform-none"
+        :style="getHandleStyle(port.type)"
+      />
+      <!-- Plus Button for unconnected main output -->
+      <div
+        v-if="!isHandleConnected(port.name, 'source')"
+        class="absolute left-1/2 top-1/2 -translate-y-1/2 flex items-center group/plus z-20"
+      >
+        <div class="w-12 h-[2px] bg-muted-foreground/30 group-hover/plus:bg-primary/50 transition-colors"></div>
+        <button
+          class="w-5 h-5 rounded-full bg-card border border-muted-foreground/30 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all shadow-sm -ml-0.5"
+          @click="onPlusClick(port.name, $event)"
+        >
+          <Plus class="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
 
     <!-- Bottom Inputs (Tool/Model/Memory) -->
     <div
@@ -183,6 +223,21 @@ const deleteNode = (e: Event) => {
           class="!relative !transform-none !rotate-45 !rounded-none !left-0 !w-2 !h-2 !bg-white transition-colors border-2 !border-muted-foreground block"
           :style="getHandleStyle(port.type)"
         />
+
+        <!-- Plus Button for unconnected top output -->
+        <div
+          v-if="!isHandleConnected(port.name, 'source')"
+          class="absolute bottom-full left-1/2 -translate-x-1/2 flex flex-col-reverse items-center group/plus z-20 mb-0.5"
+        >
+          <div class="h-8 w-[2px] bg-muted-foreground/30 group-hover/plus:bg-primary/50 transition-colors"></div>
+          <button
+            class="w-5 h-5 rounded-full bg-card border border-muted-foreground/30 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all shadow-sm -mb-0.5"
+            @click="onPlusClick(port.name, $event)"
+          >
+            <Plus class="w-3.5 h-3.5" />
+          </button>
+        </div>
+
         <span
           class="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] bg-popover px-1 rounded shadow opacity-0 group-hover/handle:opacity-100 whitespace-nowrap z-20 pointer-events-none"
           >{{ port.label || port.name }}</span

@@ -108,7 +108,9 @@
       "ai": "AI",
       "other": "Other"
     },
-    "noTriggerNode": "No Manually Trigger node found. Please add one to start the workflow."
+    "noTriggerNode": "No Manually Trigger node found. Please add one to start the workflow.",
+    "addNode": "Add Node",
+    "noNodesFound": "No nodes found."
   },
   "datatables": {
     "title": "Data Tables",

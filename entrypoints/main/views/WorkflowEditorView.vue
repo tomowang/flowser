@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted, watch, computed, provide } from "vue";
 import { useI18n } from "vue-i18n";
 import { VueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
@@ -45,6 +45,7 @@ import {
   ChevronDown,
   Undo2,
   Redo2,
+  Plus,
 } from "lucide-vue-next"; // Icons
 import { Spinner } from "@/components/ui/spinner";
 import { useMagicKeys } from "@vueuse/core";
@@ -127,7 +128,17 @@ const collapsedGroups = ref<Record<string, boolean>>({
 });
 
 const toggleGroup = (group: string) => {
-  collapsedGroups.value[group] = !collapsedGroups.value[group];
+  const isCurrentlyCollapsed = collapsedGroups.value[group];
+  if (isCurrentlyCollapsed) {
+    // If we are expanding, collapse all others first
+    Object.keys(collapsedGroups.value).forEach((key) => {
+      collapsedGroups.value[key] = true;
+    });
+    collapsedGroups.value[group] = false;
+  } else {
+    // If we are already expanded, just collapse it
+    collapsedGroups.value[group] = true;
+  }
 };
 
 const groupedNodes = computed(() => {
@@ -195,6 +206,91 @@ const currentWorkflowId = ref<string | null>(null);
 const currentWorkflowName = ref<string>(t("workflowEditor.untitledWorkflow"));
 const originalWorkflowName = ref<string>("");
 const searchQuery = ref("");
+const nodeSearchInput = ref<HTMLInputElement | null>(null);
+const showNodePanel = ref(true);
+
+const quickAddState = ref<{
+  nodeId: string;
+  handleId: string;
+  position: { x: number; y: number };
+  screenPosition: { x: number; y: number };
+} | null>(null);
+
+provide("openQuickAdd", (nodeId: string, handleId: string, position: { x: number; y: number }, screenPosition: { x: number; y: number }) => {
+  quickAddState.value = { nodeId, handleId, position, screenPosition };
+  showNodePanel.value = true;
+  // Collapse all groups first
+  Object.keys(collapsedGroups.value).forEach((key) => {
+    collapsedGroups.value[key] = true;
+  });
+  // Focus search input
+  setTimeout(() => {
+    nodeSearchInput.value?.focus();
+    nodeSearchInput.value?.select();
+  }, 0);
+});
+
+const onQuickAddNode = (nodeType: INodeType) => {
+  if (!quickAddState.value) return;
+
+  const { nodeId, handleId, position } = quickAddState.value;
+  
+  // Add new node
+  const newNodeId = crypto.randomUUID();
+  const defaultParams: Record<string, unknown> = {};
+  for (const prop of nodeType.description.properties) {
+    if (prop.default !== undefined) {
+      defaultParams[prop.name] = prop.default;
+    }
+  }
+
+  const newNode: Node = {
+    id: newNodeId,
+    type: "custom",
+    position,
+    data: {
+      nodeType: nodeType.description.name,
+      label: nodeType.description.displayName,
+      ...defaultParams,
+    },
+  };
+
+  // Find target handle (first input that matches or just 'main')
+  const targetHandle = nodeType.description.inputs?.[0]?.name || "main";
+
+  // Create edge
+  const newEdge: Edge = {
+    id: `e-${nodeId}-${newNodeId}`,
+    source: nodeId,
+    sourceHandle: handleId,
+    target: newNodeId,
+    targetHandle,
+    type: "custom",
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
+  };
+
+  const nextNodes = [...workflowState.value.nodes, newNode];
+  const nextEdges = [...workflowState.value.edges, newEdge];
+  updateState(nextNodes, nextEdges);
+
+  quickAddState.value = null;
+};
+
+const toggleNodePanel = () => {
+  showNodePanel.value = !showNodePanel.value;
+  if (showNodePanel.value) {
+    // Collapse all groups first
+    Object.keys(collapsedGroups.value).forEach((key) => {
+      collapsedGroups.value[key] = true;
+    });
+    setTimeout(() => {
+      nodeSearchInput.value?.focus();
+      nodeSearchInput.value?.select();
+    }, 0);
+  }
+};
 
 watch(searchQuery, (newVal) => {
   if (newVal.trim()) {
@@ -461,6 +557,8 @@ const onNodeDataUpdate = (newData: Record<string, unknown>) => {
 
 const onPaneClick = () => {
   selectedNode.value = null;
+  quickAddState.value = null;
+  showNodePanel.value = false;
 };
 
 const onDragOver = (event: DragEvent) => {
@@ -960,6 +1058,16 @@ const toggleExecutionPanel = () => {
         >
           <Redo2 class="h-4 w-4" />
         </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          :class="{ 'bg-accent': showNodePanel }"
+          @click="toggleNodePanel"
+        >
+          <Plus class="h-4 w-4" />
+        </Button>
       </div>
 
       <div class="h-4 w-px bg-border mx-2"></div>
@@ -1084,19 +1192,19 @@ const toggleExecutionPanel = () => {
 
         <!-- Floating Node Panel (Right) -->
         <aside
-          v-if="!selectedNode"
-          class="absolute top-20 right-4 z-10 w-64 bg-card border rounded-lg shadow-lg flex flex-col max-h-[calc(100%-8rem)]"
+          v-if="(showNodePanel && !selectedNode) || quickAddState"
+          class="absolute top-20 right-4 z-10 w-80 bg-card border rounded-lg shadow-lg flex flex-col max-h-[calc(100%-8rem)]"
         >
-          <!-- ... (Content of node panel) ... -->
           <div class="p-4 border-b">
             <h3 class="font-semibold mb-2">
-              {{ t("workflowEditor.buildWorkflow") }}
+              {{ t("workflowEditor.addNode") }}
             </h3>
             <div class="relative">
               <Search
                 class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
               />
               <input
+                ref="nodeSearchInput"
                 v-model="searchQuery"
                 type="text"
                 :placeholder="t('workflowEditor.searchNodes')"
@@ -1138,6 +1246,7 @@ const toggleExecutionPanel = () => {
                         node.description.name,
                       )
                   "
+                  @click="onQuickAddNode(node)"
                 >
                   <div
                     class="flex h-8 w-8 items-center justify-center rounded bg-muted p-1.5"
