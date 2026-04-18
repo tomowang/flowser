@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import type { Node, Edge } from "@vue-flow/core";
 import NodeInspector from "@/components/editor/NodeInspector.vue";
 import VueJsonPretty from "vue-json-pretty";
@@ -42,6 +43,52 @@ const nodeType = computed(() => {
 const nodeIcon = computed(() => {
   return nodeType.value?.description.icon || Plus;
 });
+
+// Name editing logic
+const localName = ref("");
+const nameError = ref("");
+
+watch(
+  () => props.node?.data?.label,
+  (newLabel) => {
+    if (newLabel && newLabel !== localName.value) {
+      localName.value = newLabel;
+    }
+  },
+  { immediate: true },
+);
+
+const updateName = (newName: string) => {
+  localName.value = newName;
+
+  if (!newName.trim()) {
+    nameError.value = "Name cannot be empty";
+    return;
+  }
+
+  // Check uniqueness against other nodes
+  const exists = props.nodes.some(
+    (n) => n.id !== props.node.id && (n.data?.label || n.id) === newName,
+  );
+
+  if (exists) {
+    nameError.value = "Name already exists";
+    return;
+  }
+
+  nameError.value = "";
+  if (props.node.data.label !== newName) {
+    const newData = { ...props.node.data, label: newName };
+    emit("update:data", newData);
+  }
+};
+
+const validateNameOnBlur = () => {
+  if (nameError.value) {
+    localName.value = props.node.data.label;
+    nameError.value = "";
+  }
+};
 
 // Find all upstream nodes
 const upstreamNodes = computed(() => {
@@ -169,7 +216,18 @@ const outputData = computed(() => {
               class="h-full w-full"
             />
           </div>
-          {{ node?.data?.label || "Node Properties" }}
+          <div class="flex flex-col gap-0.5">
+            <Input
+              :model-value="localName"
+              class="h-7 font-semibold px-1 -ml-1 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[300px]"
+              :class="{ 'border-destructive hover:border-destructive focus:border-destructive text-destructive': nameError }"
+              @input="(e: Event) => updateName((e.target as HTMLInputElement).value)"
+              @blur="validateNameOnBlur"
+            />
+            <span v-if="nameError" class="text-[10px] text-destructive leading-none px-1">
+              {{ nameError }}
+            </span>
+          </div>
         </DialogTitle>
         <DialogDescription class="hidden"
           >Node configuration and execution data</DialogDescription
