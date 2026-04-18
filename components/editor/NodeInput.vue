@@ -8,6 +8,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Codemirror } from "vue-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
@@ -25,6 +34,7 @@ import {
   RefreshCw,
   Loader2,
   Trash2,
+  ChevronRight,
 } from "lucide-vue-next";
 
 const props = defineProps<{
@@ -123,24 +133,35 @@ const checkDisplayOptions = (
 ): boolean => {
   if (!options) return true;
   if (!values) return true;
+
   if (options.show) {
     for (const key in options.show) {
       const showValues = options.show[key];
       const actualValue = values[key];
-      if (Array.isArray(showValues) && !(showValues as unknown[]).includes(actualValue)) {
+      if (Array.isArray(showValues)) {
+        if (!(showValues as unknown[]).includes(actualValue)) {
+          return false;
+        }
+      } else if (showValues !== actualValue) {
         return false;
       }
     }
   }
+
   if (options.hide) {
     for (const key in options.hide) {
       const hideValues = options.hide[key];
       const actualValue = values[key];
-      if (Array.isArray(hideValues) && (hideValues as unknown[]).includes(actualValue)) {
+      if (Array.isArray(hideValues)) {
+        if ((hideValues as unknown[]).includes(actualValue)) {
+          return false;
+        }
+      } else if (hideValues === actualValue) {
         return false;
       }
     }
   }
+
   return true;
 };
 
@@ -159,6 +180,25 @@ const singleLineExtension = [
   }),
   EditorView.lineWrapping,
 ];
+
+const getSelectedOption = computed(() => {
+  if (props.property.type !== "options" && props.property.type !== "action") return null;
+  const val = props.modelValue;
+
+  const findInOptions = (options: unknown[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const opt of options as any[]) {
+      if (opt.value === val) return opt;
+      if (opt.children) {
+        const found = findInOptions(opt.children);
+        if (found) return { ...found, parentIcon: opt.icon };
+      }
+    }
+    return null;
+  };
+
+  return findInOptions(props.property.options || []);
+});
 </script>
 
 <template>
@@ -257,9 +297,70 @@ const singleLineExtension = [
         :placeholder="property.placeholder"
       />
 
-      <!-- Options Select -->
-      <div v-else-if="property.type === 'options'" class="flex gap-2">
-        <Select v-model="displayValue as string">
+      <!-- Options / Action Select -->
+      <div
+        v-else-if="property.type === 'options' || property.type === 'action'"
+        class="flex gap-2"
+      >
+        <template v-if="property.options?.some((o) => o.children)">
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button
+                variant="outline"
+                class="w-full justify-between font-normal text-sm px-3"
+              >
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <component
+                    :is="getSelectedOption?.parentIcon || getSelectedOption?.icon"
+                    v-if="getSelectedOption?.parentIcon || getSelectedOption?.icon"
+                    class="h-4 w-4 shrink-0 opacity-70"
+                  />
+                  <span class="truncate">{{
+                    getSelectedOption?.name || property.placeholder || "Select option"
+                  }}</span>
+                </div>
+                <ChevronRight class="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent class="w-56" align="start">
+              <template v-for="opt in property.options" :key="opt.name">
+                <DropdownMenuSub v-if="opt.children">
+                  <DropdownMenuSubTrigger class="flex items-center gap-2">
+                    <component
+                      :is="opt.icon"
+                      v-if="opt.icon"
+                      class="h-4 w-4 opacity-70"
+                    />
+                    <span>{{ opt.name }}</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      v-for="child in opt.children"
+                      :key="child.value"
+                      class="flex items-center gap-2"
+                      @select="displayValue = child.value"
+                    >
+                      <span>{{ child.name }}</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuItem
+                  v-else
+                  class="flex items-center gap-2"
+                  @select="displayValue = opt.value"
+                >
+                  <component
+                    :is="opt.icon"
+                    v-if="opt.icon"
+                    class="h-4 w-4 opacity-70"
+                  />
+                  <span>{{ opt.name }}</span>
+                </DropdownMenuItem>
+              </template>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </template>
+        <Select v-else v-model="displayValue as string">
           <SelectTrigger class="w-full">
             <SelectValue :placeholder="property.placeholder" />
           </SelectTrigger>
@@ -267,12 +368,20 @@ const singleLineExtension = [
             <SelectItem
               v-for="opt in property.options"
               :key="opt.value ?? opt.name"
-              :value="opt.value ?? opt.name"
+              :value="(opt.value ?? opt.name) as string"
             >
-              {{ opt.name }}
+              <div class="flex items-center gap-2">
+                <component
+                  :is="opt.icon"
+                  v-if="opt.icon"
+                  class="h-4 w-4 opacity-70"
+                />
+                <span>{{ opt.name }}</span>
+              </div>
             </SelectItem>
           </SelectContent>
         </Select>
+
         <Button
           v-if="property.typeOptions?.loadOptionsMethod"
           variant="outline"

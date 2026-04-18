@@ -99,13 +99,21 @@ export interface INodeProperties {
     | "code"
     | "cron"
     | "password"
+    | "action"
     | "fixedCollection";
   default?: unknown;
   options?: {
     name: string;
     value?: string;
     displayName?: string;
+    icon?: string | object | ((...args: unknown[]) => unknown);
     values?: INodeProperties[];
+    children?: {
+      name: string;
+      value: string;
+      displayName?: string;
+      icon?: string | object | ((...args: unknown[]) => unknown);
+    }[];
   }[];
   placeholder?: string;
   description?: string;
