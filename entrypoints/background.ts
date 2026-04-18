@@ -20,11 +20,35 @@ let transientSessionKey: CryptoKey | null = null;
 
 async function getTransientKey() {
   if (transientSessionKey) return transientSessionKey;
+
+  // Try to load from session storage to survive Service Worker restarts
+  const storedKey = await storage.getItem<string>("session:flowser_transient_key");
+  if (storedKey) {
+    try {
+      transientSessionKey = await crypto.subtle.importKey(
+        "jwk",
+        JSON.parse(storedKey),
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt", "decrypt"]
+      );
+      return transientSessionKey;
+    } catch (e) {
+      console.error("Failed to import transient key from session storage", e);
+    }
+  }
+
+  // Generate new key if not found or failed to import
   transientSessionKey = await crypto.subtle.generateKey(
     { name: "AES-GCM", length: 256 },
     true,
     ["encrypt", "decrypt"],
   );
+
+  // Save to session storage for next SW wake-up
+  const exported = await crypto.subtle.exportKey("jwk", transientSessionKey);
+  await storage.setItem("session:flowser_transient_key", JSON.stringify(exported));
+
   return transientSessionKey;
 }
 
@@ -68,7 +92,28 @@ async function unwrapMasterKey(blob: string): Promise<JsonWebKey | null> {
     return JSON.parse(new TextDecoder().decode(decrypted));
   } catch (e) {
     console.error("Failed to unwrap master key", e);
+    // If decryption fails, the transient key might be out of sync with stored data
+    // We should clear the session storage to avoid repeated errors
+    storage.removeItem("session:flowser_wrapped_mk");
     return null;
+  }
+}
+
+async function restoreMasterKey() {
+  const wrapped = await storage.getItem<string>("session:flowser_wrapped_mk");
+  if (!wrapped) return;
+
+  const jwk = await unwrapMasterKey(wrapped);
+  if (jwk) {
+    const key = await crypto.subtle.importKey(
+      "jwk",
+      jwk,
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt"]
+    );
+    SecurityService.setMasterKey(key);
+    console.log("Master key restored from session storage");
   }
 }
 
@@ -121,6 +166,9 @@ export default defineBackground(() => {
   if (typeof browserStorage.session?.setAccessLevel === "function") {
     browserStorage.session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
   }
+
+  // Restore master key from session on startup
+  restoreMasterKey();
 
   // Reschedule all active workflows on startup
   dbPromise.then(async (db) => {
