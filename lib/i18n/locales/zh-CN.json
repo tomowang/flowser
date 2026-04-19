@@ -109,7 +109,8 @@
     },
     "noTriggerNode": "未找到手动触发节点。请添加一个手动触发节点以开始工作流。",
     "addNode": "添加节点",
-    "noNodesFound": "未找到节点。"
+    "noNodesFound": "未找到节点。",
+    "duplicateNodeNames": "发现重复的节点名称：{names}"
   },
   "datatables": {
     "title": "数据表",

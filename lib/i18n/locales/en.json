@@ -110,7 +110,8 @@
     },
     "noTriggerNode": "No Manually Trigger node found. Please add one to start the workflow.",
     "addNode": "Add Node",
-    "noNodesFound": "No nodes found."
+    "noNodesFound": "No nodes found.",
+    "duplicateNodeNames": "Duplicate node names found: {names}"
   },
   "datatables": {
     "title": "Data Tables",

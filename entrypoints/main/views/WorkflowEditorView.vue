@@ -199,6 +199,19 @@ const {
 const nodes = computed(() => workflowState.value.nodes);
 const edges = computed(() => workflowState.value.edges);
 
+const getUniqueNodeName = (baseName: string) => {
+  let name = baseName;
+  let counter = 1;
+  const exists = (n: string) =>
+    nodes.value.some((node) => node.data.label === n);
+
+  while (exists(name)) {
+    name = `${baseName} (${counter})`;
+    counter++;
+  }
+  return name;
+};
+
 const selectedNode = ref<Node | null>(null);
 const logs = ref<string[]>([]); // Keep for basic logs if needed, but mainly use executionResult
 const executionResult = ref<IWorkflowExecutionResult | null>(null);
@@ -234,7 +247,7 @@ const onQuickAddNode = (nodeType: INodeType) => {
   if (!quickAddState.value) return;
 
   const { nodeId, handleId, position } = quickAddState.value;
-  
+
   // Add new node
   const newNodeId = crypto.randomUUID();
   const defaultParams: Record<string, unknown> = {};
@@ -250,11 +263,10 @@ const onQuickAddNode = (nodeType: INodeType) => {
     position,
     data: {
       nodeType: nodeType.description.name,
-      label: nodeType.description.displayName,
+      label: getUniqueNodeName(nodeType.description.displayName),
       ...defaultParams,
     },
   };
-
   // Find target handle (first input that matches or just 'main')
   const targetHandle = nodeType.description.inputs?.[0]?.name || "main";
 
@@ -587,20 +599,6 @@ const onDrop = (event: DragEvent) => {
     }
   }
 
-  const getUniqueNodeName = (baseName: string) => {
-    let name = baseName;
-    let counter = 1;
-    // Helper to check if name exists
-    const exists = (n: string) =>
-      nodes.value.some((node) => node.data.label === n);
-
-    while (exists(name)) {
-      name = `${baseName} (${counter})`;
-      counter++;
-    }
-    return name;
-  };
-
   const newNode: Node = {
     id: `${type}-${Date.now()}`,
     type: "custom",
@@ -662,6 +660,19 @@ const hasChanges = computed(() => {
   return currentSnapshot !== lastSavedSnapshot.value;
 });
 
+const checkDuplicateNodeNames = () => {
+  const nameSet = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const node of nodes.value) {
+    const label = (node.data.label as string) || node.id;
+    if (nameSet.has(label)) {
+      duplicates.add(label);
+    }
+    nameSet.add(label);
+  }
+  return Array.from(duplicates);
+};
+
 const loadWorkflow = (workflow: IWorkflow) => {
   currentWorkflowId.value = workflow.id;
   currentWorkflowName.value = workflow.name;
@@ -721,6 +732,14 @@ const loadWorkflow = (workflow: IWorkflow) => {
   );
   logs.value.push(t("workflowEditor.loadedWorkflow") + " " + workflow.name);
 
+  // Check for duplicate names on load
+  const duplicates = checkDuplicateNodeNames();
+  if (duplicates.length > 0) {
+    logs.value.push(
+      t("workflowEditor.duplicateNodeNames", { names: duplicates.join(", ") }),
+    );
+  }
+
   // Validate nodes on load
   let invalidCount = 0;
   for (const node of workflow.nodes) {
@@ -742,6 +761,16 @@ const loadWorkflow = (workflow: IWorkflow) => {
 };
 
 const saveWorkflow = async () => {
+  const duplicateNames = checkDuplicateNodeNames();
+  if (duplicateNames.length > 0) {
+    toast.error(
+      t("workflowEditor.duplicateNodeNames", {
+        names: duplicateNames.join(", "),
+      }),
+    );
+    return;
+  }
+
   if (!hasChanges.value && currentWorkflowId.value) return; // Prevent saving if no changes and not new
 
   const workflowId = currentWorkflowId.value || crypto.randomUUID();
