@@ -13,7 +13,7 @@ const props = defineProps<{
   selected?: boolean;
 }>();
 
-const { removeNodes, getEdges, project } = useVueFlow();
+const { removeNodes, getEdges, project, findNode } = useVueFlow();
 const isHovered = ref(false);
 
 const openQuickAdd = inject<(nodeId: string, handleId: string, position: { x: number; y: number }, screenPosition: { x: number; y: number }) => void>("openQuickAdd");
@@ -91,10 +91,27 @@ const deleteNode = (e: Event) => {
 const onPlusClick = (handleId: string, event: MouseEvent) => {
   event.stopPropagation();
   if (openQuickAdd) {
-    // Project the mouse coordinates to the flow coordinate system for node placement
-    const position = project({ x: event.clientX + 100, y: event.clientY - 25 });
+    const node = findNode(props.id);
+    let position = { x: 0, y: 0 };
+
+    if (node) {
+      // Use the source node's actual position and width for relative placement.
+      // We place the new node to the right of the current node with a 60px gap.
+      // This is independent of window coordinates and zoom level.
+      position = {
+        x: node.position.x + (node.dimensions?.width || 200) + 60,
+        y: node.position.y,
+      };
+    } else {
+      // Fallback to projected coordinates if node isn't found
+      position = project({ x: event.clientX + 40, y: event.clientY - 40 });
+    }
+
     // Pass screen coordinates for panel positioning
-    openQuickAdd(props.id, handleId, position, { x: event.clientX, y: event.clientY });
+    openQuickAdd(props.id, handleId, position, {
+      x: event.clientX,
+      y: event.clientY,
+    });
   }
 };
 </script>
