@@ -4,6 +4,7 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
+  getSmoothStepPath,
   type EdgeProps,
   useVueFlow,
   Position,
@@ -40,13 +41,18 @@ const setHover = (value: boolean) => {
   }
 };
 
-const path = computed(() => getBezierPath(props));
-
 const isMainConnection = computed(
   () =>
     props.sourcePosition === Position.Right &&
     props.targetPosition === Position.Left,
 );
+
+const path = computed(() => {
+  if (isMainConnection.value && props.targetX < props.sourceX) {
+    return getSmoothStepPath(props);
+  }
+  return getBezierPath(props);
+});
 
 const edgeStyle = computed(() => {
   if (!isMainConnection.value) {
