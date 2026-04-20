@@ -20,6 +20,9 @@ export class WorkflowRunner {
   private nodeExecutionResults: IExecutionNodeResult[] = [];
   private runtime: QuickJSRuntime | undefined;
   private context: QuickJSContext | undefined;
+  private isSingleNodeMode = false;
+  private targetNodeId?: string;
+
   private onStatusChange?: (nodeId: string, status: ExecutionStatus) => void;
   private onNodeCompleted?: (result: IExecutionNodeResult) => void;
   private onNodeStarted?: (
@@ -44,12 +47,17 @@ export class WorkflowRunner {
     this.onNodeStarted = onNodeStarted;
   }
 
+  setInitialData(data: Map<string, INodeExecutionData[]>) {
+    this.executionData = new Map(data);
+  }
+
   async run(
     triggerNodeId?: string,
     triggerData?: INodeExecutionData[],
   ): Promise<IWorkflowExecutionResult> {
     const startTime = Date.now();
     this.nodeExecutionResults = [];
+    this.isSingleNodeMode = false;
 
     // Initialize QuickJS
     const quickJS = await getQuickJS();
@@ -64,7 +72,6 @@ export class WorkflowRunner {
       startNode = this.workflow.nodes.find((n) => n.id === triggerNodeId);
     } else {
       // Find manual trigger
-      // In real app, we look for the specific trigger type
       startNode = this.workflow.nodes.find((n) => n.type === "manualTrigger");
     }
 
@@ -94,17 +101,92 @@ export class WorkflowRunner {
         nodeExecutionResults: this.nodeExecutionResults,
       };
     } finally {
-      this.context?.dispose();
-      this.runtime?.dispose();
-      this.context = undefined;
-      this.runtime = undefined;
+      this.cleanup();
     }
+  }
+
+  async runNode(nodeId: string): Promise<IWorkflowExecutionResult> {
+    const startTime = Date.now();
+    this.nodeExecutionResults = [];
+    this.isSingleNodeMode = true;
+    this.targetNodeId = nodeId;
+
+    // Initialize QuickJS
+    const quickJS = await getQuickJS();
+    this.runtime = quickJS.newRuntime();
+    this.context = this.runtime.newContext();
+    this.setupGlobalContext();
+
+    const targetNode = this.workflow.nodes.find((n) => n.id === nodeId);
+    if (!targetNode) {
+      throw new Error(`Node ${nodeId} not found`);
+    }
+
+    try {
+      await this.ensureNodeExecuted(targetNode);
+      return {
+        id: crypto.randomUUID(),
+        workflowId: this.workflow.id,
+        workflowName: this.workflow.name,
+        startTime,
+        endTime: Date.now(),
+        status: "success",
+        nodeExecutionResults: this.nodeExecutionResults,
+      };
+    } catch (e) {
+      console.error("Single node execution failed", e);
+      return {
+        id: crypto.randomUUID(),
+        workflowId: this.workflow.id,
+        workflowName: this.workflow.name,
+        startTime,
+        endTime: Date.now(),
+        status: "error",
+        nodeExecutionResults: this.nodeExecutionResults,
+      };
+    } finally {
+      this.cleanup();
+    }
+  }
+
+  private cleanup() {
+    this.context?.dispose();
+    this.runtime?.dispose();
+    this.context = undefined;
+    this.runtime = undefined;
+  }
+
+  private async ensureNodeExecuted(node: IWorkflowNode) {
+    // If it's not the target node and we already have data, we're good
+    if (node.id !== this.targetNodeId && this.executionData.has(node.id)) {
+      return this.executionData.get(node.id)!;
+    }
+
+    // Find predecessors
+    const incomingEdges = this.workflow.edges.filter((e) => e.target === node.id);
+    const predecessorIds = Array.from(new Set(incomingEdges.map((e) => e.source)));
+
+    // Recursively ensure predecessors are executed
+    for (const predId of predecessorIds) {
+      const predNode = this.workflow.nodes.find((n) => n.id === predId);
+      if (predNode) {
+        await this.ensureNodeExecuted(predNode);
+      }
+    }
+
+    // Prepare input data for this node from all incoming edges
+    // For now, we simplify: take the first available data from a 'main' connection
+    const mainInputEdge = incomingEdges.find(e => !e.targetHandle || e.targetHandle === "main");
+    const inputData = mainInputEdge ? (this.executionData.get(mainInputEdge.source) || []) : [];
+
+    // Execute the node
+    return await this.executeNode(node, inputData);
   }
 
   private async executeNode(
     node: IWorkflowNode,
     inputData: INodeExecutionData[],
-  ) {
+  ): Promise<INodeExecutionData[]> {
     console.log(`Executing node ${node.id} (${node.type})`);
     const executionId = crypto.randomUUID();
     this.onStatusChange?.(node.id, "running");
@@ -122,9 +204,6 @@ export class WorkflowRunner {
     const executionFunctions: IExecuteFunctions = {
       getInputData: () => inputData,
       getNodeParameter: (paramName: string, ...args: unknown[]) => {
-        // Handle optional itemIndex argument
-        // getNodeParameter(name, index, fallback)
-        // getNodeParameter(name, fallback)
         let index = itemIndex;
         let fallback: unknown = undefined;
 
@@ -135,19 +214,14 @@ export class WorkflowRunner {
           fallback = args[0];
         }
 
-        // Retrieve from node.data or node.parameters
-        // Vue Flow stores custom data in .data
         const value = node.data?.[paramName] ?? fallback;
-
         return evaluateParameters.call(this, value, index, inputData);
       },
       getConnectedNodes: (inputName: string) => {
-        // Find edges connected to this node's targetHandle == inputName
         const edges = this.workflow.edges.filter(
           (e) => e.target === node.id && e.targetHandle === inputName,
         );
         const sourceIds = edges.map((e) => e.source);
-        // Return the actual node objects with their type definitions to be useful
         return this.workflow.nodes
           .filter((n) => sourceIds.includes(n.id))
           .map((n) => {
@@ -155,13 +229,12 @@ export class WorkflowRunner {
             return {
               id: n.id,
               type: n.type,
-              nodeType, // Attach the full node type definition (with execute, supplyData etc)
-              data: n.data, // access params
+              nodeType,
+              data: n.data,
             };
           });
       },
       getCredential: async (credentialType: string) => {
-        // Credentials are stored in node.data.credentials[credentialType] as credential ID
         const credentialId =
           (node.data?.credentials as Record<string, string> | undefined)?.[
             credentialType
@@ -194,7 +267,6 @@ export class WorkflowRunner {
     let executeError: Error | null = null;
 
     try {
-      // Validate node
       const { validateNode } = await import("../utils/validation");
       const validationResult = validateNode(node);
       if (!validationResult.isValid) {
@@ -234,41 +306,27 @@ export class WorkflowRunner {
       this.onNodeCompleted?.(nodeResult);
     }
 
+    const finalOutput = outputData[0];
+    this.executionData.set(node.id, finalOutput);
 
-    // Store execution data
-    this.executionData.set(node.id, outputData[0]);
+    // If in single node mode, only execute if it's a prerequisite (handled by ensureNodeExecuted)
+    // and don't trigger children from here.
+    if (this.isSingleNodeMode) {
+      return finalOutput;
+    }
 
-    // Find next nodes
-    // Iterate over all connected edges from this node
+    // Standard flow: Trigger next nodes
     const edges = this.workflow.edges.filter((e) => e.source === node.id);
-
     for (const edge of edges) {
-      // Determine which output index this edge is connected to
       let outputIndex = 0;
       if (edge.sourceHandle && edge.sourceHandle !== "main") {
         outputIndex = nodeType.description.outputs.findIndex(
           (o) => o.name === edge.sourceHandle,
         );
       }
-
-      if (outputIndex === -1) {
-        // Fallback to index 0 if valid handle not found
-        // or effectively skip if strict?
-        // Let's assume index 0 if not found, but log warning
-        console.warn(
-          `Could not find output handle ${edge.sourceHandle} for node ${node.type}`,
-        );
-        outputIndex = 0;
-      }
+      if (outputIndex === -1) outputIndex = 0;
 
       const branchData = outputData[outputIndex];
-
-      // But undefined means the branch is not taken (e.g. If node returns [items, []] - empty branch takes empty array?)
-      // Wait, If Node returns: [returnDataTrue, returnDataFalse]
-      // If true branch has items, false branch might have 0 items.
-      // If we execute next node with 0 items, it runs 0 times.
-      // That is correct behavior for data processing nodes.
-      // However, check if branchData exists (index in bounds).
       if (branchData && branchData.length > 0) {
         const nextNode = this.workflow.nodes.find((n) => n.id === edge.target);
         if (nextNode) {
@@ -276,6 +334,8 @@ export class WorkflowRunner {
         }
       }
     }
+
+    return finalOutput;
   }
 
   private findNextNodes(nodeId: string): IWorkflowNode[] {

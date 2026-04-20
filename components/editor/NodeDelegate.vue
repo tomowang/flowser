@@ -2,7 +2,7 @@
 import { computed, ref, inject } from "vue";
 import { Handle, Position, useVueFlow } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
-import { Trash2, AlertTriangle, Plus } from "lucide-vue-next";
+import { Trash2, AlertTriangle, Plus, Play } from "lucide-vue-next";
 import { validateNode } from "@/lib/utils/validation";
 import { IWorkflowNode } from "@/lib/types";
 import NodeIcon from "./NodeIcon.vue";
@@ -17,6 +17,7 @@ const { removeNodes, getEdges, project, findNode } = useVueFlow();
 const isHovered = ref(false);
 
 const openQuickAdd = inject<(nodeId: string, handleId: string, handleType: "source" | "target", position: { x: number; y: number }, screenPosition: { x: number; y: number }) => void>("openQuickAdd");
+const runSingleNode = inject<(nodeId: string) => Promise<void>>("runSingleNode");
 
 const isHandleConnected = (handleId: string, type: "source" | "target") => {
   return getEdges.value.some((e) => {
@@ -124,7 +125,7 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
 
 <template>
   <div
-    class="relative group min-w-[180px] rounded-lg border bg-card p-3 shadow-md hover:shadow-lg transition-all"
+    class="relative group min-w-[180px] rounded-lg border bg-card p-3 shadow-md hover:shadow-lg transition-all node-hover-area"
     :class="{
       '!ring-2 !ring-gray-400 !shadow-[0_0_10px_2px_rgba(156,163,175,0.5)]':
         selected,
@@ -287,15 +288,26 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
       </div>
     </div>
 
-    <!-- Delete Button (Top Right) -->
-    <button
-      v-if="isHovered"
-      class="absolute -top-3 -right-3 z-50 rounded-full bg-red-500 p-1.5 text-white shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-      title="Delete Node"
-      @click="deleteNode"
+    <!-- Actions (Top) -->
+    <div
+      class="absolute -top-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 p-1 rounded-full bg-card shadow-md opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 pointer-events-none group-hover:pointer-events-auto"
     >
-      <Trash2 class="h-3 w-3" />
-    </button>
+      <button
+        class="rounded-full bg-primary p-1.5 text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors flex items-center justify-center"
+        title="Run Node"
+        @click.stop="runSingleNode?.(id)"
+      >
+        <Play class="h-3 w-3" />
+      </button>
+      <div class="w-px h-3 bg-border mx-0.5"></div>
+      <button
+        class="rounded-full bg-muted p-1.5 text-muted-foreground shadow-sm hover:bg-destructive/10 hover:text-destructive transition-colors flex items-center justify-center"
+        title="Delete Node"
+        @click.stop="deleteNode"
+      >
+        <Trash2 class="h-3 w-3" />
+      </button>
+    </div>
 
     <!-- Validation Warning (Bottom Right) -->
     <div
@@ -325,5 +337,15 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
   animation: border-flash 1.5s infinite ease-in-out;
   /* Override other borders */
   border-color: #f97316 !important;
+}
+
+.node-hover-area::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: transparent;
 }
 </style>

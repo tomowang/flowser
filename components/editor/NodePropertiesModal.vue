@@ -21,7 +21,8 @@ import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import type { IWorkflowExecutionResult } from "@/lib/types";
 import { Registry } from "@/lib/nodes/registry";
-import { Plus } from "lucide-vue-next";
+import { Plus, Play } from "lucide-vue-next";
+import { Button } from "@/components/ui/button";
 import NodeIcon from "./NodeIcon.vue";
 
 const props = defineProps<{
@@ -33,6 +34,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(["close", "update:data"]);
+
+const runSingleNode = inject<(nodeId: string) => Promise<void>>("runSingleNode");
 
 // Get node type and icon
 const nodeType = computed(() => {
@@ -275,8 +278,18 @@ const outputData = computed(() => {
 
         <!-- Properties (Middle) -->
         <div class="col-span-6 flex flex-col h-full overflow-hidden">
-          <div class="p-3 border-b font-medium text-sm bg-muted/30 min-h-[49px] flex items-center">
-            Configuration
+          <div class="p-3 border-b font-medium text-sm bg-muted/30 min-h-[49px] flex items-center justify-between">
+            <span>Configuration</span>
+            <Button
+              v-if="node"
+              size="sm"
+              variant="outline"
+              class="h-7 px-2"
+              @click="runSingleNode?.(node.id)"
+            >
+              <Play class="h-3.5 w-3.5 mr-1" />
+              Run
+            </Button>
           </div>
           <div class="flex-1 overflow-auto p-4">
             <NodeInspector

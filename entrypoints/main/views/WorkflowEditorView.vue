@@ -26,7 +26,7 @@ import { toast } from "vue-sonner";
 import NodePropertiesModal from "@/components/editor/NodePropertiesModal.vue";
 import NodeIcon from "@/components/editor/NodeIcon.vue";
 import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
-import { IWorkflow, IWorkflowExecutionResult, INodeType } from "@/lib/types";
+import { IWorkflow, IWorkflowExecutionResult, INodeType, INodeExecutionData } from "@/lib/types";
 import { WorkflowService } from "@/lib/services/workflow-service";
 import { ExecutionService } from "@/lib/services/execution-service";
 import ExecutionPanel from "@/components/editor/execution/ExecutionPanel.vue";
@@ -587,6 +587,124 @@ const onNodeClick = (event: NodeMouseEvent) => {
 };
 
 const isPropertiesModalOpen = ref(false);
+
+const runSingleNode = async (nodeId: string) => {
+  console.log(`Running single node ${nodeId}...`);
+  // Ensure panel is open
+  isExecutionPanelCollapsed.value = false;
+
+  const workflow: IWorkflow = {
+    id: currentWorkflowId.value || "temp-workflow",
+    name: currentWorkflowName.value,
+    nodes: nodes.value.map((n) => ({
+      id: n.id,
+      type: n.data.nodeType,
+      position: n.position,
+      data: n.data,
+    })),
+    edges: edges.value.map((e) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      sourceHandle: e.sourceHandle ?? undefined,
+      targetHandle: e.targetHandle ?? undefined,
+    })),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    active: isWorkflowActive.value,
+    previewSvg: "",
+  };
+
+  const runner = new WorkflowRunner(
+    workflow,
+    (nid, status) => {
+      const node = findNode(nid);
+      if (node) {
+        node.data.executionStatus = status;
+        if (status === "running") {
+          node.data.executionError = undefined;
+        }
+      }
+    },
+    (nodeResult) => {
+      if (executionResult.value) {
+        const existingIndex =
+          executionResult.value.nodeExecutionResults.findIndex(
+            (r) => r.id === nodeResult.id,
+          );
+        if (existingIndex !== -1) {
+          executionResult.value.nodeExecutionResults[existingIndex] =
+            nodeResult;
+        } else {
+          executionResult.value.nodeExecutionResults.push(nodeResult);
+        }
+        executionResult.value.endTime = Date.now();
+      }
+    },
+    (nid, inputData, exId) => {
+      const node = findNode(nid);
+      if (executionResult.value && node) {
+        executionResult.value.nodeExecutionResults.push({
+          id: exId,
+          nodeId: node.id,
+          nodeName: node.data?.label || node.type,
+          startTime: Date.now(),
+          endTime: 0,
+          status: "running",
+          inputData: inputData || [],
+          outputData: [],
+        });
+      }
+    },
+  );
+
+  // Set initial data from previous execution result
+  if (executionResult.value) {
+    const initialData = new Map<string, INodeExecutionData[]>();
+    executionResult.value.nodeExecutionResults.forEach(r => {
+      if (r.status === "success") {
+        initialData.set(r.nodeId, r.outputData);
+      }
+    });
+    runner.setInitialData(initialData);
+  }
+
+  isExecuting.value = true;
+  
+  if (!executionResult.value) {
+    executionResult.value = {
+      id: crypto.randomUUID(),
+      workflowId: workflow.id,
+      workflowName: workflow.name,
+      startTime: Date.now(),
+      endTime: Date.now(),
+      status: "running",
+      nodeExecutionResults: [],
+    };
+  } else {
+    executionResult.value.status = "running";
+  }
+
+  try {
+    const result = await runner.runNode(nodeId);
+    // Merge results
+    if (executionResult.value) {
+      // Results are updated incrementally via callbacks, but let's ensure final status
+      executionResult.value.status = result.status;
+      executionResult.value.endTime = result.endTime;
+      
+      // We don't want to save "partial" runs to history if it's confusing, 
+      // but requirements don't specify. Saving for now.
+      await ExecutionService.saveExecution(executionResult.value);
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    isExecuting.value = false;
+  }
+};
+
+provide("runSingleNode", runSingleNode);
 
 const onNodeDoubleClick = (event: NodeMouseEvent) => {
   selectedNode.value = event.node;
