@@ -17,7 +17,7 @@ const isDev = import.meta.env.DEV;
     </SidebarInset>
   </SidebarProvider>
   <Toaster
-    position="top-center"
+    position="top-right"
     rich-colors
     close-button
     close-button-position="top-right"
