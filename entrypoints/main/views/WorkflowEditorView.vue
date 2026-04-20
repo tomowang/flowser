@@ -225,12 +225,13 @@ const showNodePanel = ref(true);
 const quickAddState = ref<{
   nodeId: string;
   handleId: string;
+  handleType: "source" | "target";
   position: { x: number; y: number };
   screenPosition: { x: number; y: number };
 } | null>(null);
 
-provide("openQuickAdd", (nodeId: string, handleId: string, position: { x: number; y: number }, screenPosition: { x: number; y: number }) => {
-  quickAddState.value = { nodeId, handleId, position, screenPosition };
+provide("openQuickAdd", (nodeId: string, handleId: string, handleType: "source" | "target", position: { x: number; y: number }, screenPosition: { x: number; y: number }) => {
+  quickAddState.value = { nodeId, handleId, handleType, position, screenPosition };
   showNodePanel.value = true;
   // Collapse all groups first
   Object.keys(collapsedGroups.value).forEach((key) => {
@@ -246,7 +247,7 @@ provide("openQuickAdd", (nodeId: string, handleId: string, position: { x: number
 const onQuickAddNode = (nodeType: INodeType) => {
   if (!quickAddState.value) return;
 
-  const { nodeId, handleId, position } = quickAddState.value;
+  const { nodeId, handleId, handleType, position } = quickAddState.value;
 
   // Add new node
   const newNodeId = crypto.randomUUID();
@@ -267,15 +268,27 @@ const onQuickAddNode = (nodeType: INodeType) => {
       ...defaultParams,
     },
   };
-  // Find target handle (first input that matches or just 'main')
-  const targetHandle = nodeType.description.inputs?.[0]?.name || "main";
 
   // Create edge
+  let source: string, sourceHandle: string, target: string, targetHandle: string;
+
+  if (handleType === "source") {
+    source = nodeId;
+    sourceHandle = handleId;
+    target = newNodeId;
+    targetHandle = nodeType.description.inputs?.[0]?.name || "main";
+  } else {
+    source = newNodeId;
+    sourceHandle = nodeType.description.outputs?.[0]?.name || "main";
+    target = nodeId;
+    targetHandle = handleId;
+  }
+
   const newEdge: Edge = {
-    id: `e-${nodeId}-${newNodeId}`,
-    source: nodeId,
-    sourceHandle: handleId,
-    target: newNodeId,
+    id: `e-${source}-${target}-${crypto.randomUUID().slice(0, 8)}`,
+    source,
+    sourceHandle,
+    target,
     targetHandle,
     type: "custom",
     markerEnd: {

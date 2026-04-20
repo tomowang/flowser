@@ -16,7 +16,7 @@ const props = defineProps<{
 const { removeNodes, getEdges, project, findNode } = useVueFlow();
 const isHovered = ref(false);
 
-const openQuickAdd = inject<(nodeId: string, handleId: string, position: { x: number; y: number }, screenPosition: { x: number; y: number }) => void>("openQuickAdd");
+const openQuickAdd = inject<(nodeId: string, handleId: string, handleType: "source" | "target", position: { x: number; y: number }, screenPosition: { x: number; y: number }) => void>("openQuickAdd");
 
 const isHandleConnected = (handleId: string, type: "source" | "target") => {
   return getEdges.value.some((e) => {
@@ -88,27 +88,33 @@ const deleteNode = (e: Event) => {
   removeNodes([props.id]);
 };
 
-const onPlusClick = (handleId: string, event: MouseEvent) => {
+const onPlusClick = (handleId: string, handleType: "source" | "target", event: MouseEvent) => {
   event.stopPropagation();
   if (openQuickAdd) {
     const node = findNode(props.id);
     let position = { x: 0, y: 0 };
 
     if (node) {
-      // Use the source node's actual position and width for relative placement.
-      // We place the new node to the right of the current node with a 60px gap.
-      // This is independent of window coordinates and zoom level.
-      position = {
-        x: node.position.x + (node.dimensions?.width || 200) + 60,
-        y: node.position.y,
-      };
+      if (handleType === "source") {
+        // Source handle (output): Place new node to the right
+        position = {
+          x: node.position.x + (node.dimensions?.width || 200) + 60,
+          y: node.position.y,
+        };
+      } else {
+        // Target handle (input): Place new node below
+        position = {
+          x: node.position.x,
+          y: node.position.y + (node.dimensions?.height || 100) + 80,
+        };
+      }
     } else {
       // Fallback to projected coordinates if node isn't found
       position = project({ x: event.clientX + 40, y: event.clientY - 40 });
     }
 
     // Pass screen coordinates for panel positioning
-    openQuickAdd(props.id, handleId, position, {
+    openQuickAdd(props.id, handleId, handleType, position, {
       x: event.clientX,
       y: event.clientY,
     });
@@ -160,7 +166,7 @@ const onPlusClick = (handleId: string, event: MouseEvent) => {
       :key="port.name"
       type="target"
       :position="Position.Left"
-      class="transition-colors !w-3 !h-3"
+      class="transition-colors !w-3 !h-3 !cursor-crosshair"
       :style="{
         ...getHandleStyle(port.type),
         top: `${((index + 1) * 100) / (mainInputs.length + 1)}%`,
@@ -181,7 +187,7 @@ const onPlusClick = (handleId: string, event: MouseEvent) => {
         :id="port.name"
         type="source"
         :position="Position.Right"
-        class="transition-colors !w-3 !h-3 !static !transform-none"
+        class="transition-colors !w-3 !h-3 !static !transform-none !cursor-crosshair"
         :style="getHandleStyle(port.type)"
       />
       <!-- Plus Button for unconnected main output -->
@@ -190,19 +196,28 @@ const onPlusClick = (handleId: string, event: MouseEvent) => {
         class="absolute left-1/2 top-1/2 -translate-y-1/2 flex items-center group/plus z-20"
       >
         <div class="w-12 h-[2px] bg-muted-foreground/30 group-hover/plus:bg-primary/50 transition-colors"></div>
-        <button
-          class="w-5 h-5 rounded-full bg-card border border-muted-foreground/30 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all shadow-sm -ml-0.5"
-          @click="onPlusClick(port.name, $event)"
+        
+        <!-- NEW: Wrap in Handle for draggability -->
+        <Handle
+          :id="port.name"
+          type="source"
+          :position="Position.Right"
+          class="!bg-transparent !border-none !w-4 !h-4 !-ml-2 !static !flex !items-center !justify-center !p-0 !cursor-grab hover:!cursor-grabbing translate-y-1/2"
         >
-          <Plus class="w-3.5 h-3.5" />
-        </button>
+          <button
+            class="w-4 h-4 rounded-full bg-card border border-muted-foreground/30 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary group-hover/plus:bg-primary group-hover/plus:text-primary-foreground group-hover/plus:border-primary transition-all shadow-sm pointer-events-auto"
+            @click="onPlusClick(port.name, 'source', $event)"
+          >
+            <Plus class="w-3 h-3" />
+          </button>
+        </Handle>
       </div>
     </div>
 
     <!-- Bottom Inputs (Tool/Model/Memory) -->
     <div
       v-if="bottomInputs.length"
-      class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 flex gap-2 z-10"
+      class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 flex gap-6 z-10"
     >
       <div
         v-for="port in bottomInputs"
@@ -213,9 +228,33 @@ const onPlusClick = (handleId: string, event: MouseEvent) => {
           :id="port.name"
           type="target"
           :position="Position.Bottom"
-          class="!relative !transform-none !rotate-45 !rounded-none !left-0 !w-2 !h-2 !bg-white transition-colors border-2 !border-muted-foreground block"
+          class="!relative !transform-none !rotate-45 !rounded-none !left-0 !w-2 !h-2 !bg-white transition-colors border-2 !border-muted-foreground block !cursor-crosshair"
           :style="getHandleStyle(port.type)"
         />
+
+        <!-- Plus Button for unconnected bottom input -->
+        <div
+          v-if="!isHandleConnected(port.name, 'target')"
+          class="absolute top-full left-1/2 -translate-x-1/2 flex flex-col items-center group/plus z-20 mt-0.5"
+        >
+          <div class="h-4 w-[2px] bg-muted-foreground/30 group-hover/plus:bg-primary/50 transition-colors"></div>
+
+          <!-- NEW: Wrap in Handle for draggability -->
+          <Handle
+            :id="port.name"
+            type="target"
+            :position="Position.Bottom"
+            class="!bg-transparent !border-none !w-4 !h-4 !-mt-2 !static !flex !items-center !justify-center !p-0 !cursor-grab hover:!cursor-grabbing translate-x-1/2"
+          >
+            <button
+              class="w-4 h-4 rounded-full bg-card border border-muted-foreground/30 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary group-hover/plus:bg-primary group-hover/plus:text-primary-foreground group-hover/plus:border-primary transition-all shadow-sm pointer-events-auto"
+              @click="onPlusClick(port.name, 'target', $event)"
+            >
+              <Plus class="w-3 h-3" />
+            </button>
+          </Handle>
+        </div>
+
         <span
           class="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] bg-popover px-1 rounded shadow opacity-0 group-hover/handle:opacity-100 whitespace-nowrap z-20 pointer-events-none"
           >{{ port.label || port.name }}</span
@@ -237,23 +276,9 @@ const onPlusClick = (handleId: string, event: MouseEvent) => {
           :id="port.name"
           type="source"
           :position="Position.Top"
-          class="!relative !transform-none !rotate-45 !rounded-none !left-0 !w-2 !h-2 !bg-white transition-colors border-2 !border-muted-foreground block"
+          class="!relative !transform-none !rotate-45 !rounded-none !left-0 !w-2 !h-2 !bg-white transition-colors border-2 !border-muted-foreground block !cursor-crosshair"
           :style="getHandleStyle(port.type)"
         />
-
-        <!-- Plus Button for unconnected top output -->
-        <div
-          v-if="!isHandleConnected(port.name, 'source')"
-          class="absolute bottom-full left-1/2 -translate-x-1/2 flex flex-col-reverse items-center group/plus z-20 mb-0.5"
-        >
-          <div class="h-8 w-[2px] bg-muted-foreground/30 group-hover/plus:bg-primary/50 transition-colors"></div>
-          <button
-            class="w-5 h-5 rounded-full bg-card border border-muted-foreground/30 flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all shadow-sm -mb-0.5"
-            @click="onPlusClick(port.name, $event)"
-          >
-            <Plus class="w-3.5 h-3.5" />
-          </button>
-        </div>
 
         <span
           class="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] bg-popover px-1 rounded shadow opacity-0 group-hover/handle:opacity-100 whitespace-nowrap z-20 pointer-events-none"
