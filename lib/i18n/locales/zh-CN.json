@@ -1,6 +1,8 @@
 {
   "common": {
     "save": "保存",
+    "undo": "撤销",
+    "redo": "重做",
     "cancel": "取消",
     "delete": "删除",
     "confirm": "确定",

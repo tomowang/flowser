@@ -1,6 +1,8 @@
 {
   "common": {
     "save": "Save",
+    "undo": "Undo",
+    "redo": "Redo",
     "cancel": "Cancel",
     "delete": "Delete",
     "confirm": "Confirm",

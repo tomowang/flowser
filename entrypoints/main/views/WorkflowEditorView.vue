@@ -48,7 +48,7 @@ import {
   Plus,
 } from "lucide-vue-next"; // Icons
 import { Spinner } from "@/components/ui/spinner";
-import { useMagicKeys } from "@vueuse/core";
+import { useMagicKeys, useEventListener } from "@vueuse/core";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -63,6 +63,11 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
@@ -356,6 +361,34 @@ const findNode = (id: string) => {
 };
 
 const { space } = useMagicKeys();
+
+const modKey = computed(() => {
+  if (typeof navigator === "undefined") return "Ctrl";
+  return /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl";
+});
+
+useEventListener("keydown", (e: KeyboardEvent) => {
+  const isMod = e.metaKey || e.ctrlKey;
+  const key = e.key.toLowerCase();
+
+  // Save: Mod + S
+  if (isMod && key === "s") {
+    e.preventDefault();
+    saveWorkflow();
+  }
+
+  // Undo: Mod + Z
+  if (isMod && key === "z" && !e.shiftKey) {
+    e.preventDefault();
+    undo();
+  }
+
+  // Redo: Mod + Shift + Z or Mod + Y
+  if ((isMod && e.shiftKey && key === "z") || (isMod && key === "y")) {
+    e.preventDefault();
+    redo();
+  }
+});
 
 // Load workflow on mount or route change
 const loadInitWorkflow = async () => {
@@ -1082,24 +1115,39 @@ const toggleExecutionPanel = () => {
       />
       <div class="h-4 w-px bg-border mx-2"></div>
       <div class="flex items-center gap-1">
-        <Button
-          size="icon"
-          variant="ghost"
-          :disabled="!canUndo"
-          class="h-8 w-8"
-          @click="undo"
-        >
-          <Undo2 class="h-4 w-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          :disabled="!canRedo"
-          class="h-8 w-8"
-          @click="redo"
-        >
-          <Redo2 class="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              size="icon"
+              variant="ghost"
+              :disabled="!canUndo"
+              class="h-8 w-8"
+              @click="undo"
+            >
+              <Undo2 class="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {{ t("common.undo") }} ({{ modKey }}+Z)
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              size="icon"
+              variant="ghost"
+              :disabled="!canRedo"
+              class="h-8 w-8"
+              @click="redo"
+            >
+              <Redo2 class="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {{ t("common.redo") }} ({{ modKey }}+Shift+Z)
+          </TooltipContent>
+        </Tooltip>
 
         <Button
           variant="ghost"
@@ -1113,17 +1161,22 @@ const toggleExecutionPanel = () => {
       </div>
 
       <div class="h-4 w-px bg-border mx-2"></div>
-      <Button
-        size="sm"
-        variant="outline"
-        :disabled="isSaving || !hasChanges"
-        class="cursor-pointer"
-        @click="saveWorkflow"
-      >
-        <Spinner v-if="isSaving" class="w-4 h-4 mr-1" />
-        <Save v-else class="w-4 h-4 mr-1" />
-        {{ t("common.save") }}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            size="sm"
+            variant="outline"
+            :disabled="isSaving || !hasChanges"
+            class="cursor-pointer"
+            @click="saveWorkflow"
+          >
+            <Spinner v-if="isSaving" class="w-4 h-4 mr-1" />
+            <Save v-else class="w-4 h-4 mr-1" />
+            {{ t("common.save") }}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent> {{ t("common.save") }} ({{ modKey }}+S) </TooltipContent>
+      </Tooltip>
       <Button
         size="sm"
         variant="outline"
