@@ -217,7 +217,7 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
     <!-- Bottom Inputs (Tool/Model/Memory) -->
     <div
       v-if="bottomInputs.length"
-      class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 flex gap-6 z-10"
+      class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 flex gap-12 z-10"
     >
       <div
         v-for="port in bottomInputs"
@@ -237,7 +237,7 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
           v-if="!isHandleConnected(port.name, 'target')"
           class="absolute top-full left-1/2 -translate-x-1/2 flex flex-col items-center group/plus z-20 mt-0.5"
         >
-          <div class="h-4 w-[2px] bg-muted-foreground/30 group-hover/plus:bg-primary/50 transition-colors"></div>
+          <div class="h-8 w-[2px] bg-muted-foreground/30 group-hover/plus:bg-primary/50 transition-colors"></div>
 
           <!-- NEW: Wrap in Handle for draggability -->
           <Handle
@@ -256,7 +256,7 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
         </div>
 
         <span
-          class="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] bg-popover px-1 rounded shadow opacity-0 group-hover/handle:opacity-100 whitespace-nowrap z-20 pointer-events-none"
+          class="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] bg-popover px-1 rounded shadow whitespace-nowrap z-20 pointer-events-none"
           >{{ port.label || port.name }}</span
         >
       </div>
