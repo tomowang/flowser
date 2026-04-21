@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { IWorkflowExecutionResult } from "@/lib/types";
 import { ref, computed, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
 import ExecutionNodeList from "./ExecutionNodeList.vue";
 import ExecutionNodeDetail from "./ExecutionNodeDetail.vue";
@@ -12,6 +13,7 @@ const props = defineProps<{
 
 const emit = defineEmits(["close", "toggle-collapse"]);
 
+const { t } = useI18n();
 const selectedExecutionId = ref<string | undefined>(undefined);
 
 // Auto-select the first node or the failed node if any
@@ -72,20 +74,32 @@ const onNodeSelect = (id: string) => {
       @click="emit('toggle-collapse')"
     >
       <div class="flex items-center gap-2">
-        <span class="font-semibold text-sm">Execution Results</span>
+        <span class="font-semibold text-sm">{{ t("executions.results") }}</span>
         <span
-          class="text-xs px-2 py-0.5 rounded-full"
+          class="text-xs px-2 py-0.5 rounded-full capitalize"
           :class="{
             'bg-green-100 text-green-700': executionResult.status === 'success',
             'bg-red-100 text-red-700': executionResult.status === 'error',
             'bg-blue-100 text-blue-700': executionResult.status === 'running',
           }"
         >
-          {{ executionResult.status }}
+          {{
+            executionResult.status === "success"
+              ? t("executions.success")
+              : executionResult.status === "error"
+                ? t("executions.error")
+                : t("common.running")
+          }}
         </span>
         <span class="text-xs text-muted-foreground ml-2">
-          {{ executionResult.nodeExecutionResults.length }} nodes executed in
-          {{ executionResult.endTime - executionResult.startTime }}ms
+          {{
+            executionResult.nodeExecutionResults.length > 0
+              ? t("executions.nodesExecuted", {
+                  count: executionResult.nodeExecutionResults.length,
+                  duration: executionResult.endTime - executionResult.startTime,
+                })
+              : t("executions.noNodesExecuted")
+          }}
         </span>
       </div>
       <div class="flex items-center gap-2">

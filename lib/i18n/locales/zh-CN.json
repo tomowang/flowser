@@ -17,15 +17,30 @@
     "saveChanges": "保存更改",
     "export": "导出",
     "import": "导入",
-    "error": "出错了"
+    "group": "分组",
+    "error": "出错了",
+    "close": "关闭",
+    "more": "更多",
+    "loading": "加载中",
+    "success": "成功",
+    "running": "运行中",
+    "items": "{count} 个项目",
+    "id": "ID",
+    "breadcrumb": "面包屑导航",
+    "saveWithShortcut": "保存 ({shortcut})",
+    "undoWithShortcut": "撤销 ({shortcut})",
+    "redoWithShortcut": "重做 ({shortcut})"
   },
   "sidebar": {
+    "title": "侧边栏",
     "platform": "平台",
     "workflows": "工作流",
     "credentials": "凭证",
     "executions": "执行记录",
     "settings": "设置",
-    "datatables": "数据表"
+    "datatables": "数据表",
+    "toggle": "切换侧边栏",
+    "mobileDesc": "显示移动端侧边栏。"
   },
   "settings": {
     "title": "设置",
@@ -54,13 +69,17 @@
     "title": "凭证",
     "addCredential": "添加凭证",
     "addCredentialTitle": "添加凭证",
-    "addCredentialDescription": "添加新的 API 密钥或秘密。数据将使用您的主密钥加密。",
+    "addCredentialDescription": "添加新的 API 密钥或密码。数据将使用您的主密钥加密。",
     "namePlaceholder": "输入凭证名称",
     "selectType": "选择类型",
     "valuePlaceholder": "sk-...",
     "createdAt": "创建时间",
     "noCredentialsFound": "未找到凭证。",
-    "deleteConfirm": "您确定要删除此凭证吗？"
+    "deleteConfirm": "您确定要删除此凭证吗？",
+    "selectCredential": "选择凭证",
+    "createNew": "创建新凭证",
+    "editCredentialTitle": "编辑凭证",
+    "editCredentialDescription": "在下方修改凭证详情。"
   },
   "executions": {
     "title": "执行记录",
@@ -73,7 +92,16 @@
     "deleteConfirm": "您确定要删除此日志吗？",
     "noExecutionsFound": "未找到工作流执行记录。",
     "success": "成功",
-    "error": "错误"
+    "error": "错误",
+    "results": "执行结果",
+    "nodesExecuted": "{count} 个节点已执行，耗时 {duration} 毫秒",
+    "noNodesExecuted": "没有节点被执行。",
+    "input": "输入",
+    "output": "输出",
+    "itemIndex": "项目 {index}",
+    "noInputData": "无输入数据",
+    "noOutputData": "无输出数据",
+    "selectNodeToViewDetails": "选择一个节点以查看详情"
   },
   "masterKey": {
     "title": "安全检查",
@@ -93,8 +121,8 @@
     "workflowNamePrompt": "工作流名称",
     "untitledWorkflow": "未命名工作流",
     "newWorkflow": "新建工作流",
-    "loadedWorkflow": "已加载工作流：",
-    "savedWorkflow": "已保存工作流：",
+    "loadedWorkflow": "已加载工作流：{name}",
+    "savedWorkflow": "已保存工作流：{name}",
     "createdNewWorkflow": "已创建新工作流",
     "executionFinished": "执行完成。",
     "workflowNotFound": "未找到工作流 {id}。",
@@ -112,7 +140,30 @@
     "noTriggerNode": "未找到手动触发节点。请添加一个手动触发节点以开始工作流。",
     "addNode": "添加节点",
     "noNodesFound": "未找到节点。",
-    "duplicateNodeNames": "发现重复的节点名称：{names}"
+    "duplicateNodeNames": "发现重复的节点名称：{names}",
+    "selectNodeToEdit": "选择一个节点以编辑属性。",
+    "fixed": "固定值",
+    "expression": "表达式",
+    "expressionPlaceholder": "表达式...",
+    "selectOption": "选择选项",
+    "refreshOptions": "刷新选项",
+    "removeItem": "删除项目",
+    "addItem": "添加 {name}",
+    "nameEmpty": "名称不能为空",
+    "nameExists": "名称已存在",
+    "nodeConfigDesc": "节点配置和执行数据",
+    "inputData": "输入数据",
+    "outputData": "输出数据",
+    "selectNode": "选择节点",
+    "noInputData": "无输入数据。",
+    "executeToSeeData": "执行工作流以查看数据。",
+    "noOutputDataForNode": "所选节点无输出数据。",
+    "noOutputData": "无输出数据。",
+    "runNode": "运行节点",
+    "deleteNode": "删除节点",
+    "invalidWorkflowFormat": "无效的工作流格式",
+    "validationWarning": "验证警告 [{name}]: {errors}",
+    "workflowLoadedWithErrors": "工作流已加载，其中包含 {count} 个无效节点。请检查上方详情。"
   },
   "datatables": {
     "title": "数据表",
@@ -152,7 +203,608 @@
       "boolean": "布尔值",
       "json": "JSON"
     },
-    "true": "True",
-    "false": "False"
+    "true": "是",
+    "false": "否",
+    "columnNamePlaceholder": "例如 email"
+  },
+  "nodes": {
+    "manualTrigger": {
+      "displayName": "手动触发",
+      "description": "手动启动工作流",
+      "properties": {}
+    },
+    "httpRequest": {
+      "displayName": "HTTP 请求",
+      "description": "发送一个 HTTP 请求",
+      "properties": {
+        "url": {
+          "displayName": "URL",
+          "description": "请求的目标 URL",
+          "placeholder": "https://api.example.com"
+        },
+        "method": {
+          "displayName": "方法",
+          "description": "HTTP 请求方法",
+          "options": {
+            "GET": "GET",
+            "POST": "POST",
+            "PUT": "PUT",
+            "DELETE": "DELETE",
+            "PATCH": "PATCH",
+            "HEAD": "HEAD"
+          }
+        },
+        "parameters": {
+          "displayName": "查询参数",
+          "description": "要追加到 URL 的查询参数"
+        },
+        "headers": {
+          "displayName": "请求头",
+          "description": "HTTP 请求头"
+        },
+        "specifyBody": {
+          "displayName": "主体类型",
+          "description": "请求主体的内容类型",
+          "options": {
+            "none": "无",
+            "json": "JSON",
+            "form": "表单 (Form-Urlencoded)"
+          }
+        },
+        "body": {
+          "displayName": "JSON 主体",
+          "description": "要发送的 JSON 数据"
+        },
+        "bodyForm": {
+          "displayName": "表单主体",
+          "description": "要发送的表单数据"
+        }
+      }
+    },
+    "agent": {
+      "displayName": "智能代理",
+      "description": "用于浏览器交互的自主代理",
+      "properties": {
+        "prompt": {
+          "displayName": "系统提示词 (Prompt)",
+          "description": "代理的系统提示词"
+        },
+        "message": {
+          "displayName": "用户消息",
+          "description": "输入给代理的消息"
+        }
+      }
+    },
+    "geminiModel": {
+      "displayName": "Gemini 模型",
+      "description": "与 Google 的 Gemini 模型交互",
+      "properties": {
+        "modelName": {
+          "displayName": "模型名称",
+          "description": "要使用的模型 ID"
+        }
+      }
+    },
+    "openAIModel": {
+      "displayName": "OpenAI 模型",
+      "description": "与 OpenAI 的 GPT 模型交互",
+      "properties": {
+        "modelName": {
+          "displayName": "模型名称",
+          "description": "要使用的模型 ID"
+        }
+      }
+    },
+    "claudeModel": {
+      "displayName": "Claude 模型",
+      "description": "与 Anthropic 的 Claude 模型交互",
+      "properties": {
+        "modelName": {
+          "displayName": "模型名称",
+          "description": "要使用的模型 ID"
+        }
+      }
+    },
+    "deepSeekModel": {
+      "displayName": "DeepSeek 模型",
+      "description": "与 DeepSeek 的模型交互",
+      "properties": {
+        "modelName": {
+          "displayName": "模型名称",
+          "description": "要使用的模型 ID"
+        }
+      }
+    },
+    "code": {
+      "displayName": "代码",
+      "description": "执行自定义 JavaScript 代码",
+      "properties": {
+        "code": {
+          "displayName": "代码内容",
+          "description": "要执行的 JavaScript 代码。"
+        }
+      }
+    },
+    "tabQuery": {
+      "displayName": "查询标签页",
+      "description": "根据特定标准查询浏览器标签页",
+      "properties": {
+        "title": {
+          "displayName": "标题模式",
+          "description": "根据模式匹配页面标题",
+          "placeholder": "例如 *Google*"
+        },
+        "url": {
+          "displayName": "URL 模式",
+          "description": "根据模式匹配 URL",
+          "placeholder": "例如 *google.com*"
+        },
+        "active": {
+          "displayName": "是否活动",
+          "description": "标签页在其窗口中是否处于活动状态",
+          "options": {
+            "any": "不限",
+            "yes": "是",
+            "no": "否"
+          }
+        },
+        "tabStatus": {
+          "displayName": "状态",
+          "description": "标签页是否已完成加载",
+          "options": {
+            "any": "不限",
+            "unloaded": "未加载",
+            "loading": "加载中",
+            "complete": "已完成"
+          }
+        }
+      }
+    },
+    "tabAction": {
+      "displayName": "标签页操作",
+      "description": "对浏览器标签页执行操作",
+      "properties": {
+        "action": {
+          "displayName": "操作类型",
+          "description": "要执行的操作",
+          "options": {
+            "create": "创建",
+            "close": "关闭",
+            "group": "分组"
+          }
+        },
+        "url": {
+          "displayName": "URL",
+          "description": "要导航到的 URL"
+        },
+        "active": {
+          "displayName": "激活窗口",
+          "description": "是否将该标签页设为窗口中的活动标签页"
+        },
+        "pinned": {
+          "displayName": "固定",
+          "description": "是否固定该标签页"
+        },
+        "windowId": {
+          "displayName": "窗口 ID",
+          "description": "要在其中创建标签页的窗口 ID"
+        },
+        "tabIds": {
+          "displayName": "标签页 ID 列表",
+          "description": "要操作的标签页 ID"
+        },
+        "groupId": {
+          "displayName": "群组 ID",
+          "description": "要添加到的标签页组 ID"
+        },
+        "tabId": {
+          "displayName": "标签页 ID",
+          "description": "要操作的单个标签页 ID"
+        }
+      }
+    },
+    "tabCreated": {
+      "displayName": "标签页已创建",
+      "description": "创建新标签页时触发",
+      "properties": {}
+    },
+    "tabUpdated": {
+      "displayName": "标签页已更新",
+      "description": "标签页更新时触发",
+      "properties": {}
+    },
+    "clickElement": {
+      "displayName": "点击元素",
+      "description": "点击页面上的元素",
+      "properties": {
+        "tabId": {
+          "displayName": "标签页 ID",
+          "description": "要在其中点击元素的标签页 ID。"
+        },
+        "selectorType": {
+          "displayName": "选择器类型",
+          "description": "要使用的选择器类型",
+          "options": {
+            "css": "CSS 选择器",
+            "xpath": "XPath"
+          }
+        },
+        "selector": {
+          "displayName": "选择器",
+          "description": "要点击的元素选择器",
+          "placeholder": "例如 .button 或 //button"
+        },
+        "multiple": {
+          "displayName": "点击多个",
+          "description": "点击所有匹配的元素"
+        }
+      }
+    },
+    "windowCreate": {
+      "displayName": "创建窗口",
+      "description": "创建一个新窗口",
+      "properties": {
+        "url": {
+          "displayName": "URL",
+          "description": "在新窗口中打开的 URL"
+        },
+        "type": {
+          "displayName": "窗口类型",
+          "description": "要创建的窗口类型",
+          "options": {
+            "normal": "普通窗口",
+            "popup": "弹出窗口",
+            "panel": "面板"
+          }
+        },
+        "state": {
+          "displayName": "窗口状态",
+          "description": "窗口的初始状态",
+          "options": {
+            "normal": "正常",
+            "minimized": "最小化",
+            "maximized": "最大化",
+            "fullscreen": "全屏"
+          }
+        },
+        "focused": {
+          "displayName": "聚焦",
+          "description": "窗口创建后是否自动聚焦"
+        },
+        "incognito": {
+          "displayName": "无痕模式",
+          "description": "是否在无痕/隐身模式下创建窗口"
+        }
+      }
+    },
+    "windowQuery": {
+      "displayName": "查询窗口",
+      "description": "根据特定标准查询浏览器窗口",
+      "properties": {
+        "populate": {
+          "displayName": "包含标签页",
+          "description": "查询结果是否包含窗口内的标签页列表"
+        },
+        "windowTypes": {
+          "displayName": "窗口类型",
+          "description": "要查询的窗口类型",
+          "options": {
+            "any": "不限",
+            "normal": "普通",
+            "popup": "弹出",
+            "panel": "面板",
+            "app": "应用",
+            "devtools": "开发者工具"
+          }
+        }
+      }
+    },
+    "windowClose": {
+      "displayName": "关闭窗口",
+      "description": "关闭特定窗口",
+      "properties": {
+        "windowId": {
+          "displayName": "窗口 ID",
+          "description": "要关闭的窗口 ID",
+          "placeholder": "例如 123 或 {{ $json.windowId }}"
+        }
+      }
+    },
+    "wait": {
+      "displayName": "等待",
+      "description": "等待特定时间或等待元素出现",
+      "properties": {
+        "seconds": {
+          "displayName": "等待时长 (秒)",
+          "description": "要等待的秒数"
+        }
+      }
+    },
+    "testNode": {
+      "displayName": "测试节点",
+      "description": "用于测试目的的节点",
+      "properties": {
+        "requiredProp": {
+          "displayName": "必填属性",
+          "description": "用于测试验证的必填属性"
+        },
+        "raiseError": {
+          "displayName": "抛出错误",
+          "description": "如果为真，该节点在执行时将抛出错误"
+        }
+      }
+    },
+    "fetchContent": {
+      "displayName": "获取内容",
+      "description": "获取页面内容",
+      "properties": {
+        "tabId": {
+          "displayName": "标签页 ID",
+          "description": "要从中获取内容的标签页 ID。"
+        },
+        "selectorType": {
+          "displayName": "选择器类型",
+          "description": "要使用的选择器类型",
+          "options": {
+            "css": "CSS 选择器",
+            "xpath": "XPath"
+          }
+        },
+        "selector": {
+          "displayName": "选择器",
+          "description": "要获取内容的元素选择器",
+          "placeholder": "例如 .content 或 //div[@id='main']"
+        },
+        "contentType": {
+          "displayName": "内容类型",
+          "description": "要获取的内容格式",
+          "options": {
+            "text": "纯文本",
+            "html": "HTML 源码"
+          }
+        },
+        "multiple": {
+          "displayName": "获取多个",
+          "description": "获取所有匹配元素的内容"
+        }
+      }
+    },
+    "scheduleTrigger": {
+      "displayName": "定时触发",
+      "description": "按计划定时触发工作流",
+      "properties": {
+        "cron": {
+          "displayName": "Cron 表达式",
+          "description": "计划触发的 Cron 表达式",
+          "placeholder": "0 * * * *"
+        }
+      }
+    },
+    "editFields": {
+      "displayName": "编辑字段",
+      "description": "对输入项目的字段进行编辑、添加或删除",
+      "properties": {
+        "mode": {
+          "displayName": "模式",
+          "description": "是将新字段与现有字段合并，还是仅保留新设置的字段",
+          "options": {
+            "mapping": "映射 (合并)",
+            "keepOnlySet": "仅保留设置的字段"
+          }
+        },
+        "fields": {
+          "displayName": "字段列表",
+          "description": ""
+        },
+        "values": {
+          "displayName": "字段名称",
+          "description": "要设置的字段名称",
+          "placeholder": "字段名"
+        },
+        "type": {
+          "displayName": "类型",
+          "description": "字段值的类型"
+        },
+        "stringValue": {
+          "displayName": "值",
+          "description": "",
+          "placeholder": "字段值"
+        },
+        "numberValue": {
+          "displayName": "值",
+          "description": "",
+          "placeholder": "字段值"
+        },
+        "booleanValue": {
+          "displayName": "值",
+          "description": ""
+        },
+        "jsonValue": {
+          "displayName": "值",
+          "description": ""
+        }
+      }
+    },
+    "dataTable": {
+      "displayName": "数据表",
+      "description": "从数据表中读取或向其写入数据",
+      "properties": {
+        "table": {
+          "displayName": "数据表名称或 ID",
+          "description": "要操作的数据表名称或 ID"
+        },
+        "filter": {
+          "displayName": "过滤器",
+          "description": "JSON 对象，键为列名，值为过滤值。(例如 {\"status\": \"active\"})"
+        },
+        "limit": {
+          "displayName": "限制数量",
+          "description": "返回的最大行数 (0 表示不限制)"
+        }
+      }
+    },
+    "tabGroupQuery": {
+      "displayName": "查询标签组",
+      "description": "查询浏览器标签组",
+      "properties": {
+        "title": {
+          "displayName": "标题模式",
+          "description": "根据模式匹配标签组标题",
+          "placeholder": "例如 *工作*"
+        }
+      }
+    },
+    "if": {
+      "displayName": "条件判断 (If)",
+      "description": "根据条件分支工作流",
+      "properties": {
+        "combinator": {
+          "displayName": "组合方式",
+          "description": "如何组合多个条件",
+          "options": {
+            "all": "全部满足 (AND)",
+            "any": "满足任意一个 (OR)"
+          }
+        },
+        "conditions": {
+          "displayName": "条件列表",
+          "description": ""
+        },
+        "items": {
+          "displayName": "条件项",
+          "description": ""
+        },
+        "operator": {
+          "displayName": "操作符",
+          "description": ""
+        },
+        "is not equal to": {
+          "displayName": "不等于",
+          "description": ""
+        },
+        "contains": {
+          "displayName": "包含",
+          "description": ""
+        },
+        "does not contain": {
+          "displayName": "不包含",
+          "description": ""
+        },
+        "starts with": {
+          "displayName": "以...开始",
+          "description": ""
+        },
+        "ends with": {
+          "displayName": "以...结束",
+          "description": ""
+        },
+        "matches regex": {
+          "displayName": "正则匹配",
+          "description": ""
+        },
+        "does not match regex": {
+          "displayName": "正则不匹配",
+          "description": ""
+        },
+        "is empty": {
+          "displayName": "为空",
+          "description": ""
+        },
+        "is not empty": {
+          "displayName": "不为空",
+          "description": ""
+        },
+        "is greater than": {
+          "displayName": "大于",
+          "description": ""
+        },
+        "is greater than or equal": {
+          "displayName": "大于等于",
+          "description": ""
+        },
+        "is less than": {
+          "displayName": "小于",
+          "description": ""
+        },
+        "is less than or equal": {
+          "displayName": "小于等于",
+          "description": ""
+        },
+        "is before": {
+          "displayName": "在...之前",
+          "description": ""
+        },
+        "is equal to": {
+          "displayName": "等于",
+          "description": ""
+        },
+        "is false": {
+          "displayName": "为假",
+          "description": ""
+        },
+        "targetValue": {
+          "displayName": "目标值",
+          "description": ""
+        }
+      }
+    }
+  },
+  "credentialTypes": {
+    "gemini_api": {
+      "displayName": "Gemini API",
+      "properties": {
+        "apiKey": {
+          "displayName": "API 密钥",
+          "description": "Google AI Gemini API 密钥"
+        }
+      }
+    },
+    "openai_api": {
+      "displayName": "OpenAI API",
+      "properties": {
+        "apiKey": {
+          "displayName": "API 密钥",
+          "description": "OpenAI API 密钥"
+        },
+        "baseUrl": {
+          "displayName": "基础 URL",
+          "description": "可选的自定义基础 URL（例如用于代理或 Azure）"
+        }
+      }
+    },
+    "anthropic_api": {
+      "displayName": "Anthropic API",
+      "properties": {
+        "apiKey": {
+          "displayName": "API 密钥",
+          "description": "Anthropic API 密钥"
+        }
+      }
+    },
+    "deepseek_api": {
+      "displayName": "DeepSeek API",
+      "properties": {
+        "apiKey": {
+          "displayName": "API 密钥",
+          "description": "DeepSeek API 密钥"
+        },
+        "baseUrl": {
+          "displayName": "基础 URL",
+          "description": "DeepSeek API 基础 URL"
+        }
+      }
+    },
+    "demo_credential": {
+      "displayName": "演示凭证",
+      "properties": {
+        "username": {
+          "displayName": "用户名"
+        },
+        "password": {
+          "displayName": "密码",
+          "description": "这是一个演示密码"
+        }
+      }
+    }
   }
 }

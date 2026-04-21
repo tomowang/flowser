@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
 import { browser } from "wxt/browser";
+import { useI18n } from "vue-i18n";
 import { WorkflowService } from "@/lib/services/workflow-service";
 import { SecurityService } from "@/lib/services/security-service";
 import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
@@ -30,6 +31,8 @@ const showMasterKeyDialog = ref(false);
 const masterKeyInput = ref("");
 const pendingWorkflowId = ref<string | null>(null);
 const verifyingKey = ref(false);
+
+const { t } = useI18n();
 
 const filteredWorkflows = computed(() => {
   if (!searchQuery.value) return workflows.value;
@@ -64,13 +67,13 @@ const handleRun = async (id: string) => {
     const result = await runner.run();
 
     if (result.status === "success") {
-      toast.success(`Execution successful: ${workflow.name}`);
+      toast.success(t("workflowEditor.executionFinished") + ": " + workflow.name);
     } else {
-      toast.error(`Execution failed: ${workflow.name}`);
+      toast.error(t("common.error") + ": " + workflow.name);
     }
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : String(e);
-    toast.error(`Error running workflow: ${errorMessage}`);
+    toast.error(t("common.error") + ": " + errorMessage);
   }
 };
 
@@ -93,24 +96,24 @@ const handleMasterKeySubmit = async () => {
         pendingWorkflowId.value = null;
       }
     } else {
-      toast.error("Invalid master key");
+      toast.error(t("masterKey.invalidPassword"));
     }
   } catch (e) {
     console.error(e);
-    toast.error("Failed to verify master key");
+    toast.error(t("masterKey.failedToDeriveKey"));
   } finally {
     verifyingKey.value = false;
   }
 };
 
 const handleDelete = async (id: string) => {
-  if (!confirm("Are you sure you want to delete this workflow?")) return;
+  if (!confirm(t("common.confirmDelete"))) return;
   try {
     await WorkflowService.deleteWorkflow(id);
     await loadWorkflows();
-    toast.success("Workflow deleted");
+    toast.success(t("workflows.deleted"));
   } catch {
-    toast.error("Failed to delete workflow");
+    toast.error(t("common.error"));
   }
 };
 
@@ -118,9 +121,9 @@ const handleToggle = async (id: string, active: boolean) => {
   try {
     await WorkflowService.updateWorkflowStatus(id, active);
     await loadWorkflows();
-    toast.success(`Workflow ${active ? "activated" : "deactivated"}`);
+    toast.success(active ? t("workflows.active") : t("workflows.inactive"));
   } catch {
-    toast.error("Failed to update status");
+    toast.error(t("common.error"));
   }
 };
 
@@ -152,7 +155,7 @@ onMounted(async () => {
         class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 flex items-center gap-1"
         @click="openDashboard"
       >
-        Dashboard
+        {{ t("sidebar.settings") }}
         <ExternalLink class="w-3 h-3" />
       </button>
     </div>
@@ -166,7 +169,7 @@ onMounted(async () => {
         <Input
           v-model="searchQuery"
           type="search"
-          placeholder="Search workflows..."
+          :placeholder="t('workflows.searchPlaceholder')"
           class="w-full bg-white dark:bg-gray-900 pl-9"
         />
       </div>
@@ -174,12 +177,12 @@ onMounted(async () => {
 
     <!-- List -->
     <div class="flex-1 overflow-y-auto max-h-[400px]">
-      <div v-if="loading" class="p-8 text-center text-gray-500">Loading...</div>
+      <div v-if="loading" class="p-8 text-center text-gray-500">{{ t("common.loading") }}</div>
       <div
         v-else-if="filteredWorkflows.length === 0"
         class="p-8 text-center text-gray-500"
       >
-        No workflows found
+        {{ t("workflows.noWorkflowsFound") }}
       </div>
       <div v-else>
         <WorkflowItem
@@ -202,15 +205,14 @@ onMounted(async () => {
     <Dialog v-model:open="showMasterKeyDialog">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Enter Master Key</DialogTitle>
+          <DialogTitle>{{ t("masterKey.title") }}</DialogTitle>
           <DialogDescription>
-            This workflow requires encryption access. Please enter your master
-            key.
+            {{ t("masterKey.description") }}
           </DialogDescription>
         </DialogHeader>
         <div class="grid gap-4 py-4">
           <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="master-key" class="text-right"> Master Key </Label>
+            <Label for="master-key" class="text-right"> {{ t("masterKey.passwordPlaceholder") }} </Label>
             <Input
               id="master-key"
               v-model="masterKeyInput"
@@ -223,7 +225,7 @@ onMounted(async () => {
         </div>
         <DialogFooter>
           <Button :disabled="verifyingKey" @click="handleMasterKeySubmit">
-            {{ verifyingKey ? "Verifying..." : "Unlock & Run" }}
+            {{ verifyingKey ? t("masterKey.unlocking") : t("masterKey.unlock") }}
           </Button>
         </DialogFooter>
       </DialogContent>

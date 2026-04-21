@@ -48,7 +48,7 @@ const localRowData = ref<Record<string, unknown>>({});
 const loadData = async () => {
   table.value = await DataTableService.getTable(tableId);
   if (!table.value) {
-    toast.error("Table not found");
+    toast.error(t("datatables.tableNotFound"));
     router.push("/datatables");
     return;
   }
@@ -206,7 +206,7 @@ const deleteRow = async (rowId: number) => {
           <thead class="bg-muted/50 text-muted-foreground font-medium border-b">
             <tr>
               <th class="h-10 px-4 align-middle whitespace-nowrap w-[50px]">
-                ID
+                {{ t("common.id") }}
               </th>
               <th
                 v-for="col in columns"
@@ -299,7 +299,7 @@ const deleteRow = async (rowId: number) => {
           <div class="flex gap-2 items-end">
             <div class="grid gap-1.5 flex-1">
               <label class="text-sm font-medium">{{ t("common.name") }}</label>
-              <Input v-model="newColumnName" placeholder="e.g. email" />
+              <Input v-model="newColumnName" :placeholder="t('datatables.columnNamePlaceholder')" />
             </div>
             <div class="grid gap-1.5 w-[140px]">
               <label class="text-sm font-medium">{{ t("common.type") }}</label>

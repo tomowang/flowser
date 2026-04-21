@@ -81,7 +81,9 @@ onMounted(() => {
                     exec.status === 'success' ? 'bg-green-500' : 'bg-red-500'
                   "
                 ></span>
-                <span class="capitalize text-sm">{{ exec.status }}</span>
+                <span class="capitalize text-sm">{{
+                  exec.status === 'success' ? t('executions.success') : t('executions.error')
+                }}</span>
               </div>
             </TableCell>
             <TableCell class="font-medium">{{

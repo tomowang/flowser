@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { type Node } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
 import { CredentialService } from "@/lib/services/credential-service";
@@ -22,6 +23,8 @@ import type {
 } from "@/lib/types";
 import "@vue-js-cron/light/dist/light.css";
 import NodeInput from "./NodeInput.vue";
+
+const { t, te } = useI18n();
 
 const props = defineProps<{
   node: Node; // The selected node object from Vue Flow
@@ -302,10 +305,10 @@ const shouldShowProperty = (prop: INodeProperties) => {
   <div v-if="node && nodeType" class="space-y-4">
     <div>
       <h3 class="font-medium text-lg">
-        {{ nodeType.description.displayName }}
+        {{ te(`nodes.${nodeType.description.name}.displayName`) ? t(`nodes.${nodeType.description.name}.displayName`) : nodeType.description.displayName }}
       </h3>
       <p class="text-xs text-muted-foreground">
-        {{ nodeType.description.description }}
+        {{ te(`nodes.${nodeType.description.name}.description`) ? t(`nodes.${nodeType.description.name}.description`) : nodeType.description.description }}
       </p>
     </div>
 
@@ -317,7 +320,7 @@ const shouldShowProperty = (prop: INodeProperties) => {
         class="flex flex-col gap-1"
       >
         <label class="text-sm font-medium">{{
-          cred.displayName || cred.name
+          te(`credentialTypes.${cred.name}.displayName`) ? t(`credentialTypes.${cred.name}.displayName`) : (cred.displayName || cred.name)
         }}</label>
         <div class="flex gap-2">
           <Select
@@ -327,7 +330,7 @@ const shouldShowProperty = (prop: INodeProperties) => {
             "
           >
             <SelectTrigger class="w-full">
-              <SelectValue placeholder="Select a credential">
+              <SelectValue :placeholder="t('credentials.selectCredential')">
                 <div v-if="getCredentialValue(cred.name)" class="flex items-center gap-2">
                   <CredentialIcon
                     :icon="getCredentialType(cred.name)?.icon"
@@ -354,7 +357,7 @@ const shouldShowProperty = (prop: INodeProperties) => {
                 </SelectItem>
               </template>
               <SelectItem v-else value="no-credentials" disabled>
-                No credentials found
+                {{ t('credentials.noCredentialsFound') }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -362,7 +365,7 @@ const shouldShowProperty = (prop: INodeProperties) => {
             variant="outline"
             size="icon"
             class="shrink-0"
-            title="Create new credential"
+            :title="t('credentials.createNew')"
             @click="openCreateCredentialModal(cred.name)"
           >
             <Plus class="h-4 w-4" />
@@ -380,6 +383,7 @@ const shouldShowProperty = (prop: INodeProperties) => {
       >
         <NodeInput
           :property="prop"
+          :node-type-name="nodeType.description.name"
           :model-value="
             (node.data as Record<string, unknown>)[prop.name] ?? prop.default
           "
@@ -391,7 +395,7 @@ const shouldShowProperty = (prop: INodeProperties) => {
     </div>
   </div>
   <div v-else class="text-muted-foreground text-sm">
-    Select a node to edit properties.
+    {{ t('workflowEditor.selectNodeToEdit') }}
   </div>
 
   <CreateCredentialModal

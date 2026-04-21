@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { IExecutionNodeResult } from "@/lib/types";
+import { useI18n } from "vue-i18n";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 
 defineProps<{
   nodeResult: IExecutionNodeResult | null;
 }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -16,12 +19,12 @@ defineProps<{
         class="flex items-center justify-between px-4 h-10 bg-muted/20 border-b shrink-0"
       >
         <span class="text-xs font-semibold uppercase text-muted-foreground">
-          Input
+          {{ t("executions.input") }}
         </span>
         <span
           class="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted/50"
         >
-          {{ nodeResult.inputData.length }} items
+          {{ t("common.items", { count: nodeResult.inputData.length }) }}
         </span>
       </div>
       <div class="flex-1 overflow-auto p-4 custom-scrollbar">
@@ -34,7 +37,7 @@ defineProps<{
             <div
               class="px-3 py-1.5 border-b bg-muted/10 text-[10px] font-mono text-muted-foreground"
             >
-              Item {{ index + 1 }}
+              {{ t("executions.itemIndex", { index: index + 1 }) }}
             </div>
             <div class="p-2 text-xs">
               <VueJsonPretty
@@ -51,7 +54,7 @@ defineProps<{
           v-else
           class="h-full flex items-center justify-center text-xs text-muted-foreground italic"
         >
-          No input data
+          {{ t("executions.noInputData") }}
         </div>
       </div>
     </div>
@@ -62,12 +65,12 @@ defineProps<{
         class="flex items-center justify-between px-4 h-10 bg-muted/20 border-b shrink-0"
       >
         <span class="text-xs font-semibold uppercase text-muted-foreground">
-          Output
+          {{ t("executions.output") }}
         </span>
         <span
           class="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted/50"
         >
-          {{ nodeResult.outputData.length }} items
+          {{ t("common.items", { count: nodeResult.outputData.length }) }}
         </span>
       </div>
       <div class="flex-1 overflow-auto p-4 custom-scrollbar">
@@ -80,7 +83,7 @@ defineProps<{
             <div
               class="px-3 py-1.5 border-b bg-muted/10 text-[10px] font-mono text-muted-foreground"
             >
-              Item {{ index + 1 }}
+              {{ t("executions.itemIndex", { index: index + 1 }) }}
             </div>
             <div class="p-2 text-xs">
               <VueJsonPretty
@@ -97,7 +100,7 @@ defineProps<{
           v-else
           class="h-full flex items-center justify-center text-xs text-muted-foreground italic"
         >
-          No output data
+          {{ t("executions.noOutputData") }}
         </div>
       </div>
     </div>
@@ -106,7 +109,7 @@ defineProps<{
     v-else
     class="flex h-full items-center justify-center text-muted-foreground text-xs"
   >
-    Select a node to view details
+    {{ t("executions.selectNodeToViewDetails") }}
   </div>
 </template>
 

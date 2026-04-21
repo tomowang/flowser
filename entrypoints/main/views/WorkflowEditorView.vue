@@ -74,7 +74,7 @@ import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
 import "@vue-flow/minimap/dist/style.css";
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 const route = useRoute();
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -95,7 +95,7 @@ const handleImport = async (event: Event) => {
       const importedData = JSON.parse(content);
 
       if (!importedData.nodes || !importedData.edges) {
-        throw new Error("Invalid workflow format");
+        throw new Error(t("workflows.invalidFormat"));
       }
 
       // Prepare as IWorkflow for loadWorkflow
@@ -159,13 +159,16 @@ const groupedNodes = computed(() => {
   };
 
   const allNodes = Registry.getAll();
-  // Sort by displayName
-  const sortedNodes = allNodes.sort((a, b) =>
-    a.description.displayName.localeCompare(b.description.displayName),
-  );
+  // Sort by displayName (localized if available)
+  const sortedNodes = allNodes.sort((a, b) => {
+    const nameA = te(`nodes.${a.description.name}.displayName`) ? t(`nodes.${a.description.name}.displayName`) : a.description.displayName;
+    const nameB = te(`nodes.${b.description.name}.displayName`) ? t(`nodes.${b.description.name}.displayName`) : b.description.displayName;
+    return nameA.localeCompare(nameB);
+  });
 
   for (const node of sortedNodes) {
-    if (query && !node.description.displayName.toLowerCase().includes(query)) {
+    const displayName = te(`nodes.${node.description.name}.displayName`) ? t(`nodes.${node.description.name}.displayName`) : node.description.displayName;
+    if (query && !displayName.toLowerCase().includes(query)) {
       continue;
     }
 
@@ -263,13 +266,17 @@ const onQuickAddNode = (nodeType: INodeType) => {
     }
   }
 
+  const baseName = te(`nodes.${nodeType.description.name}.displayName`)
+    ? t(`nodes.${nodeType.description.name}.displayName`)
+    : nodeType.description.displayName;
+
   const newNode: Node = {
     id: newNodeId,
     type: "custom",
     position,
     data: {
       nodeType: nodeType.description.name,
-      label: getUniqueNodeName(nodeType.description.displayName),
+      label: getUniqueNodeName(baseName),
       ...defaultParams,
     },
   };
@@ -763,12 +770,16 @@ const onDrop = (event: DragEvent) => {
     }
   }
 
+  const baseName = te(`nodes.${nodeType.description.name}.displayName`)
+    ? t(`nodes.${nodeType.description.name}.displayName`)
+    : nodeType.description.displayName;
+
   const newNode: Node = {
     id: `${type}-${Date.now()}`,
     type: "custom",
     position,
     data: {
-      label: getUniqueNodeName(nodeType.description.displayName),
+      label: getUniqueNodeName(baseName),
       nodeType: type,
       ...nodeType.description.defaults,
       ...defaultParams,
@@ -894,7 +905,7 @@ const loadWorkflow = (workflow: IWorkflow) => {
     workflow.edges as unknown as Edge[],
     false,
   );
-  logs.value.push(t("workflowEditor.loadedWorkflow") + " " + workflow.name);
+  logs.value.push(t("workflowEditor.loadedWorkflow", { name: workflow.name }));
 
   // Check for duplicate names on load
   const duplicates = checkDuplicateNodeNames();
@@ -912,14 +923,17 @@ const loadWorkflow = (workflow: IWorkflow) => {
       invalidCount++;
       const nodeName = node.data.label || node.type;
       logs.value.push(
-        `Validation Warning [${nodeName}]: ${validationResult.errors.join(", ")}`,
+        t("workflowEditor.validationWarning", {
+          name: nodeName,
+          errors: validationResult.errors.join(", "),
+        }),
       );
     }
   }
 
   if (invalidCount > 0) {
     logs.value.push(
-      `Workflow loaded with ${invalidCount} invalid node(s). Check details above.`,
+      t("workflowEditor.workflowLoadedWithErrors", { count: invalidCount }),
     );
   }
 };
@@ -1003,8 +1017,8 @@ const saveWorkflow = async () => {
       edges.value,
       true,
     );
-    logs.value.push(t("workflowEditor.savedWorkflow") + " " + name);
-    toast.success(t("workflowEditor.savedWorkflow") + " " + name);
+    logs.value.push(t("workflowEditor.savedWorkflow", { name }));
+    toast.success(t("workflowEditor.savedWorkflow", { name }));
   } finally {
     isSaving.value = false;
   }
@@ -1246,7 +1260,7 @@ const toggleExecutionPanel = () => {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {{ t("common.undo") }} ({{ modKey }}+Z)
+            {{ t("common.undoWithShortcut", { shortcut: `${modKey}+Z` }) }}
           </TooltipContent>
         </Tooltip>
 
@@ -1263,7 +1277,7 @@ const toggleExecutionPanel = () => {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {{ t("common.redo") }} ({{ modKey }}+Shift+Z)
+            {{ t("common.redoWithShortcut", { shortcut: `${modKey}+Shift+Z` }) }}
           </TooltipContent>
         </Tooltip>
 
@@ -1293,7 +1307,7 @@ const toggleExecutionPanel = () => {
             {{ t("common.save") }}
           </Button>
         </TooltipTrigger>
-        <TooltipContent> {{ t("common.save") }} ({{ modKey }}+S) </TooltipContent>
+        <TooltipContent> {{ t("common.saveWithShortcut", { shortcut: `${modKey}+S` }) }} </TooltipContent>
       </Tooltip>
       <Button
         size="sm"
@@ -1472,7 +1486,9 @@ const toggleExecutionPanel = () => {
                   </div>
                   <div class="flex flex-col text-left">
                     <span class="text-sm font-medium">{{
-                      node.description.displayName
+                      te(`nodes.${node.description.name}.displayName`)
+                        ? t(`nodes.${node.description.name}.displayName`)
+                        : node.description.displayName
                     }}</span>
                   </div>
                 </div>

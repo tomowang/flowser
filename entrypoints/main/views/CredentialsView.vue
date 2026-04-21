@@ -25,7 +25,7 @@ const isMasterKeyModalOpen = ref(false);
 const isAddDialogOpen = ref(false);
 const editingCredentialId = ref<string | undefined>(undefined);
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 
 const loadCredentials = async () => {
   try {
@@ -102,14 +102,23 @@ const openAddDialog = () => {
         </TableHeader>
         <TableBody>
           <TableRow v-for="cred in credentials" :key="cred.id">
-            <TableCell class="font-medium">{{ cred.name }}</TableCell>
+            <TableCell class="font-medium">{{
+              te(`credentialTypes.${cred.type}.displayName`) && cred.name === getCredentialType(cred.type)?.displayName
+                ? t(`credentialTypes.${cred.type}.displayName`)
+                : cred.name
+            }}</TableCell>
             <TableCell>
               <div class="flex items-center gap-2">
                 <CredentialIcon
                   :icon="getCredentialType(cred.type)?.icon"
                   class="w-4 h-4 shrink-0"
                 />
-                <span>{{ getCredentialType(cred.type)?.displayName }}</span>
+                <span>{{
+                  getCredentialType(cred.type)?.name &&
+                  te(`credentialTypes.${getCredentialType(cred.type)?.name}.displayName`)
+                    ? t(`credentialTypes.${getCredentialType(cred.type)?.name}.displayName`)
+                    : getCredentialType(cred.type)?.displayName
+                }}</span>
               </div>
             </TableCell>
             <TableCell>{{

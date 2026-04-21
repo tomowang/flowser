@@ -18,15 +18,29 @@
     "export": "Export",
     "import": "Import",
     "group": "Group",
-    "error": "Something went wrong"
+    "error": "Something went wrong",
+    "close": "Close",
+    "more": "More",
+    "loading": "Loading",
+    "success": "Success",
+    "running": "Running",
+    "items": "{count} item | {count} items",
+    "id": "ID",
+    "breadcrumb": "Breadcrumb",
+    "saveWithShortcut": "Save ({shortcut})",
+    "undoWithShortcut": "Undo ({shortcut})",
+    "redoWithShortcut": "Redo ({shortcut})"
   },
   "sidebar": {
+    "title": "Sidebar",
     "platform": "Platform",
     "workflows": "Workflows",
     "credentials": "Credentials",
     "executions": "Executions",
     "settings": "Settings",
-    "datatables": "Data Tables"
+    "datatables": "Data Tables",
+    "toggle": "Toggle Sidebar",
+    "mobileDesc": "Displays the mobile sidebar."
   },
   "settings": {
     "title": "Settings",
@@ -61,7 +75,11 @@
     "valuePlaceholder": "sk-...",
     "createdAt": "Created At",
     "noCredentialsFound": "No credentials found.",
-    "deleteConfirm": "Are you sure you want to delete this credential?"
+    "deleteConfirm": "Are you sure you want to delete this credential?",
+    "selectCredential": "Select a credential",
+    "createNew": "Create new credential",
+    "editCredentialTitle": "Edit Credential",
+    "editCredentialDescription": "Modify the credential details below."
   },
   "executions": {
     "title": "Executions",
@@ -74,7 +92,16 @@
     "deleteConfirm": "Are you sure you want to delete this log?",
     "noExecutionsFound": "No workflow executions found.",
     "success": "Success",
-    "error": "Error"
+    "error": "Error",
+    "results": "Execution Results",
+    "nodesExecuted": "{count} nodes executed in {duration}ms",
+    "noNodesExecuted": "No nodes executed.",
+    "input": "Input",
+    "output": "Output",
+    "itemIndex": "Item {index}",
+    "noInputData": "No input data",
+    "noOutputData": "No output data",
+    "selectNodeToViewDetails": "Select a node to view details"
   },
   "masterKey": {
     "title": "Security Check",
@@ -94,8 +121,8 @@
     "workflowNamePrompt": "Workflow Name",
     "untitledWorkflow": "Untitled Workflow",
     "newWorkflow": "New Workflow",
-    "loadedWorkflow": "Loaded workflow:",
-    "savedWorkflow": "Saved workflow:",
+    "loadedWorkflow": "Loaded workflow: {name}",
+    "savedWorkflow": "Saved workflow: {name}",
     "createdNewWorkflow": "Created new workflow",
     "executionFinished": "Execution finished.",
     "workflowNotFound": "Workflow {id} not found.",
@@ -113,7 +140,30 @@
     "noTriggerNode": "No Manually Trigger node found. Please add one to start the workflow.",
     "addNode": "Add Node",
     "noNodesFound": "No nodes found.",
-    "duplicateNodeNames": "Duplicate node names found: {names}"
+    "duplicateNodeNames": "Duplicate node names found: {names}",
+    "selectNodeToEdit": "Select a node to edit properties.",
+    "fixed": "Fixed",
+    "expression": "Expression",
+    "expressionPlaceholder": "Expression...",
+    "selectOption": "Select option",
+    "refreshOptions": "Refresh options",
+    "removeItem": "Remove Item",
+    "addItem": "Add {name}",
+    "nameEmpty": "Name cannot be empty",
+    "nameExists": "Name already exists",
+    "nodeConfigDesc": "Node configuration and execution data",
+    "inputData": "Input Data",
+    "outputData": "Output Data",
+    "selectNode": "Select node",
+    "noInputData": "No input data available.",
+    "executeToSeeData": "Execute workflow to see data.",
+    "noOutputDataForNode": "No output data available for the selected node.",
+    "noOutputData": "No output data available.",
+    "runNode": "Run Node",
+    "deleteNode": "Delete Node",
+    "invalidWorkflowFormat": "Invalid workflow format",
+    "validationWarning": "Validation Warning [{name}]: {errors}",
+    "workflowLoadedWithErrors": "Workflow loaded with {count} invalid node(s). Check details above."
   },
   "datatables": {
     "title": "Data Tables",
@@ -154,6 +204,607 @@
       "json": "JSON"
     },
     "true": "True",
-    "false": "False"
+    "false": "False",
+    "columnNamePlaceholder": "e.g. email"
+  },
+  "nodes": {
+    "manualTrigger": {
+      "displayName": "Manually Trigger",
+      "description": "Trigger the workflow manually",
+      "properties": {}
+    },
+    "httpRequest": {
+      "displayName": "HTTP Request",
+      "description": "Send an HTTP request",
+      "properties": {
+        "url": {
+          "displayName": "URL",
+          "description": "The URL to make the request to",
+          "placeholder": "https://api.example.com"
+        },
+        "method": {
+          "displayName": "Method",
+          "description": "",
+          "options": {
+            "GET": "GET",
+            "POST": "POST",
+            "PUT": "PUT",
+            "DELETE": "DELETE",
+            "PATCH": "PATCH",
+            "HEAD": "HEAD"
+          }
+        },
+        "parameters": {
+          "displayName": "Query Parameters",
+          "description": "Query parameters to append to the URL"
+        },
+        "headers": {
+          "displayName": "Headers",
+          "description": "Request headers"
+        },
+        "specifyBody": {
+          "displayName": "Body Type",
+          "description": "",
+          "options": {
+            "none": "None",
+            "json": "JSON",
+            "form": "Form-Urlencoded"
+          }
+        },
+        "body": {
+          "displayName": "JSON Body",
+          "description": ""
+        },
+        "bodyForm": {
+          "displayName": "Form Body",
+          "description": ""
+        }
+      }
+    },
+    "agent": {
+      "displayName": "Agent",
+      "description": "Autonomous agent for browser interaction",
+      "properties": {
+        "prompt": {
+          "displayName": "Prompt",
+          "description": "System prompt for the agent"
+        },
+        "message": {
+          "displayName": "User Message",
+          "description": "Input message"
+        }
+      }
+    },
+    "geminiModel": {
+      "displayName": "Gemini Model",
+      "description": "Interact with Google's Gemini models",
+      "properties": {
+        "modelName": {
+          "displayName": "Model Name",
+          "description": ""
+        }
+      }
+    },
+    "openAIModel": {
+      "displayName": "OpenAI Model",
+      "description": "Interact with OpenAI's GPT models",
+      "properties": {
+        "modelName": {
+          "displayName": "Model Name",
+          "description": ""
+        }
+      }
+    },
+    "claudeModel": {
+      "displayName": "Claude Model",
+      "description": "Interact with Anthropic's Claude models",
+      "properties": {
+        "modelName": {
+          "displayName": "Model Name",
+          "description": ""
+        }
+      }
+    },
+    "deepSeekModel": {
+      "displayName": "DeepSeek Model",
+      "description": "Interact with DeepSeek's models",
+      "properties": {
+        "modelName": {
+          "displayName": "Model Name",
+          "description": ""
+        }
+      }
+    },
+    "code": {
+      "displayName": "Code",
+      "description": "Execute custom JavaScript code",
+      "properties": {
+        "code": {
+          "displayName": "Code",
+          "description": "The JavaScript code to execute."
+        }
+      }
+    },
+    "tabQuery": {
+      "displayName": "Tab Query",
+      "description": "Query browser tabs based on specific criteria",
+      "properties": {
+        "title": {
+          "displayName": "Title Pattern",
+          "description": "Match page titles against a pattern",
+          "placeholder": "e.g. *Google*"
+        },
+        "url": {
+          "displayName": "URL Pattern",
+          "description": "Match tabs against a URL pattern",
+          "placeholder": "e.g. *google.com*"
+        },
+        "active": {
+          "displayName": "Active",
+          "description": "Whether the tabs are active in their windows",
+          "options": {
+            "any": "Any",
+            "yes": "Yes",
+            "no": "No"
+          }
+        },
+        "tabStatus": {
+          "displayName": "Status",
+          "description": "Whether the tabs have completed loading",
+          "options": {
+            "any": "Any",
+            "unloaded": "Unloaded",
+            "loading": "Loading",
+            "complete": "Complete"
+          }
+        }
+      }
+    },
+    "tabAction": {
+      "displayName": "Tab Action",
+      "description": "Perform actions on browser tabs",
+      "properties": {
+        "action": {
+          "displayName": "Action",
+          "description": "The action to perform",
+          "options": {
+            "create": "Create",
+            "close": "Close",
+            "group": "Group"
+          }
+        },
+        "url": {
+          "displayName": "URL",
+          "description": "The URL to navigate the tab to"
+        },
+        "active": {
+          "displayName": "Active",
+          "description": "Whether the tab should become the active tab in the window"
+        },
+        "pinned": {
+          "displayName": "Pinned",
+          "description": "Whether the tab should be pinned"
+        },
+        "windowId": {
+          "displayName": "Window ID",
+          "description": "The ID of the window to create the tab in"
+        },
+        "tabIds": {
+          "displayName": "Tab IDs",
+          "description": ""
+        },
+        "groupId": {
+          "displayName": "Group ID",
+          "description": "The ID of the group to add the tabs to"
+        },
+        "tabId": {
+          "displayName": "Tab ID",
+          "description": ""
+        }
+      }
+    },
+    "tabCreated": {
+      "displayName": "Tab Created",
+      "description": "Triggered when a new tab is created",
+      "properties": {}
+    },
+    "tabUpdated": {
+      "displayName": "Tab Updated",
+      "description": "Triggered when a tab is updated",
+      "properties": {}
+    },
+    "clickElement": {
+      "displayName": "Click Element",
+      "description": "Click an element on the page",
+      "properties": {
+        "tabId": {
+          "displayName": "Tab ID",
+          "description": "The ID of the tab to click the element in."
+        },
+        "selectorType": {
+          "displayName": "Selector Type",
+          "description": "The type of selector to use",
+          "options": {
+            "css": "CSS Selector",
+            "xpath": "XPath"
+          }
+        },
+        "selector": {
+          "displayName": "Selector",
+          "description": "The selector of the element to click",
+          "placeholder": "e.g. .button or //button"
+        },
+        "multiple": {
+          "displayName": "Multiple",
+          "description": "Click all matched elements"
+        }
+      }
+    },
+    "windowCreate": {
+      "displayName": "Window Create",
+      "description": "Create a new window",
+      "properties": {
+        "url": {
+          "displayName": "URL",
+          "description": "The URL to navigate the window to"
+        },
+        "type": {
+          "displayName": "Type",
+          "description": "The type of window to create",
+          "options": {
+            "normal": "Normal",
+            "popup": "Popup",
+            "panel": "Panel"
+          }
+        },
+        "state": {
+          "displayName": "State",
+          "description": "The initial state of the window",
+          "options": {
+            "normal": "Normal",
+            "minimized": "Minimized",
+            "maximized": "Maximized",
+            "fullscreen": "Fullscreen"
+          }
+        },
+        "focused": {
+          "displayName": "Focused",
+          "description": "Whether the window should be focused"
+        },
+        "incognito": {
+          "displayName": "Incognito",
+          "description": "Whether the window should be incognito"
+        }
+      }
+    },
+    "windowQuery": {
+      "displayName": "Window Query",
+      "description": "Query browser windows based on specific criteria",
+      "properties": {
+        "populate": {
+          "displayName": "Populate Tabs",
+          "description": "Whether the window objects should have a "
+        },
+        "windowTypes": {
+          "displayName": "Window Types",
+          "description": "The type of window to query",
+          "options": {
+            "any": "Any",
+            "normal": "Normal",
+            "popup": "Popup",
+            "panel": "Panel",
+            "app": "App",
+            "devtools": "DevTools"
+          }
+        }
+      }
+    },
+    "windowClose": {
+      "displayName": "Window Close",
+      "description": "Close a specific window",
+      "properties": {
+        "windowId": {
+          "displayName": "Window ID",
+          "description": "The ID of the window to close",
+          "placeholder": "e.g. 123 or {{ $json.windowId }}"
+        }
+      }
+    },
+    "wait": {
+      "displayName": "Wait",
+      "description": "Wait for a specific amount of time or for an element to appear",
+      "properties": {
+        "seconds": {
+          "displayName": "Seconds",
+          "description": "The number of seconds to wait"
+        }
+      }
+    },
+    "testNode": {
+      "displayName": "Test Node",
+      "description": "Node for testing purposes",
+      "properties": {
+        "requiredProp": {
+          "displayName": "Required Property",
+          "description": "A property required for testing validation"
+        },
+        "raiseError": {
+          "displayName": "Raise Error",
+          "description": "If true, the node will raise an error during execution"
+        }
+      }
+    },
+    "fetchContent": {
+      "displayName": "Fetch Content",
+      "description": "Fetch the content of a page",
+      "properties": {
+        "tabId": {
+          "displayName": "Tab ID",
+          "description": "The ID of the tab to fetch content from."
+        },
+        "selectorType": {
+          "displayName": "Selector Type",
+          "description": "The type of selector to use",
+          "options": {
+            "css": "CSS Selector",
+            "xpath": "XPath"
+          }
+        },
+        "selector": {
+          "displayName": "Selector",
+          "description": "The selector of the element to fetch",
+          "placeholder": "e.g. .content or //div[@id="
+        },
+        "contentType": {
+          "displayName": "Content Type",
+          "description": "The type of content to fetch",
+          "options": {
+            "text": "Text",
+            "html": "HTML"
+          }
+        },
+        "multiple": {
+          "displayName": "Multiple",
+          "description": "Fetch all matched elements"
+        }
+      }
+    },
+    "scheduleTrigger": {
+      "displayName": "Schedule Trigger",
+      "description": "Trigger the workflow on a schedule",
+      "properties": {
+        "cron": {
+          "displayName": "Cron Expression",
+          "description": "Cron expression for the schedule",
+          "placeholder": "0 * * * *"
+        }
+      }
+    },
+    "editFields": {
+      "displayName": "Edit Fields",
+      "description": "Edit, add or remove fields from the input items",
+      "properties": {
+        "mode": {
+          "displayName": "Mode",
+          "description": "Whether to merge new fields with existing ones or keep only the new fields",
+          "options": {
+            "mapping": "Mapping (Merge)",
+            "keepOnlySet": "Keep Only Set"
+          }
+        },
+        "fields": {
+          "displayName": "Fields",
+          "description": ""
+        },
+        "values": {
+          "displayName": "Values",
+          "description": "The name of the field to set",
+          "placeholder": "Field Name"
+        },
+        "type": {
+          "displayName": "Type",
+          "description": ""
+        },
+        "stringValue": {
+          "displayName": "Value",
+          "description": "",
+          "placeholder": "Field Value"
+        },
+        "numberValue": {
+          "displayName": "Value",
+          "description": "",
+          "placeholder": "Field Value"
+        },
+        "booleanValue": {
+          "displayName": "Value",
+          "description": ""
+        },
+        "jsonValue": {
+          "displayName": "Value",
+          "description": ""
+        }
+      }
+    },
+    "dataTable": {
+      "displayName": "Data Table",
+      "description": "Read or write data from/to a data table",
+      "properties": {
+        "table": {
+          "displayName": "Table Name or ID",
+          "description": "The name or ID of the Data Table to read from"
+        },
+        "filter": {
+          "displayName": "Filter",
+          "description": "JSON object where keys are column names and values are filter values. (e.g. { "
+        },
+        "limit": {
+          "displayName": "Limit",
+          "description": "Max number of rows to return (0 for no limit)"
+        }
+      }
+    },
+    "tabGroupQuery": {
+      "displayName": "Tab Group Query",
+      "description": "Query browser tab groups",
+      "properties": {
+        "title": {
+          "displayName": "Title Pattern",
+          "description": "Match group titles against a pattern",
+          "placeholder": "e.g. *Work*"
+        }
+      }
+    },
+    "if": {
+      "displayName": "If",
+      "description": "Branch the workflow based on a condition",
+      "properties": {
+        "combinator": {
+          "displayName": "Combinator",
+          "description": "How to combine multiple conditions",
+          "options": {
+            "all": "All (AND)",
+            "any": "Any (OR)"
+          }
+        },
+        "conditions": {
+          "displayName": "Conditions",
+          "description": ""
+        },
+        "items": {
+          "displayName": "Condition",
+          "description": ""
+        },
+        "operator": {
+          "displayName": "Operator",
+          "description": ""
+        },
+        "is not equal to": {
+          "displayName": "Is not equal to",
+          "description": ""
+        },
+        "contains": {
+          "displayName": "Contains",
+          "description": ""
+        },
+        "does not contain": {
+          "displayName": "Does not contain",
+          "description": ""
+        },
+        "starts with": {
+          "displayName": "Starts with",
+          "description": ""
+        },
+        "ends with": {
+          "displayName": "Ends with",
+          "description": ""
+        },
+        "matches regex": {
+          "displayName": "Matches regex",
+          "description": ""
+        },
+        "does not match regex": {
+          "displayName": "Does not match regex",
+          "description": ""
+        },
+        "is empty": {
+          "displayName": "Is empty",
+          "description": ""
+        },
+        "is not empty": {
+          "displayName": "Is not empty",
+          "description": ""
+        },
+        "is greater than": {
+          "displayName": "Is greater than",
+          "description": ""
+        },
+        "is greater than or equal": {
+          "displayName": "Is greater than or equal",
+          "description": ""
+        },
+        "is less than": {
+          "displayName": "Is less than",
+          "description": ""
+        },
+        "is less than or equal": {
+          "displayName": "Is less than or equal",
+          "description": ""
+        },
+        "is before": {
+          "displayName": "Is before",
+          "description": ""
+        },
+        "is equal to": {
+          "displayName": "Is equal to",
+          "description": ""
+        },
+        "is false": {
+          "displayName": "Is false",
+          "description": ""
+        },
+        "targetValue": {
+          "displayName": "Target Value",
+          "description": ""
+        }
+      }
+    }
+  },
+  "credentialTypes": {
+    "gemini_api": {
+      "displayName": "Gemini API",
+      "properties": {
+        "apiKey": {
+          "displayName": "API Key",
+          "description": "Google AI Gemini API key"
+        }
+      }
+    },
+    "openai_api": {
+      "displayName": "OpenAI API",
+      "properties": {
+        "apiKey": {
+          "displayName": "API Key",
+          "description": "OpenAI API key"
+        },
+        "baseUrl": {
+          "displayName": "Base URL",
+          "description": "Optional custom Base URL (e.g. for proxies or Azure)"
+        }
+      }
+    },
+    "anthropic_api": {
+      "displayName": "Anthropic API",
+      "properties": {
+        "apiKey": {
+          "displayName": "API Key",
+          "description": "Anthropic API key"
+        }
+      }
+    },
+    "deepseek_api": {
+      "displayName": "DeepSeek API",
+      "properties": {
+        "apiKey": {
+          "displayName": "API Key",
+          "description": "DeepSeek API key"
+        },
+        "baseUrl": {
+          "displayName": "Base URL",
+          "description": "DeepSeek API Base URL"
+        }
+      }
+    },
+    "demo_credential": {
+      "displayName": "Demo Credential",
+      "properties": {
+        "username": {
+          "displayName": "Username"
+        },
+        "password": {
+          "displayName": "Password",
+          "description": "This is a demo password"
+        }
+      }
+    }
   }
 }

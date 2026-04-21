@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { IExecutionNodeResult } from "@/lib/types";
+import { useI18n } from "vue-i18n";
 import { Check, X, Clock, Loader2 } from "lucide-vue-next";
 import { computed } from "vue";
 
@@ -9,6 +10,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(["select"]);
+
+const { t } = useI18n();
 
 const sortedResults = computed(() => {
   return [...props.results].sort((a, b) => a.startTime - b.startTime);
@@ -60,7 +63,7 @@ const formatDuration = (start: number, end: number) => {
       v-if="results.length === 0"
       class="p-4 text-center text-xs text-muted-foreground"
     >
-      No nodes executed.
+      {{ t("executions.noNodesExecuted") }}
     </div>
   </div>
 </template>

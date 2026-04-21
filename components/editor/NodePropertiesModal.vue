@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, inject } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,8 @@ const props = defineProps<{
 
 const emit = defineEmits(["close", "update:data"]);
 
+const { t, te } = useI18n();
+
 const runSingleNode = inject<(nodeId: string) => Promise<void>>("runSingleNode");
 
 // Get node type and icon
@@ -65,7 +68,7 @@ const updateName = (newName: string) => {
   localName.value = newName;
 
   if (!newName.trim()) {
-    nameError.value = "Name cannot be empty";
+    nameError.value = t("workflowEditor.nameEmpty");
     return;
   }
 
@@ -75,7 +78,7 @@ const updateName = (newName: string) => {
   );
 
   if (exists) {
-    nameError.value = "Name already exists";
+    nameError.value = t("workflowEditor.nameExists");
     return;
   }
 
@@ -167,9 +170,15 @@ watch(defaultUpstreamNodeId, (newVal) => {
 const dropdownOptions = computed(() => {
   const options = upstreamNodes.value.map(node => {
     const result = props.executionResult?.nodeExecutionResults.find(r => r.nodeId === node.id);
+    let label = node.data.label;
+    if (!label) {
+      const nodeTypeName = node.data.nodeType;
+      const key = `nodes.${nodeTypeName}.displayName`;
+      label = te(key) ? t(key) : nodeTypeName;
+    }
     return {
       id: node.id,
-      label: node.data.label || node.data.nodeType,
+      label,
       endTime: result?.endTime || 0
     };
   });
@@ -232,9 +241,9 @@ const outputData = computed(() => {
             </span>
           </div>
         </DialogTitle>
-        <DialogDescription class="hidden"
-          >Node configuration and execution data</DialogDescription
-        >
+        <DialogDescription class="hidden">
+          {{ t("workflowEditor.nodeConfigDesc") }}
+        </DialogDescription>
       </DialogHeader>
 
       <div class="flex-1 grid grid-cols-12 overflow-hidden">
@@ -243,10 +252,10 @@ const outputData = computed(() => {
           class="col-span-3 border-r flex flex-col bg-muted/10 h-full overflow-hidden"
         >
           <div class="p-3 border-b flex items-center justify-between bg-muted/30 min-h-[49px]">
-            <span class="font-medium text-sm">Input Data</span>
+            <span class="font-medium text-sm">{{ t("workflowEditor.inputData") }}</span>
             <Select v-if="dropdownOptions.length > 0" v-model="selectedUpstreamNodeId">
               <SelectTrigger class="h-8 w-[160px] text-xs">
-                <SelectValue placeholder="Select node" />
+                <SelectValue :placeholder="t('workflowEditor.selectNode')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem 
@@ -268,10 +277,11 @@ const outputData = computed(() => {
               />
             </div>
             <div v-else-if="!executionResult" class="text-sm text-muted-foreground italic p-2">
-              No input data available. <br />Execute workflow to see data.
+              {{ t("workflowEditor.noInputData") }} <br />
+              {{ t("workflowEditor.executeToSeeData") }}
             </div>
             <div v-else class="text-sm text-muted-foreground italic p-2">
-              No output data available for the selected node.
+              {{ t("workflowEditor.noOutputDataForNode") }}
             </div>
           </div>
         </div>
@@ -279,7 +289,7 @@ const outputData = computed(() => {
         <!-- Properties (Middle) -->
         <div class="col-span-6 flex flex-col h-full overflow-hidden">
           <div class="p-3 border-b font-medium text-sm bg-muted/30 min-h-[49px] flex items-center justify-between">
-            <span>Configuration</span>
+            <span>{{ t("workflowEditor.properties") }}</span>
             <Button
               v-if="node"
               size="sm"
@@ -288,7 +298,7 @@ const outputData = computed(() => {
               @click="runSingleNode?.(node.id)"
             >
               <Play class="h-3.5 w-3.5 mr-1" />
-              Run
+              {{ t("workflowEditor.runNode") }}
             </Button>
           </div>
           <div class="flex-1 overflow-auto p-4">
@@ -305,7 +315,7 @@ const outputData = computed(() => {
           class="col-span-3 border-l flex flex-col bg-muted/10 h-full overflow-hidden"
         >
           <div class="p-3 border-b font-medium text-sm bg-muted/30 min-h-[49px] flex items-center">
-            Output Data
+            {{ t("workflowEditor.outputData") }}
           </div>
           <div class="flex-1 overflow-auto p-3">
             <div v-if="outputData && outputData.length > 0">
@@ -316,7 +326,7 @@ const outputData = computed(() => {
               />
             </div>
             <div v-else class="text-sm text-muted-foreground italic p-2">
-              No output data available.
+              {{ t("workflowEditor.noOutputData") }}
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import NodeDelegate from "./NodeDelegate.vue";
+import { i18n } from "@/lib/i18n";
 import { Registry } from "@/lib/nodes/registry";
 import { Plus } from "lucide-vue-next";
 import { INodeType } from "@/lib/types";
@@ -56,6 +57,7 @@ describe("NodeDelegate Component", () => {
         },
       },
       global: {
+        plugins: [i18n],
         provide: {
           openQuickAdd: vi.fn(),
         },
@@ -109,6 +111,7 @@ describe("NodeDelegate Component", () => {
         },
       },
       global: {
+        plugins: [i18n],
         provide: {
           openQuickAdd: vi.fn(),
         },
@@ -144,6 +147,7 @@ describe("NodeDelegate Component", () => {
         },
       },
       global: {
+        plugins: [i18n],
         provide: {
           openQuickAdd,
         },

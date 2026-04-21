@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import type { IDisplayOptions, INodeProperties } from "@/lib/types";
 import {
   Select,
@@ -41,9 +42,12 @@ const props = defineProps<{
   modelValue: unknown;
   property: INodeProperties;
   loading?: boolean;
+  nodeTypeName?: string;
 }>();
 
 const emit = defineEmits(["update:modelValue", "refresh"]);
+
+const { t, te, locale } = useI18n();
 
 const isExpression = ref(false);
 
@@ -197,14 +201,28 @@ const getSelectedOption = computed(() => {
     return null;
   };
 
-  return findInOptions(props.property.options || []);
+  const option = findInOptions(props.property.options || []);
+  if (!option) return null;
+
+  // Try to translate option name
+  if (props.nodeTypeName) {
+    const key = `nodes.${props.nodeTypeName}.properties.${props.property.name}.options.${option.value ?? option.name}`;
+    if (te(key)) {
+      return { ...option, name: t(key) };
+    }
+  }
+  return option;
 });
 </script>
 
 <template>
   <div class="flex flex-col gap-1">
     <div class="flex items-center justify-between h-6">
-      <label class="text-sm font-medium">{{ property.displayName }}</label>
+      <label class="text-sm font-medium">{{
+        nodeTypeName && te(`nodes.${nodeTypeName}.properties.${property.name}.displayName`)
+          ? t(`nodes.${nodeTypeName}.properties.${property.name}.displayName`)
+          : property.displayName
+      }}</label>
 
       <!-- Mode Toggle -->
       <div
@@ -225,7 +243,7 @@ const getSelectedOption = computed(() => {
           @click="toggleMode('fixed')"
         >
           <Type class="h-2.5 w-2.5" />
-          Fixed
+          {{ t("workflowEditor.fixed") }}
         </button>
         <button
           class="flex items-center gap-1 rounded-sm px-1.5 py-0 text-[10px] font-medium transition-colors"
@@ -237,7 +255,7 @@ const getSelectedOption = computed(() => {
           @click="toggleMode('expression')"
         >
           <FunctionSquare class="h-2.5 w-2.5" />
-          Expression
+          {{ t("workflowEditor.expression") }}
         </button>
       </div>
     </div>
@@ -263,7 +281,7 @@ const getSelectedOption = computed(() => {
             singleLineExtension,
           ]"
           class="w-full text-sm font-mono overflow-hidden"
-          placeholder="Expression..."
+          :placeholder="t('workflowEditor.expressionPlaceholder')"
         />
       </div>
     </div>
@@ -316,7 +334,9 @@ const getSelectedOption = computed(() => {
                     class="h-4 w-4 shrink-0 opacity-70"
                   />
                   <span class="truncate">{{
-                    getSelectedOption?.name || property.placeholder || "Select option"
+                    getSelectedOption?.name ||
+                    property.placeholder ||
+                    t("workflowEditor.selectOption")
                   }}</span>
                 </div>
                 <ChevronRight class="h-4 w-4 opacity-50" />
@@ -388,7 +408,7 @@ const getSelectedOption = computed(() => {
           size="icon"
           class="shrink-0"
           :disabled="loading"
-          title="Refresh options"
+          :title="t('workflowEditor.refreshOptions')"
           @click="$emit('refresh')"
         >
           <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
@@ -427,7 +447,7 @@ const getSelectedOption = computed(() => {
         <div class="text-xs font-mono bg-muted p-2 rounded">
           {{ displayValue }}
         </div>
-        <CronLight v-model="displayValue as string" locale="en" />
+        <CronLight v-model="displayValue as string" :locale="locale" />
       </div>
 
       <!-- Fixed Collection -->
@@ -453,7 +473,7 @@ const getSelectedOption = computed(() => {
               <!-- Remove Button -->
               <button
                 class="absolute right-2 top-2 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors"
-                title="Remove Item"
+                :title="t('workflowEditor.removeItem')"
                 @click="
                   () => {
                     const newValue = { ...(displayValue as Record<string, unknown[]>) };
@@ -528,7 +548,7 @@ const getSelectedOption = computed(() => {
                 }
               "
             >
-              Add {{ option.displayName || option.name }}
+              {{ t("workflowEditor.addItem", { name: option.displayName || option.name }) }}
             </Button>
           </div>
         </div>
@@ -536,7 +556,11 @@ const getSelectedOption = computed(() => {
     </div>
 
     <p v-if="property.description" class="text-[10px] text-muted-foreground">
-      {{ property.description }}
+      {{
+        nodeTypeName && te(`nodes.${nodeTypeName}.properties.${property.name}.description`)
+          ? t(`nodes.${nodeTypeName}.properties.${property.name}.description`)
+          : property.description
+      }}
     </p>
   </div>
 </template>

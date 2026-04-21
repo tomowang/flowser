@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, inject } from "vue";
+import { useI18n } from "vue-i18n";
 import { Handle, Position, useVueFlow } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
 import { Trash2, AlertTriangle, Plus, Play } from "lucide-vue-next";
@@ -13,6 +14,7 @@ const props = defineProps<{
   selected?: boolean;
 }>();
 
+const { t, te } = useI18n();
 const { removeNodes, getEdges, project, findNode } = useVueFlow();
 const isHovered = ref(false);
 
@@ -155,7 +157,9 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
       <div class="flex flex-col overflow-hidden">
         <span class="text-sm font-semibold truncate">{{ data.label }}</span>
         <span class="text-[10px] text-muted-foreground truncate">{{
-          nodeType?.description.displayName
+          nodeType?.description.name && te(`nodes.${nodeType.description.name}.displayName`)
+            ? t(`nodes.${nodeType.description.name}.displayName`)
+            : nodeType?.description.displayName
         }}</span>
       </div>
     </div>
@@ -294,7 +298,7 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
     >
       <button
         class="rounded-full bg-primary p-1.5 text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors flex items-center justify-center"
-        title="Run Node"
+        :title="t('workflowEditor.runNode')"
         @click.stop="runSingleNode?.(id)"
       >
         <Play class="h-3 w-3" />
@@ -302,7 +306,7 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
       <div class="w-px h-3 bg-border mx-0.5"></div>
       <button
         class="rounded-full bg-muted p-1.5 text-muted-foreground shadow-sm hover:bg-destructive/10 hover:text-destructive transition-colors flex items-center justify-center"
-        title="Delete Node"
+        :title="t('workflowEditor.deleteNode')"
         @click.stop="deleteNode"
       >
         <Trash2 class="h-3 w-3" />

@@ -34,7 +34,7 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:open", "created"]);
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 const isMasterKeyModalOpen = ref(false);
 
 const formData = ref<{
@@ -78,7 +78,7 @@ const loadCredential = async () => {
 // Get all registered credential types
 const availableCredentialTypes = computed(() => {
   return getAllCredentialTypes().map((ct) => ({
-    label: ct.displayName,
+    label: te(`credentialTypes.${ct.name}.displayName`) ? t(`credentialTypes.${ct.name}.displayName`) : ct.displayName,
     value: ct.name,
     icon: ct.icon,
   }));
@@ -111,9 +111,12 @@ watch(
         if (props.defaultType) {
           formData.value.type = props.defaultType;
         }
-        // Set default name to credential type's displayName
+        // Set default name to credential type's localized displayName
         const credType = getCredentialType(formData.value.type);
-        formData.value.name = credType?.displayName || "";
+        const translatedName = credType?.name && te(`credentialTypes.${credType.name}.displayName`)
+          ? t(`credentialTypes.${credType.name}.displayName`)
+          : credType?.displayName;
+        formData.value.name = translatedName || "";
         // Reset values when opening
         populateDefaults();
       }
@@ -260,20 +263,26 @@ const onUnlocked = () => {
           class="grid grid-cols-4 items-center gap-4"
         >
           <Label :html-for="prop.name" class="text-right">{{
-            prop.displayName
+            te(`credentialTypes.${formData.type}.properties.${prop.name}.displayName`)
+              ? t(`credentialTypes.${formData.type}.properties.${prop.name}.displayName`)
+              : prop.displayName
           }}</Label>
           <Input
             :id="prop.name"
             v-model="formData.values[prop.name]"
             :type="prop.type === 'password' ? 'password' : 'text'"
             class="col-span-3"
-            :placeholder="prop.description || prop.displayName"
+            :placeholder="
+              te(`credentialTypes.${formData.type}.properties.${prop.name}.description`)
+                ? t(`credentialTypes.${formData.type}.properties.${prop.name}.description`)
+                : (prop.description || prop.displayName)
+            "
           />
         </div>
       </div>
       <DialogFooter>
         <Button type="submit" @click="saveCredential">{{
-          isEditMode ? t("common.save", "Save") : t("credentials.addCredential")
+          isEditMode ? t("common.save") : t("credentials.addCredential")
         }}</Button>
       </DialogFooter>
     </DialogContent>
