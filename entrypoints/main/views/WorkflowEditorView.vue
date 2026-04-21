@@ -39,7 +39,7 @@ import {
   Search,
   Play,
   Save,
-  Download,
+  FileDown,
   FileUp,
   ChevronRight,
   ChevronDown,
@@ -1010,7 +1010,7 @@ const saveWorkflow = async () => {
   }
 };
 
-const downloadWorkflow = () => {
+const exportWorkflow = () => {
   const workflowData = {
     name: currentWorkflowName.value,
     nodes: nodes.value.map((n) => {
@@ -1299,10 +1299,10 @@ const toggleExecutionPanel = () => {
         size="sm"
         variant="outline"
         class="cursor-pointer"
-        @click="downloadWorkflow"
+        @click="exportWorkflow"
       >
-        <Download class="w-4 h-4 mr-1" />
-        {{ t("common.download") }}
+        <FileDown class="w-4 h-4 mr-1" />
+        {{ t("common.export") }}
       </Button>
       <input
         ref="fileInput"

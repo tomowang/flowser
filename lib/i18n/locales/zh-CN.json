@@ -15,7 +15,7 @@
     "type": "类型",
     "value": "值",
     "saveChanges": "保存更改",
-    "download": "下载",
+    "export": "导出",
     "import": "导入",
     "error": "出错了"
   },

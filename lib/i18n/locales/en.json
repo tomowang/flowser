@@ -15,7 +15,7 @@
     "type": "Type",
     "value": "Value",
     "saveChanges": "Save changes",
-    "download": "Download",
+    "export": "Export",
     "import": "Import",
     "group": "Group",
     "error": "Something went wrong"
