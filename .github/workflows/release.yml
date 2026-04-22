@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Package chrome and edge
+        run: pnpm zip
+
+      - name: Package firefox
+        run: pnpm zip:firefox
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            .output/flowser-*.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          make_latest: true
