@@ -15,7 +15,10 @@
     "lint": "eslint .",
     "postinstall": "wxt prepare",
     "prepare": "husky",
-    "test": "vitest run"
+    "test": "vitest run",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.58",
@@ -73,6 +76,7 @@
     "lint-staged": "^16.4.0",
     "prettier": "3.6.2",
     "typescript": "^5.9.2",
+    "vitepress": "2.0.0-alpha.17",
     "vitest": "^4.1.0",
     "vue-tsc": "^3.0.6",
     "wxt": "^0.20.20"

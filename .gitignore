@@ -25,3 +25,6 @@ web-ext.config.ts
 *.sln
 *.sw?
 \n# Vitest\ncoverage/\n.vitest-result
+
+docs/.vitepress/dist
+docs/.vitepress/cache

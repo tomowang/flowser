@@ -10,7 +10,7 @@ export default [
 
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '.output/**', '.wxt/**', 'components/ui/**'],
+    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '.output/**', '.wxt/**', 'components/ui/**', 'docs/**'],
   },
 
   ...pluginVue.configs['flat/recommended'],
