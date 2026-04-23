@@ -5,14 +5,11 @@ layout: home
 hero:
   name: "Flowser"
   text: "A browser extension for automating web workflows with AI"
-  tagline: My great project tagline
+  tagline: Build AI agents that can use any website as their API.
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
-    - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Nodes
+      link: /nodes/
 
 features:
   - title: Feature A

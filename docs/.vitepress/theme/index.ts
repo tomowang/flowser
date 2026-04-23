@@ -9,7 +9,6 @@ export default {
   Layout: () => {
     return h(DefaultTheme.Layout, null, {
       // https://vitepress.dev/guide/extending-default-theme#layout-slots
-      'nav-bar-title-before': () => h('img', { src: '/logo.svg', alt: 'Flowser', width: 24, height: 24 })
     })
   },
   enhanceApp({ app, router, siteData }) {
