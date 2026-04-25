@@ -26,6 +26,9 @@ function getNodeSidebarItems() {
 export default defineConfig({
   title: "Flowser",
   description: "Flowser - a browser extension for automating web workflows with AI",
+  head: [
+    ['link', { rel: 'icon', href: '/logo.svg' }]
+  ],
   vite: {
     plugins: [
       {
