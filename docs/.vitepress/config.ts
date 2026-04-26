@@ -24,6 +24,7 @@ function getNodeSidebarItems() {
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  base: '/flowser/',
   title: "Flowser",
   description: "Flowser - a browser extension for automating web workflows with AI",
   head: [
