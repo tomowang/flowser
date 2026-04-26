@@ -1,6 +1,6 @@
 # AI Models
 
-These nodes provide Large Language Model (LLM) configurations used by other nodes, such as the [AI Agent](../Agent/index.md). They handle authentication and model selection for various AI providers.
+These nodes provide Large Language Model (LLM) configurations used by other nodes, such as the [AI Agent](./agent). They handle authentication and model selection for various AI providers.
 
 ## Available Models
 
