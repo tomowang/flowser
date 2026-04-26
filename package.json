@@ -89,6 +89,5 @@
       "@codemirror/state": "6.6.0",
       "@codemirror/view": "6.40.0"
     }
-  },
-  "packageManager": "pnpm@10.28.0"
+  }
 }
