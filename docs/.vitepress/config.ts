@@ -51,6 +51,12 @@ export default defineConfig({
 
     sidebar: [
       {
+        text: 'Guide',
+        items: [
+          { text: 'Execution Engine', link: '/execution-engine' },
+        ]
+      },
+      {
         text: 'Nodes',
         items: getNodeSidebarItems()
       },
