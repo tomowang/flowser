@@ -1,0 +1,7 @@
+allowBuilds:
+  esbuild: true
+  spawn-sync: true
+  vue-demi: true
+
+overrides:
+  rolldown: "1.0.1"
