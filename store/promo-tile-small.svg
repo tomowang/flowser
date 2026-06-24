@@ -1,0 +1,112 @@
+<svg width="440" height="280" viewBox="0 0 440 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Subtle Grid Pattern -->
+    <pattern id="grid-small" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.8" fill="#e2e2e7" />
+    </pattern>
+    
+    <!-- Ambient brand glow -->
+    <radialGradient id="brand-glow-small" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 140) rotate(90) scale(120)">
+      <stop stop-color="#fc662d" stop-opacity="0.12" />
+      <stop offset="1" stop-color="#fc662d" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Node Card Drop Shadow -->
+    <filter id="node-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.04" />
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.03" />
+    </filter>
+
+    <!-- Canvas Card Shadow -->
+    <filter id="canvas-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="16" flood-color="#000000" flood-opacity="0.05" />
+    </filter>
+  </defs>
+
+  <!-- Clean background -->
+  <rect width="440" height="280" fill="#fafafb" />
+  <rect width="440" height="280" fill="url(#grid-small)" />
+  
+  <!-- Ambient glow behind brand logo -->
+  <circle cx="100" cy="140" r="120" fill="url(#brand-glow-small)" />
+
+  <!-- LEFT SIDE: Branding -->
+  <g transform="translate(0, 0)">
+    <!-- Flowser Logo (Scale 0.25, centered at X=100, Y=50) -->
+    <g transform="translate(68, 50) scale(0.25)">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="m 98.780322,188.81276 c -11.8952,3.05638 -20.68464,13.83315 -20.68464,26.65925 0,15.20185 12.34785,27.52549 27.579668,27.52549 15.23183,0 27.57936,-12.32364 27.57936,-27.52549 0,-12.8261 -8.78934,-23.60287 -20.68455,-26.65925 -0.005,-38.40678 9.34991,-53.70477 35.79079,-53.68577 3.06811,11.84785 13.88863,20.60198 26.76593,20.60198 15.26266,0 27.63644,-12.2991 27.63644,-27.47001 0,-15.16986 -12.37378,-27.46895 -27.63644,-27.46895 -12.8773,0 -23.69782,8.75413 -26.76593,20.60197 -26.36515,0.0354 -49.388508,10.99359 -49.580628,67.42083 z M 171.32972,46.32916 c 3.06704,11.847738 13.88757,20.601982 26.76487,20.601982 15.26372,0 27.63643,-12.298356 27.63643,-27.469273 0,-15.170703 -12.37271,-27.469158 -27.63643,-27.469158 -12.8773,0 -23.69783,8.754257 -26.76487,20.601867 -58.10431,6.008021 -44.20195,83.117612 -86.919088,83.016062 -3.0681,-11.84784 -13.88777,-20.602608 -26.765285,-20.602608 -15.262768,0 -27.635583,12.298658 -27.635583,27.469578 0,15.17091 12.372815,27.46895 27.635583,27.46895 12.877515,0 23.697185,-8.75307 26.765285,-20.60092 55.138108,-5.97436 44.270918,-82.99389 86.919088,-83.01648 z m 3.79716,96.52571 c 8.32422,0 15.07277,-6.72189 15.07277,-15.0141 0,-8.29114 -6.74855,-15.01303 -15.07277,-15.01303 -8.32421,0 -15.07278,6.72189 -15.07278,15.01303 0,8.29221 6.74857,15.0141 15.07278,15.0141 z m -69.45409,87.63017 c 8.324,0 15.07309,-6.72189 15.07309,-15.01303 0,-8.29221 -6.74909,-15.01409 -15.07309,-15.01409 -8.323998,0 -15.072978,6.72188 -15.072978,15.01409 0,8.29114 6.74898,15.01303 15.072978,15.01303 z M 57.586567,137.49171 c 8.324005,0 15.073095,-6.72189 15.073095,-15.0141 0,-8.29222 -6.74909,-15.01303 -15.073095,-15.01303 -8.324002,0 -15.072985,6.72081 -15.072985,15.01303 0,8.29221 6.748983,15.0141 15.072985,15.0141 z M 198.09779,54.475113 c 8.32421,0 15.07277,-6.721673 15.07277,-15.013244 0,-8.291571 -6.74856,-15.013243 -15.07277,-15.013243 -8.32421,0 -15.07278,6.721672 -15.07278,15.013243 0,8.291571 6.74857,15.013244 15.07278,15.013244 z" fill="#fc662d" />
+    </g>
+    
+    <!-- Brand Name -->
+    <text x="100" y="165" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="28" fill="#1c1c1e" letter-spacing="-0.02em">Flowser</text>
+    
+    <!-- Tagline -->
+    <text x="100" y="200" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="600" font-size="12" fill="#636366">AI Web Automation</text>
+    <text x="100" y="218" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="600" font-size="12" fill="#fc662d">Local &amp; Visual</text>
+  </g>
+
+  <!-- RIGHT SIDE: Connected Nodes Canvas -->
+  <g transform="translate(230, 25)">
+    <!-- Canvas Boundary (with shadow and light border) -->
+    <rect x="-10" y="-10" width="180" height="250" rx="14" fill="#ffffff" stroke="#dcdce0" stroke-width="1" filter="url(#canvas-shadow)" />
+    <rect x="-10" y="-10" width="180" height="250" rx="14" fill="none" stroke="#dcdce0" stroke-width="1" />
+    
+    <!-- Connectors (Straight vertical lines) -->
+    <line x1="80" y1="55" x2="80" y2="95" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round" />
+    <path d="M 77 87 L 80 93 L 83 87" fill="none" stroke="#a2a2a6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <line x1="80" y1="135" x2="80" y2="175" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round" />
+    <path d="M 77 167 L 80 173 L 83 167" fill="none" stroke="#a2a2a6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- NODE 1: Trigger Node (Y: 15 to 55) -->
+    <g transform="translate(0, 15)">
+      <!-- Card background with shadow -->
+      <rect x="0" y="0" width="160" height="40" rx="8" fill="#ffffff" filter="url(#node-shadow)" />
+      <rect x="0" y="0" width="160" height="40" rx="8" fill="none" stroke="#c8c8cc" stroke-width="1" />
+      <g transform="translate(8, 8)">
+        <rect width="24" height="24" rx="5" fill="#fff5f1" />
+        <g transform="translate(4, 4) scale(0.66)" stroke="#fc662d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </g>
+      </g>
+      <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="8" fill="#86868b" text-transform="uppercase">Trigger</text>
+      <text x="40" y="28" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="10" fill="#1c1c1e">Every Hour</text>
+    </g>
+
+    <!-- NODE 2: AI Agent Node (Y: 95 to 135) -->
+    <g transform="translate(0, 95)">
+      <rect x="0" y="0" width="160" height="40" rx="8" fill="#ffffff" filter="url(#node-shadow)" />
+      <rect x="0" y="0" width="160" height="40" rx="8" fill="none" stroke="#c8c8cc" stroke-width="1" />
+      <g transform="translate(8, 8)">
+        <rect width="24" height="24" rx="5" fill="#f5f0f9" />
+        <g transform="translate(4, 4) scale(0.66)" stroke="#af52de" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M12 8V4H8" />
+          <rect width="16" height="12" x="4" y="8" rx="2" />
+          <path d="M2 14h2" />
+          <path d="M20 14h2" />
+          <path d="M15 13v2" />
+          <path d="M9 13v2" />
+        </g>
+      </g>
+      <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="8" fill="#86868b" text-transform="uppercase">AI Agent</text>
+      <text x="40" y="28" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="10" fill="#1c1c1e">Ask GPT/Claude</text>
+    </g>
+
+    <!-- NODE 3: Data Node (Y: 175 to 215) -->
+    <g transform="translate(0, 175)">
+      <rect x="0" y="0" width="160" height="40" rx="8" fill="#ffffff" filter="url(#node-shadow)" />
+      <rect x="0" y="0" width="160" height="40" rx="8" fill="none" stroke="#c8c8cc" stroke-width="1" />
+      <g transform="translate(8, 8)">
+        <rect width="24" height="24" rx="5" fill="#fffaf0" />
+        <g transform="translate(4, 4) scale(0.66)" stroke="#ff9f0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+          <path d="M3 12A9 3 0 0 0 21 12" />
+        </g>
+      </g>
+      <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="8" fill="#86868b" text-transform="uppercase">Database</text>
+      <text x="40" y="28" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="10" fill="#1c1c1e">Save to Table</text>
+    </g>
+  </g>
+</svg>

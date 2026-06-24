@@ -1,0 +1,207 @@
+<svg width="1400" height="560" viewBox="0 0 1400 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Grid Pattern -->
+    <pattern id="grid-marquee" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#e2e2e7" />
+    </pattern>
+    
+    <!-- Ambient brand glow -->
+    <radialGradient id="brand-glow-marquee" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(315 280) rotate(90) scale(300)">
+      <stop stop-color="#fc662d" stop-opacity="0.12" />
+      <stop offset="1" stop-color="#fc662d" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Clip Path for rounded browser window contents -->
+    <clipPath id="window-clip">
+      <rect x="0" y="0" width="600" height="420" rx="14" />
+    </clipPath>
+
+    <!-- Browser Window Shadow -->
+    <filter id="window-shadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="16" stdDeviation="28" flood-color="#000000" flood-opacity="0.07" />
+    </filter>
+
+    <!-- Node Card Shadow -->
+    <filter id="node-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.04" />
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000000" flood-opacity="0.03" />
+    </filter>
+  </defs>
+
+  <!-- Clean background -->
+  <rect width="1400" height="560" fill="#fafafb" />
+  <rect width="1400" height="560" fill="url(#grid-marquee)" />
+  
+  <!-- Ambient brand glow -->
+  <circle cx="315" cy="280" r="300" fill="url(#brand-glow-marquee)" />
+
+  <!-- LEFT SIDE: Prominent Branding (Center X = 315) -->
+  <g transform="translate(145, 110)">
+    <!-- Large Flowser Logo (Scale 0.6) -->
+    <g transform="translate(100, 0) scale(0.6)">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="m 98.780322,188.81276 c -11.8952,3.05638 -20.68464,13.83315 -20.68464,26.65925 0,15.20185 12.34785,27.52549 27.579668,27.52549 15.23183,0 27.57936,-12.32364 27.57936,-27.52549 0,-12.8261 -8.78934,-23.60287 -20.68455,-26.65925 -0.005,-38.40678 9.34991,-53.70477 35.79079,-53.68577 3.06811,11.84785 13.88863,20.60198 26.76593,20.60198 15.26266,0 27.63644,-12.2991 27.63644,-27.47001 0,-15.16986 -12.37378,-27.46895 -27.63644,-27.46895 -12.8773,0 -23.69782,8.75413 -26.76593,20.60197 -26.36515,0.0354 -49.388508,10.99359 -49.580628,67.42083 z M 171.32972,46.32916 c 3.06704,11.847738 13.88757,20.601982 26.76487,20.601982 15.26372,0 27.63643,-12.298356 27.63643,-27.469273 0,-15.170703 -12.37271,-27.469158 -27.63643,-27.469158 -12.8773,0 -23.69783,8.754257 -26.76487,20.601867 -58.10431,6.008021 -44.20195,83.117612 -86.919088,83.016062 -3.0681,-11.84784 -13.88777,-20.602608 -26.765285,-20.602608 -15.262768,0 -27.635583,12.298658 -27.635583,27.469578 0,15.17091 12.372815,27.46895 27.635583,27.46895 12.877515,0 23.697185,-8.75307 26.765285,-20.60092 55.138108,-5.97436 44.270918,-82.99389 86.919088,-83.01648 z m 3.79716,96.52571 c 8.32422,0 15.07277,-6.72189 15.07277,-15.0141 0,-8.29114 -6.74855,-15.01303 -15.07277,-15.01303 -8.32421,0 -15.07278,6.72189 -15.07278,15.01303 0,8.29221 6.74857,15.0141 15.07278,15.0141 z m -69.45409,87.63017 c 8.324,0 15.07309,-6.72189 15.07309,-15.01303 0,-8.29221 -6.74909,-15.01409 -15.07309,-15.01409 -8.323998,0 -15.072978,6.72188 -15.072978,15.01409 0,8.29114 6.74898,15.01303 15.072978,15.01303 z M 57.586567,137.49171 c 8.324005,0 15.073095,-6.72189 15.073095,-15.0141 0,-8.29222 -6.74909,-15.01303 -15.073095,-15.01303 -8.324002,0 -15.072985,6.72081 -15.072985,15.01303 0,8.29221 6.748983,15.0141 15.072985,15.0141 z M 198.09779,54.475113 c 8.32421,0 15.07277,-6.721673 15.07277,-15.013244 0,-8.291571 -6.74856,-15.013243 -15.07277,-15.013243 -8.32421,0 -15.07278,6.721672 -15.07278,15.013243 0,8.291571 6.74857,15.013244 15.07278,15.013244 z" fill="#fc662d" />
+    </g>
+    
+    <!-- Brand Name -->
+    <text x="175" y="200" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="56" fill="#1c1c1e" letter-spacing="-0.03em">Flowser</text>
+    
+    <!-- Description -->
+    <text x="175" y="255" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="600" font-size="18" fill="#48484a">Automate web workflows visually</text>
+    <text x="175" y="285" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="600" font-size="18" fill="#fc662d">Local-first browser extension</text>
+  </g>
+
+  <!-- RIGHT SIDE: Visual Editor Mockup Grid (X range: 680 to 1330) -->
+  <g transform="translate(670, 70)">
+    <!-- Editor Shadow Canvas Base -->
+    <rect x="0" y="0" width="600" height="420" rx="14" fill="#ffffff" filter="url(#window-shadow)" />
+    
+    <!-- Clipped window content (white bg, top bar, controls) -->
+    <g clip-path="url(#window-clip)">
+      <!-- Actual window fill -->
+      <rect x="0" y="0" width="600" height="420" fill="#ffffff" />
+      
+      <!-- Gray header background -->
+      <rect x="0" y="0" width="600" height="46" fill="#f4f4f6" />
+      
+      <!-- Top orange accent bar -->
+      <rect x="0" y="0" width="600" height="4" fill="#fc662d" />
+      
+      <!-- Window controls -->
+      <circle cx="25" cy="25" r="5" fill="#ff5f56" />
+      <circle cx="40" cy="25" r="5" fill="#ffbd2e" />
+      <circle cx="55" cy="25" r="5" fill="#27c93f" />
+      
+      <!-- Title -->
+      <text x="300" y="30" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="11" fill="#86868b" letter-spacing="0.08em">VISUAL WORKFLOW EDITOR</text>
+      
+      <!-- Header boundary -->
+      <line x1="0" y1="46" x2="600" y2="46" stroke="#e5e5e7" stroke-width="1.5" />
+    </g>
+
+    <!-- Window border (drawn outside clip-path so the stroke is clean) -->
+    <rect x="0" y="0" width="600" height="420" rx="14" fill="none" stroke="#dcdce0" stroke-width="1.5" />
+
+    <!-- Grid Content Canvas (Row 1 Center Y = 150, Row 2 Center Y = 310) -->
+    <!-- Connectors: Clean, Straight, Perfectly Aligned Horizontal Lines -->
+    
+    <!-- Connector Row 1: Trigger -> Split -->
+    <line x1="190" y1="150" x2="220" y2="150" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round" />
+    <path d="M 213 146 L 219 150 L 213 154" fill="none" stroke="#a2a2a6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Connector Row 1: Split -> Code -->
+    <line x1="380" y1="150" x2="410" y2="150" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round" />
+    <path d="M 403 146 L 409 150 L 403 154" fill="none" stroke="#a2a2a6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- Connector Row 2: Browser -> Bot -->
+    <line x1="190" y1="310" x2="220" y2="310" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round" />
+    <path d="M 213 306 L 219 310 L 213 314" fill="none" stroke="#a2a2a6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Connector Row 2: Bot -> Database -->
+    <line x1="380" y1="310" x2="410" y2="310" stroke="#d1d1d6" stroke-width="2" stroke-linecap="round" />
+    <path d="M 403 306 L 409 310 L 403 314" fill="none" stroke="#a2a2a6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- ================== COLUMN 1 (X=30 to 190) ================== -->
+    
+    <!-- Node 1: Trigger (Row 1, Y=120) -->
+    <g transform="translate(30, 120)">
+      <rect width="160" height="60" rx="10" fill="#ffffff" filter="url(#node-shadow)" />
+      <rect width="160" height="60" rx="10" fill="none" stroke="#c8c8cc" stroke-width="1.2" />
+      <g transform="translate(12, 14)">
+        <rect width="32" height="32" rx="6" fill="#fff5f1" />
+        <g transform="translate(6, 6)" stroke="#fc662d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </g>
+      </g>
+      <text x="56" y="26" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="9" fill="#86868b" text-transform="uppercase">Trigger</text>
+      <text x="56" y="40" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="12" fill="#1c1c1e">Every Hour</text>
+    </g>
+
+    <!-- Node 2: Browser/Globe (Row 2, Y=280) -->
+    <g transform="translate(30, 280)">
+      <rect width="160" height="60" rx="10" fill="#ffffff" filter="url(#node-shadow)" />
+      <rect width="160" height="60" rx="10" fill="none" stroke="#c8c8cc" stroke-width="1.2" />
+      <g transform="translate(12, 14)">
+        <rect width="32" height="32" rx="6" fill="#e8f4fd" />
+        <g transform="translate(6, 6)" stroke="#0071e3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+          <path d="M2 12h20" />
+        </g>
+      </g>
+      <text x="56" y="26" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="9" fill="#86868b" text-transform="uppercase">Browser</text>
+      <text x="56" y="40" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="12" fill="#1c1c1e">Active Page</text>
+    </g>
+
+    <!-- ================== COLUMN 2 (X=220 to 380) ================== -->
+    
+    <!-- Node 3: Logic/Split (Row 1, Y=120) -->
+    <g transform="translate(220, 120)">
+      <rect width="160" height="60" rx="10" fill="#ffffff" filter="url(#node-shadow)" />
+      <rect width="160" height="60" rx="10" fill="none" stroke="#c8c8cc" stroke-width="1.2" />
+      <g transform="translate(12, 14)">
+        <rect width="32" height="32" rx="6" fill="#edf9f0" />
+        <g transform="translate(6, 6)" stroke="#34c759" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M16 3h5v5" />
+          <path d="M8 3H3v5" />
+          <path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3" />
+          <path d="m15 9 6-6" />
+        </g>
+      </g>
+      <text x="56" y="26" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="9" fill="#86868b" text-transform="uppercase">Logic</text>
+      <text x="56" y="40" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="12" fill="#1c1c1e">If Match</text>
+    </g>
+
+    <!-- Node 4: AI Agent/Bot (Row 2, Y=280) -->
+    <g transform="translate(220, 280)">
+      <rect width="160" height="60" rx="10" fill="#ffffff" filter="url(#node-shadow)" />
+      <rect width="160" height="60" rx="10" fill="none" stroke="#c8c8cc" stroke-width="1.2" />
+      <g transform="translate(12, 14)">
+        <rect width="32" height="32" rx="6" fill="#f5f0f9" />
+        <g transform="translate(6, 6)" stroke="#af52de" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M12 8V4H8" />
+          <rect width="16" height="12" x="4" y="8" rx="2" />
+          <path d="M2 14h2" />
+          <path d="M20 14h2" />
+          <path d="M15 13v2" />
+          <path d="M9 13v2" />
+        </g>
+      </g>
+      <text x="56" y="26" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="9" fill="#86868b" text-transform="uppercase">AI Agent</text>
+      <text x="56" y="40" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="12" fill="#1c1c1e">Extract Info</text>
+    </g>
+
+    <!-- ================== COLUMN 3 (X=410 to 570) ================== -->
+    
+    <!-- Node 5: Script/Code (Row 1, Y=120) -->
+    <g transform="translate(410, 120)">
+      <rect width="160" height="60" rx="10" fill="#ffffff" filter="url(#node-shadow)" />
+      <rect width="160" height="60" rx="10" fill="none" stroke="#c8c8cc" stroke-width="1.2" />
+      <g transform="translate(12, 14)">
+        <rect width="32" height="32" rx="6" fill="#f0effb" />
+        <g transform="translate(6, 6)" stroke="#5856d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="m16 18 6-6-6-6" />
+          <path d="m8 6-6 6 6 6" />
+        </g>
+      </g>
+      <text x="56" y="26" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="9" fill="#86868b" text-transform="uppercase">Script</text>
+      <text x="56" y="40" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="12" fill="#1c1c1e">JavaScript</text>
+    </g>
+
+    <!-- Node 6: Database (Row 2, Y=280) -->
+    <g transform="translate(410, 280)">
+      <rect width="160" height="60" rx="10" fill="#ffffff" filter="url(#node-shadow)" />
+      <rect width="160" height="60" rx="10" fill="none" stroke="#c8c8cc" stroke-width="1.2" />
+      <g transform="translate(12, 14)">
+        <rect width="32" height="32" rx="6" fill="#fffaf0" />
+        <g transform="translate(6, 6)" stroke="#ff9f0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+          <path d="M3 12A9 3 0 0 0 21 12" />
+        </g>
+      </g>
+      <text x="56" y="26" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="9" fill="#86868b" text-transform="uppercase">Database</text>
+      <text x="56" y="40" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="12" fill="#1c1c1e">Save Table</text>
+    </g>
+  </g>
+</svg>
