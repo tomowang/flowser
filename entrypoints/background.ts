@@ -155,8 +155,61 @@ async function scheduleWorkflow(workflow: IWorkflow) {
   }
 }
 
+async function importInitialWorkflows() {
+  try {
+    const db = await dbPromise;
+    const initialWorkflows = import.meta.glob(
+      "../assets/initial-workflows/*.json",
+      { eager: true },
+    );
+
+    for (const path in initialWorkflows) {
+      const mod = initialWorkflows[path] as Record<string, unknown>;
+      const workflowJson = (mod.default || mod) as Partial<IWorkflow>;
+
+      const filename = path.split("/").pop()?.replace(".json", "") || "workflow";
+      const id = workflowJson.id || filename;
+      const name = workflowJson.name || filename;
+      const nodes = workflowJson.nodes || [];
+      const edges = workflowJson.edges || [];
+      const createdAt = workflowJson.createdAt || Date.now();
+      const updatedAt = workflowJson.updatedAt || Date.now();
+      const active = workflowJson.active !== undefined ? workflowJson.active : false;
+      const previewSvg = workflowJson.previewSvg || "";
+
+      const workflowToSave: IWorkflow = {
+        id,
+        name,
+        nodes,
+        edges,
+        createdAt,
+        updatedAt,
+        active,
+        previewSvg,
+      };
+
+      const existing = await db.get("workflows", id);
+      if (!existing) {
+        await db.put("workflows", workflowToSave);
+        console.log(`Successfully added initial workflow: ${name} (${id})`);
+      } else {
+        console.log(`Initial workflow already exists: ${name} (${id})`);
+      }
+    }
+  } catch (e) {
+    console.error("Failed to insert initial workflows:", e);
+  }
+}
+
 export default defineBackground(() => {
   console.log("Hello background!", { id: browser.runtime.id });
+
+  // Import initial workflows on first-time installation
+  browser.runtime.onInstalled.addListener(async (details) => {
+    if (details.reason === "install") {
+      await importInitialWorkflows();
+    }
+  });
 
   // 1. Set storage session access level to TRUSTED_CONTEXTS (prevents content script access)
   // This is a browser-native security hardening.

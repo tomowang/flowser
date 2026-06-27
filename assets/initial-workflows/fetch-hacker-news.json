@@ -1,0 +1,69 @@
+{
+  "name": "Fetch Hacker News",
+  "nodes": [
+    {
+      "id": "manualTrigger-1782570987289",
+      "type": "manualTrigger",
+      "position": {
+        "x": 640,
+        "y": 400
+      },
+      "data": {
+        "label": "Manually Trigger",
+        "nodeType": "manualTrigger",
+        "name": "Manual Trigger"
+      }
+    },
+    {
+      "id": "60b433f8-b81c-4cce-9394-dca1a360a217",
+      "type": "tabAction",
+      "position": {
+        "x": 896,
+        "y": 400
+      },
+      "data": {
+        "nodeType": "tabAction",
+        "label": "New tab",
+        "action": "create",
+        "url": "https://news.ycombinator.com/news",
+        "active": true,
+        "pinned": false,
+        "tabIds": ""
+      }
+    },
+    {
+      "id": "fetchContent-1782571208303",
+      "type": "fetchContent",
+      "position": {
+        "x": 1152,
+        "y": 400
+      },
+      "data": {
+        "label": "Fetch Content",
+        "nodeType": "fetchContent",
+        "name": "Fetch Content",
+        "selectorType": "css",
+        "selector": "td.title > span.titleline > a",
+        "contentType": "html",
+        "multiple": true,
+        "tabId": "={{ $json.id }}"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-manualTrigger-1782570987289-60b433f8-b81c-4cce-9394-dca1a360a217-bda4b562",
+      "source": "manualTrigger-1782570987289",
+      "target": "60b433f8-b81c-4cce-9394-dca1a360a217",
+      "sourceHandle": "main",
+      "targetHandle": "main"
+    },
+    {
+      "id": "e-1782571211474",
+      "source": "60b433f8-b81c-4cce-9394-dca1a360a217",
+      "target": "fetchContent-1782571208303",
+      "sourceHandle": "main",
+      "targetHandle": "main"
+    }
+  ]
+}
