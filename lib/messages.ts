@@ -3,6 +3,7 @@ export enum MessageType {
   WORKFLOW_UPDATED = "WORKFLOW:UPDATED",
   SECURITY_SAVE_MK = "SECURITY:SAVE_MK",
   SECURITY_GET_MK = "SECURITY:GET_MK",
+  WORKFLOW_EXECUTE = "WORKFLOW:EXECUTE",
 }
 
 export interface ExecuteHttpRequestPayload {

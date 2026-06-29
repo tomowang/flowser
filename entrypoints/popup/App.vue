@@ -4,7 +4,7 @@ import { browser } from "wxt/browser";
 import { useI18n } from "vue-i18n";
 import { WorkflowService } from "@/lib/services/workflow-service";
 import { SecurityService } from "@/lib/services/security-service";
-import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
+import { MessageType } from "@/lib/messages";
 import { IWorkflow } from "@/lib/types";
 import { Search, ExternalLink } from "lucide-vue-next";
 import WorkflowItem from "./components/WorkflowItem.vue";
@@ -70,15 +70,13 @@ const handleRun = async (id: string) => {
   }
 
   try {
-    const runner = new WorkflowRunner(workflow);
-    const result = await runner.run();
-
-    if (result.status === "success") {
-      toast.success(
-        t("workflowEditor.executionFinished") + ": " + workflow.name,
-      );
-    } else {
-      toast.error(t("common.error") + ": " + workflow.name);
+    toast.info(t("workflows.executing") + ": " + workflow.name);
+    const response = await browser.runtime.sendMessage({
+      type: MessageType.WORKFLOW_EXECUTE,
+      payload: { workflowId: id },
+    });
+    if (!response?.success) {
+      throw new Error(response?.error || "Failed to trigger workflow execution");
     }
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : String(e);

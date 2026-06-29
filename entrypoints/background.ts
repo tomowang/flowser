@@ -290,6 +290,27 @@ export default defineBackground(() => {
         scheduleWorkflow(workflow);
         // Reschedule might not need to send response, but good practice
         sendResponse({ success: true });
+      } else if (message.type === MessageType.WORKFLOW_EXECUTE) {
+        const { workflowId } = message.payload as { workflowId: string };
+        dbPromise.then(async (db) => {
+          const workflow = await db.get("workflows", workflowId);
+          if (!workflow) {
+            console.error("Workflow not found to execute in background:", workflowId);
+            return;
+          }
+          console.log("Executing workflow in background:", workflow.name);
+          const runner = new WorkflowRunner(workflow);
+          try {
+            const result = await runner.run();
+            await ExecutionService.saveExecution(result);
+            console.log("Workflow execution saved in background:", workflow.name);
+          } catch (e) {
+            console.error("Error executing workflow in background:", e);
+          }
+        }).catch((err) => {
+          console.error("Failed to fetch workflow in background:", err);
+        });
+        sendResponse({ success: true });
       }
     },
   );
