@@ -63,7 +63,11 @@
     "deleted": "工作流删除成功。",
     "importWorkflow": "导入工作流",
     "importSuccess": "工作流导入成功",
-    "importError": "导入工作流失败：无效的文件格式"
+    "importError": "导入工作流失败：无效的文件格式",
+    "execute": "执行",
+    "executing": "执行中...",
+    "executionSuccess": "工作流执行成功",
+    "executionError": "工作流执行失败"
   },
   "credentials": {
     "title": "凭证",

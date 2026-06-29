@@ -63,7 +63,11 @@
     "deleted": "Workflow deleted",
     "importWorkflow": "Import Workflow",
     "importSuccess": "Workflow imported successfully",
-    "importError": "Failed to import workflow: Invalid file format"
+    "importError": "Failed to import workflow: Invalid file format",
+    "execute": "Execute",
+    "executing": "Executing...",
+    "executionSuccess": "Workflow executed successfully",
+    "executionError": "Failed to execute workflow"
   },
   "credentials": {
     "title": "Credentials",

@@ -30,10 +30,14 @@ import {
   GitCommitHorizontal,
   Clock,
   FileUp,
+  Play,
 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import CardAction from "@/components/ui/card/CardAction.vue";
 import logoUrl from "@/assets/logo.svg";
+import { Spinner } from "@/components/ui/spinner";
+import { WorkflowRunner } from "@/lib/engine/WorkflowRunner";
+import { ExecutionService } from "@/lib/services/execution-service";
 
 const { t } = useI18n();
 const workflows = ref<IWorkflow[]>([]);
@@ -129,6 +133,44 @@ const onToggleActive = async (checked: boolean, wf: IWorkflow) => {
     console.error(error);
     wf.active = !checked; // Revert
     toast.error(t("common.error"));
+  }
+};
+
+const executingWorkflows = ref<Record<string, boolean>>({});
+
+const runWorkflow = async (e: Event, wf: IWorkflow) => {
+  e.preventDefault(); // Prevent RouterLink navigation
+  if (executingWorkflows.value[wf.id]) return;
+  executingWorkflows.value[wf.id] = true;
+
+  try {
+    const promise = (async () => {
+      const runner = new WorkflowRunner(wf);
+      const result = await runner.run();
+      await ExecutionService.saveExecution(result);
+      if (result.status === "error") {
+        throw new Error(t("workflows.executionError"));
+      }
+      return result;
+    })();
+
+    toast.promise(promise, {
+      loading: t("workflows.executing"),
+      success: t("workflows.executionSuccess"),
+      error: (err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        if (message === "No trigger node found") {
+          return t("workflowEditor.noTriggerNode");
+        }
+        return message || t("workflows.executionError");
+      },
+    });
+
+    await promise;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    executingWorkflows.value[wf.id] = false;
   }
 };
 </script>
@@ -250,7 +292,7 @@ const onToggleActive = async (checked: boolean, wf: IWorkflow) => {
             </div>
           </CardContent>
         </RouterLink>
-        <CardFooter class="">
+        <CardFooter class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <Switch
               v-model="wf.active"
@@ -263,6 +305,17 @@ const onToggleActive = async (checked: boolean, wf: IWorkflow) => {
               {{ wf.active ? t("workflows.active") : t("workflows.inactive") }}
             </span>
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            :disabled="executingWorkflows[wf.id]"
+            class="cursor-pointer z-10"
+            @click.stop.prevent="runWorkflow($event, wf)"
+          >
+            <Spinner v-if="executingWorkflows[wf.id]" class="w-4 h-4 mr-1" />
+            <Play v-else class="w-4 h-4 mr-1" />
+            {{ t("workflows.execute") }}
+          </Button>
         </CardFooter>
       </Card>
 
