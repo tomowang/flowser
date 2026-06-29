@@ -105,13 +105,18 @@
   },
   "masterKey": {
     "title": "Security Check",
+    "titleInitial": "Set Master Password",
     "description": "Enter your Master Password to access secure credentials.",
+    "descriptionInitial": "Set a Master Password to protect your secure credentials. Make sure to remember it, as it cannot be recovered.",
     "passwordPlaceholder": "Master Password",
+    "passwordPlaceholderInitial": "Enter initial Master Password",
     "passwordRequired": "Password is required",
     "invalidPassword": "Invalid Master Password",
     "failedToDeriveKey": "Failed to derive key:",
     "unlock": "Unlock",
-    "unlocking": "Unlocking..."
+    "unlocking": "Unlocking...",
+    "save": "Set Password",
+    "saving": "Saving..."
   },
   "workflowEditor": {
     "execute": "Execute",

@@ -105,13 +105,18 @@
   },
   "masterKey": {
     "title": "安全检查",
+    "titleInitial": "设置主密码",
     "description": "输入您的主密码以访问安全凭证。",
+    "descriptionInitial": "设置主密码以保护您的安全凭证。请务必记住它，因为它是无法恢复的。",
     "passwordPlaceholder": "主密码",
+    "passwordPlaceholderInitial": "输入初始主密码",
     "passwordRequired": "密码为必填项",
     "invalidPassword": "主密码无效",
     "failedToDeriveKey": "密钥派生失败：",
     "unlock": "解锁",
-    "unlocking": "解锁中..."
+    "unlocking": "解锁中...",
+    "save": "设置密码",
+    "saving": "保存中..."
   },
   "workflowEditor": {
     "execute": "执行",

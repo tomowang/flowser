@@ -62,6 +62,27 @@ export class SecurityService {
     return !!this.masterKey;
   }
 
+  static async isMasterKeyConfigured(): Promise<boolean> {
+    const isSet = await storage.getItem<string>("local:flowser_master_key_set");
+    if (isSet === "true") return true;
+
+    // Fallback: check if we have any credentials
+    try {
+      const db = await dbPromise;
+      if (db && typeof db.getAll === "function") {
+        const all = await db.getAll("credentials");
+        if (all && all.length > 0) {
+          await storage.setItem("local:flowser_master_key_set", "true");
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to check credentials database", e);
+    }
+
+    return false;
+  }
+
   /**
    * Encrypts plaintext using the set master key.
    * Returns: { iv (base64), data (base64) }
@@ -157,7 +178,6 @@ export class SecurityService {
     }
   }
 
-
   // --- Helpers ---
 
   private static bufferToBase64(buffer: Uint8Array): string {
@@ -183,7 +203,10 @@ export class SecurityService {
   static async saveToSession(key: CryptoKey) {
     // Export key to JWK
     const exported = await crypto.subtle.exportKey("jwk", key);
-    
+
+    // Save flag indicating master key is configured
+    await storage.setItem("local:flowser_master_key_set", "true");
+
     // Use background script to securely wrap and store the key in storage.session
     // This provides "Double Wrapping" protection.
     try {
@@ -193,9 +216,11 @@ export class SecurityService {
       });
 
       if (!response?.success) {
-        throw new Error(response?.error || "Failed to save master key to session");
+        throw new Error(
+          response?.error || "Failed to save master key to session",
+        );
       }
-      
+
       this.masterKey = key;
     } catch (e: unknown) {
       const error = e as Error;
@@ -205,7 +230,10 @@ export class SecurityService {
         error?.message?.includes("Extension context invalidated");
 
       if (!isExpectedError) {
-        console.warn("Could not save to session via background, falling back to local memory only", e);
+        console.warn(
+          "Could not save to session via background, falling back to local memory only",
+          e,
+        );
       }
       this.masterKey = key;
     }

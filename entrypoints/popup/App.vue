@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { browser } from "wxt/browser";
 import { useI18n } from "vue-i18n";
 import { WorkflowService } from "@/lib/services/workflow-service";
@@ -31,6 +31,13 @@ const showMasterKeyDialog = ref(false);
 const masterKeyInput = ref("");
 const pendingWorkflowId = ref<string | null>(null);
 const verifyingKey = ref(false);
+const isMasterKeyConfigured = ref(true);
+
+watch(showMasterKeyDialog, async (newVal) => {
+  if (newVal) {
+    isMasterKeyConfigured.value = await SecurityService.isMasterKeyConfigured();
+  }
+});
 
 const { t } = useI18n();
 
@@ -67,7 +74,9 @@ const handleRun = async (id: string) => {
     const result = await runner.run();
 
     if (result.status === "success") {
-      toast.success(t("workflowEditor.executionFinished") + ": " + workflow.name);
+      toast.success(
+        t("workflowEditor.executionFinished") + ": " + workflow.name,
+      );
     } else {
       toast.error(t("common.error") + ": " + workflow.name);
     }
@@ -177,7 +186,9 @@ onMounted(async () => {
 
     <!-- List -->
     <div class="flex-1 overflow-y-auto max-h-[400px]">
-      <div v-if="loading" class="p-8 text-center text-gray-500">{{ t("common.loading") }}</div>
+      <div v-if="loading" class="p-8 text-center text-gray-500">
+        {{ t("common.loading") }}
+      </div>
       <div
         v-else-if="filteredWorkflows.length === 0"
         class="p-8 text-center text-gray-500"
@@ -205,14 +216,28 @@ onMounted(async () => {
     <Dialog v-model:open="showMasterKeyDialog">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{{ t("masterKey.title") }}</DialogTitle>
+          <DialogTitle>{{
+            isMasterKeyConfigured
+              ? t("masterKey.title")
+              : t("masterKey.titleInitial")
+          }}</DialogTitle>
           <DialogDescription>
-            {{ t("masterKey.description") }}
+            {{
+              isMasterKeyConfigured
+                ? t("masterKey.description")
+                : t("masterKey.descriptionInitial")
+            }}
           </DialogDescription>
         </DialogHeader>
         <div class="grid gap-4 py-4">
           <div class="grid grid-cols-4 items-center gap-4">
-            <Label for="master-key" class="text-right"> {{ t("masterKey.passwordPlaceholder") }} </Label>
+            <Label for="master-key" class="text-right">
+              {{
+                isMasterKeyConfigured
+                  ? t("masterKey.passwordPlaceholder")
+                  : t("masterKey.passwordPlaceholderInitial")
+              }}
+            </Label>
             <Input
               id="master-key"
               v-model="masterKeyInput"
@@ -225,7 +250,15 @@ onMounted(async () => {
         </div>
         <DialogFooter>
           <Button :disabled="verifyingKey" @click="handleMasterKeySubmit">
-            {{ verifyingKey ? t("masterKey.unlocking") : t("masterKey.unlock") }}
+            {{
+              verifyingKey
+                ? isMasterKeyConfigured
+                  ? t("masterKey.unlocking")
+                  : t("masterKey.saving")
+                : isMasterKeyConfigured
+                  ? t("masterKey.unlock")
+                  : t("masterKey.save")
+            }}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { SecurityService } from "@/lib/services/security-service";
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
 }>();
 
@@ -16,6 +16,26 @@ const { t } = useI18n();
 const password = ref("");
 const error = ref("");
 const isLoading = ref(false);
+const isConfigured = ref(true);
+
+const checkConfigured = async () => {
+  isConfigured.value = await SecurityService.isMasterKeyConfigured();
+};
+
+watch(
+  () => props.isOpen,
+  (newVal) => {
+    if (newVal) {
+      checkConfigured();
+    }
+  },
+);
+
+onMounted(() => {
+  if (props.isOpen) {
+    checkConfigured();
+  }
+});
 
 const unlock = async () => {
   if (!password.value) {
@@ -57,9 +77,15 @@ const unlock = async () => {
     class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
   >
     <div class="w-full max-w-sm rounded-lg border bg-card p-6 shadow-lg">
-      <h2 class="text-lg font-semibold mb-2">{{ t("masterKey.title") }}</h2>
+      <h2 class="text-lg font-semibold mb-2">
+        {{ isConfigured ? t("masterKey.title") : t("masterKey.titleInitial") }}
+      </h2>
       <p class="text-sm text-muted-foreground mb-4">
-        {{ t("masterKey.description") }}
+        {{
+          isConfigured
+            ? t("masterKey.description")
+            : t("masterKey.descriptionInitial")
+        }}
       </p>
 
       <div class="space-y-4">
@@ -67,7 +93,11 @@ const unlock = async () => {
           <input
             v-model="password"
             type="password"
-            :placeholder="t('masterKey.passwordPlaceholder')"
+            :placeholder="
+              isConfigured
+                ? t('masterKey.passwordPlaceholder')
+                : t('masterKey.passwordPlaceholderInitial')
+            "
             class="w-full rounded-md border bg-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             @keyup.enter="unlock"
           />
@@ -89,7 +119,15 @@ const unlock = async () => {
             class="rounded bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             @click="unlock"
           >
-            {{ isLoading ? t("masterKey.unlocking") : t("masterKey.unlock") }}
+            {{
+              isLoading
+                ? isConfigured
+                  ? t("masterKey.unlocking")
+                  : t("masterKey.saving")
+                : isConfigured
+                  ? t("masterKey.unlock")
+                  : t("masterKey.save")
+            }}
           </button>
         </div>
       </div>
