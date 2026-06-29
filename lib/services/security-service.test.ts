@@ -118,4 +118,142 @@ describe("SecurityService", () => {
       expect(result).toBe(false);
     });
   });
+
+  describe("validateKey", () => {
+    it("should return true if master key is not configured", async () => {
+      vi.spyOn(storage, "getItem").mockResolvedValue(null);
+      mockGetAll.mockResolvedValue([]);
+      const key = await SecurityService.deriveKey("password");
+      const result = await SecurityService.validateKey(key);
+      expect(result).toBe(true);
+    });
+
+    it("should validate correctly using verification block when it exists", async () => {
+      vi.spyOn(storage, "getItem").mockResolvedValue("true");
+      let storedVerification: string | null = null;
+      vi.spyOn(storage, "setItem").mockImplementation(async (key, value) => {
+        if (key === "local:flowser_verification") {
+          storedVerification = value as string;
+        }
+      });
+
+      const correctKey = await SecurityService.deriveKey("correct-password");
+      const incorrectKey = await SecurityService.deriveKey("wrong-password");
+
+      await SecurityService.saveToSession(correctKey);
+      expect(storedVerification).not.toBeNull();
+
+      vi.spyOn(storage, "getItem").mockImplementation(async (key) => {
+        if (key === "local:flowser_master_key_set") return "true";
+        if (key === "local:flowser_verification") return storedVerification;
+        return null;
+      });
+
+      expect(await SecurityService.validateKey(correctKey)).toBe(true);
+      expect(await SecurityService.validateKey(incorrectKey)).toBe(false);
+    });
+
+    it("should migrate and return true using credentials when verification block is missing", async () => {
+      vi.spyOn(storage, "getItem").mockImplementation(async (key) => {
+        if (key === "local:flowser_master_key_set") return "true";
+        return null;
+      });
+
+      const key = await SecurityService.deriveKey("password");
+      SecurityService.setMasterKey(key);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv },
+        key,
+        new TextEncoder().encode("some-credential-data"),
+      );
+
+      const b64 = (buf: Uint8Array) => {
+        let binary = "";
+        for (let i = 0; i < buf.byteLength; i++) {
+          binary += String.fromCharCode(buf[i]);
+        }
+        return btoa(binary);
+      };
+
+      mockGetAll.mockResolvedValue([
+        {
+          id: "1",
+          name: "cred",
+          encryptedData: b64(new Uint8Array(encrypted)),
+          iv: b64(iv),
+        },
+      ]);
+
+      let savedVerification = false;
+      vi.spyOn(storage, "setItem").mockImplementation(async (key) => {
+        if (key === "local:flowser_verification") {
+          savedVerification = true;
+        }
+      });
+
+      const result = await SecurityService.validateKey(key);
+      expect(result).toBe(true);
+      expect(savedVerification).toBe(true);
+    });
+
+    it("should return false using credentials when verification block is missing and key is wrong", async () => {
+      vi.spyOn(storage, "getItem").mockImplementation(async (key) => {
+        if (key === "local:flowser_master_key_set") return "true";
+        return null;
+      });
+
+      const key = await SecurityService.deriveKey("password");
+      const wrongKey = await SecurityService.deriveKey("wrong-password");
+
+      SecurityService.setMasterKey(key);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv },
+        key,
+        new TextEncoder().encode("some-credential-data"),
+      );
+
+      const b64 = (buf: Uint8Array) => {
+        let binary = "";
+        for (let i = 0; i < buf.byteLength; i++) {
+          binary += String.fromCharCode(buf[i]);
+        }
+        return btoa(binary);
+      };
+
+      mockGetAll.mockResolvedValue([
+        {
+          id: "1",
+          name: "cred",
+          encryptedData: b64(new Uint8Array(encrypted)),
+          iv: b64(iv),
+        },
+      ]);
+
+      const result = await SecurityService.validateKey(wrongKey);
+      expect(result).toBe(false);
+    });
+
+    it("should return true and save verification block in legacy case where configured is true but no credentials exist", async () => {
+      vi.spyOn(storage, "getItem").mockImplementation(async (key) => {
+        if (key === "local:flowser_master_key_set") return "true";
+        return null;
+      });
+
+      mockGetAll.mockResolvedValue([]);
+
+      const key = await SecurityService.deriveKey("password");
+      let savedVerification = false;
+      vi.spyOn(storage, "setItem").mockImplementation(async (key) => {
+        if (key === "local:flowser_verification") {
+          savedVerification = true;
+        }
+      });
+
+      const result = await SecurityService.validateKey(key);
+      expect(result).toBe(true);
+      expect(savedVerification).toBe(true);
+    });
+  });
 });

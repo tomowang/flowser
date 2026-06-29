@@ -4,6 +4,7 @@ import { dbPromise } from "../db";
 
 export class SecurityService {
   private static masterKey: CryptoKey | null = null;
+  private static readonly VERIFICATION_PLAINTEXT = "flowser-validation-string";
 
   /**
    * Derives a master key from the password using PBKDF2.
@@ -160,22 +161,69 @@ export class SecurityService {
   }
 
   /**
-   * Validates the master key by attempting to decrypt the first available credential.
-   * Returns true if no credentials exist or if decryption succeeds.
+   * Validates the master key.
+   * If there is a stored verification block, it decrypts and verifies it.
+   * Otherwise, it falls back to decrypting the first available credential in the DB.
+   * If no credentials exist and no verification block exists, it creates the verification block (legacy migration).
    */
   static async validateKey(key: CryptoKey): Promise<boolean> {
+    const isConfigured = await this.isMasterKeyConfigured();
+    if (!isConfigured) return true;
+
+    try {
+      const verificationStr = await storage.getItem<string>("local:flowser_verification");
+      if (verificationStr) {
+        const { iv, data } = JSON.parse(verificationStr);
+        const decrypted = await this.decryptWithKey(data, iv, key);
+        return decrypted === this.VERIFICATION_PLAINTEXT;
+      }
+    } catch {
+      return false;
+    }
+
     const db = await dbPromise;
     const all = await db.getAll("credentials");
-    if (all.length === 0) return true;
+    if (all.length === 0) {
+      try {
+        await this.saveVerificationBlock(key);
+        return true;
+      } catch {
+        return false;
+      }
+    }
 
     // Use the first one to validate
     const cred = all[0];
     try {
       await this.decryptWithKey(cred.encryptedData, cred.iv, key);
+      // Migration: save verification block now that we successfully validated the key
+      await this.saveVerificationBlock(key);
       return true;
     } catch {
       return false;
     }
+  }
+
+  private static async saveVerificationBlock(key: CryptoKey): Promise<void> {
+    const encoder = new TextEncoder();
+    const encoded = encoder.encode(this.VERIFICATION_PLAINTEXT);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encryptedContent = await crypto.subtle.encrypt(
+      {
+        name: "AES-GCM",
+        iv: iv,
+      },
+      key,
+      encoded,
+    );
+    const verificationData = {
+      iv: this.bufferToBase64(iv),
+      data: this.bufferToBase64(new Uint8Array(encryptedContent)),
+    };
+    await storage.setItem(
+      "local:flowser_verification",
+      JSON.stringify(verificationData),
+    );
   }
 
   // --- Helpers ---
@@ -206,6 +254,9 @@ export class SecurityService {
 
     // Save flag indicating master key is configured
     await storage.setItem("local:flowser_master_key_set", "true");
+
+    // Save verification block
+    await this.saveVerificationBlock(key);
 
     // Use background script to securely wrap and store the key in storage.session
     // This provides "Double Wrapping" protection.
