@@ -1,8 +1,17 @@
 # Flowser
 
+![Vue](https://img.shields.io/badge/Made_with-Vue-blue)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+![GitHub Release](https://img.shields.io/github/v/release/tomowang/flowser)
+
+[![Chrome Web Store](https://img.shields.io/badge/Google_chrome-4285F4?style=for-the-badge&logo=Google-chrome&logoColor=white)](https://chromewebstore.google.com/detail/flowser/odmicdckhpklbjccdjceodllkalodedi)
+
+
 <img src="assets/logo.svg" alt="flowser" width="100"/>
 
 Flowser is a browser extension for automating web workflows with AI. It brings visual workflow automation to your browser, allowing you to create complex automations with ease.
+
+![Marquee Promotional Tile](./store/promo-tile-marquee.svg)
 
 ## Features
 
