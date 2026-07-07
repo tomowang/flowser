@@ -14,7 +14,7 @@ import {
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import ExecutionPanel from "@/components/editor/execution/ExecutionPanel.vue";
 import { Button } from "@/components/ui/button";
-import { Trash2, Eye, RefreshCcw } from "lucide-vue-next";
+import { Trash2, Eye, RefreshCcw } from "@lucide/vue";
 
 const { t } = useI18n();
 const executions = ref<IWorkflowExecutionResult[]>([]);

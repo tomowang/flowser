@@ -4,7 +4,7 @@ import {
   INodeExecutionData,
   ISupplyDataFunctions,
 } from "../../types";
-import { Bot } from "lucide-vue-next";
+import { Bot } from "@lucide/vue";
 
 interface IConnectedNode {
   id: string;

@@ -5,7 +5,7 @@ import { type Node } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
 import { CredentialService } from "@/lib/services/credential-service";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-vue-next";
+import { Plus } from "@lucide/vue";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
 import CredentialIcon from "@/components/editor/CredentialIcon.vue";
 import { getCredentialType } from "@/lib/credentials";

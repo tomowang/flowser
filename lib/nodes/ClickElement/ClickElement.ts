@@ -1,6 +1,6 @@
 import { browser } from "#imports";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
-import { MousePointerClick } from "lucide-vue-next";
+import { MousePointerClick } from "@lucide/vue";
 
 export const ClickElement: INodeType = {
   description: {

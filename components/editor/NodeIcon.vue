@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, type Component } from "vue";
-import { Plus } from "lucide-vue-next";
+import { Plus } from "@lucide/vue";
 import { getNodeIconContent } from "@/lib/nodes/icons";
 
 interface Props {

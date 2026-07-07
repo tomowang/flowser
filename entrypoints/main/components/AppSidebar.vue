@@ -21,7 +21,7 @@ import {
   History,
   Settings,
   Database,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import { RouterLink } from "vue-router";
 import { computed } from "vue";
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, type Component } from "vue";
-import { Key } from "lucide-vue-next";
+import { Key } from "@lucide/vue";
 import { getCredentialIconContent } from "@/lib/credentials/icons";
 
 interface Props {

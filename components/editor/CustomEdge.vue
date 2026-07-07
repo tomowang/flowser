@@ -9,7 +9,7 @@ import {
   useVueFlow,
   Position,
 } from "@vue-flow/core";
-import { Trash2 } from "lucide-vue-next";
+import { Trash2 } from "@lucide/vue";
 
 const props = defineProps<EdgeProps>();
 

@@ -1,5 +1,5 @@
 import { INodeType } from "../../types";
-import { RefreshCw } from "lucide-vue-next";
+import { RefreshCw } from "@lucide/vue";
 
 export const TabUpdated: INodeType = {
   description: {

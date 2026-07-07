@@ -2,7 +2,7 @@
 import { IWorkflowExecutionResult } from "@/lib/types";
 import { ref, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
+import { X, ChevronDown, ChevronUp } from "@lucide/vue";
 import ExecutionNodeList from "./ExecutionNodeList.vue";
 import ExecutionNodeDetail from "./ExecutionNodeDetail.vue";
 

@@ -1,5 +1,5 @@
 import { INodeType } from "../../types";
-import { MousePointerClick } from "lucide-vue-next";
+import { MousePointerClick } from "@lucide/vue";
 
 export const ManualTrigger: INodeType = {
   description: {

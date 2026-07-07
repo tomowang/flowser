@@ -1,5 +1,5 @@
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
-import { Calculator } from "lucide-vue-next";
+import { Calculator } from "@lucide/vue";
 
 interface IFieldDefinition {
   name: string;

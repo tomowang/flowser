@@ -1,5 +1,5 @@
 import { INodeType, INodeExecutionData } from "../../types";
-import { Clock } from "lucide-vue-next";
+import { Clock } from "@lucide/vue";
 
 export const Wait: INodeType = {
   description: {

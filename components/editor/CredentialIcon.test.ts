@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import CredentialIcon from './CredentialIcon.vue';
-import { Key, User } from 'lucide-vue-next';
+import { Key, User } from '@lucide/vue';
 
 vi.mock('@/lib/credentials/icons', () => ({
   getCredentialIconContent: (icon: string) => {

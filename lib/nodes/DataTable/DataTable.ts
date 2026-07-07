@@ -1,4 +1,4 @@
-import { Database } from "lucide-vue-next";
+import { Database } from "@lucide/vue";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
 import { DataTableService } from "../../services/data-table-service";
 

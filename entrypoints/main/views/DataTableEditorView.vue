@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Plus, ArrowLeft, Settings, Database, GripVertical } from "lucide-vue-next";
+import { Trash2, Plus, ArrowLeft, Settings, Database, GripVertical } from "@lucide/vue";
 import { toast } from "vue-sonner";
 import draggable from "vuedraggable";
 

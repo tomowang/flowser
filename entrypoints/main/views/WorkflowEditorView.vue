@@ -46,7 +46,7 @@ import {
   Undo2,
   Redo2,
   Plus,
-} from "lucide-vue-next"; // Icons
+} from "@lucide/vue"; // Icons
 import { Spinner } from "@/components/ui/spinner";
 import { useMagicKeys, useEventListener } from "@vueuse/core";
 import {

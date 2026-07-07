@@ -3,7 +3,7 @@ import { computed, ref, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import { Handle, Position, useVueFlow } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
-import { Trash2, AlertTriangle, Plus, Play } from "lucide-vue-next";
+import { Trash2, AlertTriangle, Plus, Play } from "@lucide/vue";
 import { validateNode } from "@/lib/utils/validation";
 import { IWorkflowNode } from "@/lib/types";
 import NodeIcon from "./NodeIcon.vue";

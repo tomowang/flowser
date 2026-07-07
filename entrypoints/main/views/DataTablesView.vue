@@ -20,7 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Table } from "lucide-vue-next";
+import { Plus, Trash2, Table } from "@lucide/vue";
 import { toast } from "vue-sonner";
 import CardAction from "@/components/ui/card/CardAction.vue";
 import CardContent from "@/components/ui/card/CardContent.vue";

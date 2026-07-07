@@ -47,7 +47,7 @@
     "codemirror": "^6.0.2",
     "cron-parser": "^5.6.0",
     "idb": "^8.0.3",
-    "lucide-vue-next": "^1.0.0",
+    "@lucide/vue": "^1.0.0",
     "quickjs-emscripten": "^0.32.0",
     "reka-ui": "^2.10.0",
     "tailwind-merge": "^3.6.0",

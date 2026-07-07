@@ -1,6 +1,6 @@
 import { browser } from "#imports";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
-import { FileText } from "lucide-vue-next";
+import { FileText } from "@lucide/vue";
 
 export const FetchContent: INodeType = {
   description: {

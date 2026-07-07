@@ -1,6 +1,6 @@
 import { browser } from "#imports";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
-import { AppWindow } from "lucide-vue-next";
+import { AppWindow } from "@lucide/vue";
 
 export const WindowQuery: INodeType = {
   description: {

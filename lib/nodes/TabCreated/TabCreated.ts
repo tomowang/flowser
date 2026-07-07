@@ -1,5 +1,5 @@
 import { INodeType } from "../../types";
-import { CopyPlus } from "lucide-vue-next";
+import { CopyPlus } from "@lucide/vue";
 
 export const TabCreated: INodeType = {
   description: {

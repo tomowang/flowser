@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { IWorkflow } from "@/lib/types";
-import { MoreVertical, Play, Trash2, Power } from "lucide-vue-next";
+import { MoreVertical, Play, Trash2, Power } from "@lucide/vue";
 import {
   DropdownMenu,
   DropdownMenuContent,

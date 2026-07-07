@@ -1,6 +1,6 @@
 import { getQuickJS } from "../../services/quickjs";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
-import { Code2 } from "lucide-vue-next";
+import { Code2 } from "@lucide/vue";
 
 export const Code: INodeType = {
   description: {

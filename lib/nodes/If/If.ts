@@ -7,7 +7,7 @@ import {
   CheckSquare,
   List,
   Box,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 
 interface Condition {
   value: unknown;

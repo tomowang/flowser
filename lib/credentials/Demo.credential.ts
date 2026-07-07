@@ -1,5 +1,5 @@
 import type { ICredentialType } from "../types";
-import { FlaskConical } from "lucide-vue-next";
+import { FlaskConical } from "@lucide/vue";
 
 export const DemoCredential: ICredentialType = {
   name: "demo_credential",

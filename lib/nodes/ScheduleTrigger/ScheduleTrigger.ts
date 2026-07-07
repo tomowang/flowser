@@ -1,5 +1,5 @@
 import { INodeType, INodeExecutionData, IExecuteFunctions } from "../../types";
-import { Clock } from "lucide-vue-next";
+import { Clock } from "@lucide/vue";
 
 export const ScheduleTrigger: INodeType = {
   description: {

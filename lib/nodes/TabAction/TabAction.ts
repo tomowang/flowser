@@ -1,6 +1,6 @@
 import { browser } from "#imports";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
-import { Layers } from "lucide-vue-next";
+import { Layers } from "@lucide/vue";
 
 export const TabAction: INodeType = {
   description: {

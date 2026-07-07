@@ -3,7 +3,7 @@ import { mount } from "@vue/test-utils";
 import NodeDelegate from "./NodeDelegate.vue";
 import { i18n } from "@/lib/i18n";
 import { Registry } from "@/lib/nodes/registry";
-import { Plus } from "lucide-vue-next";
+import { Plus } from "@lucide/vue";
 import { INodeType } from "@/lib/types";
 
 // Mock @vue-flow/core

@@ -22,7 +22,7 @@ import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import type { IWorkflowExecutionResult } from "@/lib/types";
 import { Registry } from "@/lib/nodes/registry";
-import { Plus, Play } from "lucide-vue-next";
+import { Plus, Play } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import NodeIcon from "./NodeIcon.vue";
 

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Edit } from "lucide-vue-next";
+import { Plus, Trash2, Edit } from "@lucide/vue";
 import { CredentialService } from "@/lib/services/credential-service";
 import { SecurityService } from "@/lib/services/security-service";
 import { ICredential } from "@/lib/types";

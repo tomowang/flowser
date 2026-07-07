@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IExecutionNodeResult } from "@/lib/types";
 import { useI18n } from "vue-i18n";
-import { Check, X, Clock, Loader2 } from "lucide-vue-next";
+import { Check, X, Clock, Loader2 } from "@lucide/vue";
 import { computed } from "vue";
 
 const props = defineProps<{

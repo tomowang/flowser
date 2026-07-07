@@ -1,5 +1,5 @@
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
-import { Info } from "lucide-vue-next";
+import { Info } from "@lucide/vue";
 
 export const TestNode: INodeType = {
   description: {

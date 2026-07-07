@@ -6,7 +6,7 @@ import { WorkflowService } from "@/lib/services/workflow-service";
 import { SecurityService } from "@/lib/services/security-service";
 import { MessageType } from "@/lib/messages";
 import { IWorkflow } from "@/lib/types";
-import { Search, ExternalLink } from "lucide-vue-next";
+import { Search, ExternalLink } from "@lucide/vue";
 import WorkflowItem from "./components/WorkflowItem.vue";
 import { Input } from "@/components/ui/input";
 import { toast } from "vue-sonner";

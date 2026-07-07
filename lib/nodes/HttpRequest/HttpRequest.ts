@@ -1,7 +1,7 @@
 import { browser } from "#imports";
 import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
 import { MessageType } from "../../messages";
-import { Globe } from "lucide-vue-next";
+import { Globe } from "@lucide/vue";
 
 export const HttpRequest: INodeType = {
   description: {

@@ -31,7 +31,7 @@ import {
   Clock,
   FileUp,
   Play,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import { toast } from "vue-sonner";
 import CardAction from "@/components/ui/card/CardAction.vue";
 import logoUrl from "@/assets/logo.svg";
