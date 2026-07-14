@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { ExecutionService } from "@/lib/services/execution-service";
-import { IWorkflowExecutionResult } from "@/lib/types";
+import { WorkflowService } from "@/lib/services/workflow-service";
+import { IWorkflow, IWorkflowExecutionResult } from "@/lib/types";
 import {
   Table,
   TableBody,
@@ -12,18 +13,75 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationFirst,
+  PaginationItem,
+  PaginationLast,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import ExecutionPanel from "@/components/editor/execution/ExecutionPanel.vue";
 import { Button } from "@/components/ui/button";
 import { Trash2, Eye, RefreshCcw } from "@lucide/vue";
 
 const { t } = useI18n();
 const executions = ref<IWorkflowExecutionResult[]>([]);
+const workflows = ref<IWorkflow[]>([]);
 const selectedExecution = ref<IWorkflowExecutionResult | null>(null);
 const isSheetOpen = ref(false);
+
+const statusFilter = ref("all");
+const workflowFilter = ref("all");
+const currentPage = ref(1);
+const pageSize = 10;
 
 const loadExecutions = async () => {
   executions.value = await ExecutionService.getExecutions();
 };
+
+const loadWorkflows = async () => {
+  workflows.value = await WorkflowService.getAllWorkflows();
+};
+
+const filteredExecutions = computed(() => {
+  return executions.value.filter((exec) => {
+    const matchesStatus =
+      statusFilter.value === "all" || exec.status === statusFilter.value;
+    const matchesWorkflow =
+      workflowFilter.value === "all" ||
+      exec.workflowId === workflowFilter.value;
+    return matchesStatus && matchesWorkflow;
+  });
+});
+
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredExecutions.value.length / pageSize)),
+);
+
+const paginatedExecutions = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  return filteredExecutions.value.slice(start, start + pageSize);
+});
+
+watch([statusFilter, workflowFilter], () => {
+  currentPage.value = 1;
+});
+
+watch(totalPages, (total) => {
+  if (currentPage.value > total) {
+    currentPage.value = total;
+  }
+});
 
 const deleteExecution = async (id: string) => {
   if (confirm(t("executions.deleteConfirm"))) {
@@ -47,6 +105,7 @@ const formatDate = (ts: number) => {
 
 onMounted(() => {
   loadExecutions();
+  loadWorkflows();
 });
 </script>
 
@@ -58,6 +117,35 @@ onMounted(() => {
         <RefreshCcw class="w-4 h-4 mr-2" />
         {{ t("common.refresh") }}
       </Button>
+    </div>
+
+    <div class="flex items-center gap-3 shrink-0">
+      <Select v-model="statusFilter">
+        <SelectTrigger class="w-[160px]">
+          <SelectValue :placeholder="t('executions.status')" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{{ t("executions.allStatuses") }}</SelectItem>
+          <SelectItem value="success">{{ t("executions.success") }}</SelectItem>
+          <SelectItem value="error">{{ t("executions.error") }}</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <Select v-model="workflowFilter">
+        <SelectTrigger class="w-[220px]">
+          <SelectValue :placeholder="t('executions.workflow')" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{{ t("executions.allWorkflows") }}</SelectItem>
+          <SelectItem
+            v-for="workflow in workflows"
+            :key="workflow.id"
+            :value="workflow.id"
+          >
+            {{ workflow.name }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
     </div>
 
     <div class="border rounded-md flex-1 overflow-auto bg-card">
@@ -72,7 +160,7 @@ onMounted(() => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="exec in executions" :key="exec.id">
+          <TableRow v-for="exec in paginatedExecutions" :key="exec.id">
             <TableCell>
               <div class="flex items-center gap-2">
                 <span
@@ -115,7 +203,7 @@ onMounted(() => {
               </div>
             </TableCell>
           </TableRow>
-          <TableRow v-if="executions.length === 0">
+          <TableRow v-if="filteredExecutions.length === 0">
             <TableCell
               colspan="5"
               class="text-center h-24 text-muted-foreground"
@@ -125,6 +213,40 @@ onMounted(() => {
           </TableRow>
         </TableBody>
       </Table>
+    </div>
+
+    <div
+      v-if="filteredExecutions.length > 0"
+      class="flex items-center justify-between shrink-0"
+    >
+      <span class="text-sm text-muted-foreground shrink-0 whitespace-nowrap">
+        {{ t("executions.pageInfo", { current: currentPage, total: totalPages }) }}
+      </span>
+      <Pagination
+        v-model:page="currentPage"
+        :total="filteredExecutions.length"
+        :items-per-page="pageSize"
+        :sibling-count="1"
+        show-edges
+      >
+        <PaginationContent v-slot="{ items }">
+          <PaginationFirst />
+          <PaginationPrevious />
+          <template v-for="(item, index) in items">
+            <PaginationItem
+              v-if="item.type === 'page'"
+              :key="index"
+              :value="item.value"
+              :is-active="item.value === currentPage"
+            >
+              {{ item.value }}
+            </PaginationItem>
+            <PaginationEllipsis v-else :key="`ellipsis-${index}`" />
+          </template>
+          <PaginationNext />
+          <PaginationLast />
+        </PaginationContent>
+      </Pagination>
     </div>
 
     <Sheet v-model:open="isSheetOpen">
