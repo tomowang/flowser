@@ -668,6 +668,50 @@
         }
       }
     },
+    "tabGroupAction": {
+      "displayName": "标签组操作",
+      "description": "对浏览器标签组执行操作",
+      "properties": {
+        "action": {
+          "displayName": "操作类型",
+          "description": "要执行的操作",
+          "options": {
+            "create": "创建"
+          }
+        },
+        "tabIds": {
+          "displayName": "标签页 ID",
+          "description": "要加入新标签组的标签页 ID，多个 ID 用逗号分隔"
+        },
+        "windowId": {
+          "displayName": "窗口 ID",
+          "description": "创建标签组所在的窗口 ID"
+        },
+        "title": {
+          "displayName": "标题",
+          "description": "新标签组的标题"
+        },
+        "color": {
+          "displayName": "颜色",
+          "description": "新标签组的颜色",
+          "options": {
+            "grey": "灰色",
+            "blue": "蓝色",
+            "red": "红色",
+            "yellow": "黄色",
+            "green": "绿色",
+            "pink": "粉色",
+            "purple": "紫色",
+            "cyan": "青色",
+            "orange": "橙色"
+          }
+        },
+        "collapsed": {
+          "displayName": "折叠",
+          "description": "新标签组是否折叠"
+        }
+      }
+    },
     "if": {
       "displayName": "条件判断 (If)",
       "description": "根据条件分支工作流",

@@ -668,6 +668,50 @@
         }
       }
     },
+    "tabGroupAction": {
+      "displayName": "Tab Group Action",
+      "description": "Perform actions on browser tab groups",
+      "properties": {
+        "action": {
+          "displayName": "Action",
+          "description": "The action to perform",
+          "options": {
+            "create": "Create"
+          }
+        },
+        "tabIds": {
+          "displayName": "Tab IDs",
+          "description": "The ID(s) of the tab(s) to add to the new group. Separated by comma for multiple IDs."
+        },
+        "windowId": {
+          "displayName": "Window ID",
+          "description": "The ID of the window to create the group in"
+        },
+        "title": {
+          "displayName": "Title",
+          "description": "The title to give the new tab group"
+        },
+        "color": {
+          "displayName": "Color",
+          "description": "The color of the new tab group",
+          "options": {
+            "grey": "Grey",
+            "blue": "Blue",
+            "red": "Red",
+            "yellow": "Yellow",
+            "green": "Green",
+            "pink": "Pink",
+            "purple": "Purple",
+            "cyan": "Cyan",
+            "orange": "Orange"
+          }
+        },
+        "collapsed": {
+          "displayName": "Collapsed",
+          "description": "Whether the new tab group should be collapsed"
+        }
+      }
+    },
     "if": {
       "displayName": "If",
       "description": "Branch the workflow based on a condition",

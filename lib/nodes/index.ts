@@ -21,4 +21,5 @@ export * from "./ScheduleTrigger/ScheduleTrigger";
 export * from "./EditFields/EditFields";
 export * from "./DataTable/DataTable";
 export * from "./TabGroupQuery/TabGroupQuery";
+export * from "./TabGroupAction/TabGroupAction";
 export * from "./If/If";

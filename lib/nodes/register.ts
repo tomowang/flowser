@@ -11,6 +11,7 @@ import {
   TabQuery,
   TabGroupQuery,
   TabAction,
+  TabGroupAction,
   TabCreated,
   TabUpdated,
   ClickElement,
@@ -38,6 +39,7 @@ Registry.register(Code);
 Registry.register(TabQuery);
 Registry.register(TabGroupQuery);
 Registry.register(TabAction);
+Registry.register(TabGroupAction);
 Registry.register(TabCreated);
 Registry.register(TabUpdated);
 Registry.register(ClickElement);
