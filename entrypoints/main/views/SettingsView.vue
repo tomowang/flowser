@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { browser } from "wxt/browser";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import { supportedLocales, setLocale, getCurrentLocale } from "@/lib/i18n";
 
 const { t } = useI18n();
 const currentLocale = ref(getCurrentLocale());
+const appVersion = browser.runtime.getManifest().version;
 
 watch(currentLocale, (newLocale) => {
   setLocale(newLocale);
@@ -44,6 +46,13 @@ watch(currentLocale, (newLocale) => {
             </SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <Label>{{ t("settings.about") }}</Label>
+        <p class="text-sm text-muted-foreground">
+          {{ t("settings.version", { version: appVersion }) }}
+        </p>
       </div>
     </div>
   </div>

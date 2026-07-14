@@ -46,7 +46,9 @@
     "title": "Settings",
     "description": "Application settings.",
     "language": "Language",
-    "languageDescription": "Select your preferred display language."
+    "languageDescription": "Select your preferred display language.",
+    "about": "About",
+    "version": "Version: {version}"
   },
   "workflows": {
     "title": "Workflows",

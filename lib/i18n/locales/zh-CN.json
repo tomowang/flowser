@@ -46,7 +46,9 @@
     "title": "设置",
     "description": "应用程序设置。",
     "language": "语言",
-    "languageDescription": "选择您偏好的显示语言。"
+    "languageDescription": "选择您偏好的显示语言。",
+    "about": "关于",
+    "version": "版本：{version}"
   },
   "workflows": {
     "title": "工作流",
