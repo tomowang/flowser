@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import type { Node, Edge } from "@vue-flow/core";
 import NodeInspector from "@/components/editor/NodeInspector.vue";
+import NodeInputSchema from "@/components/editor/NodeInputSchema.vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import type { IWorkflowExecutionResult } from "@/lib/types";
@@ -152,38 +153,74 @@ const defaultUpstreamNodeId = computed(() => {
 
 const selectedUpstreamNodeId = ref<string | null>(null);
 
-// Initialize selected node
-watch(() => props.isOpen, (newVal) => {
-  if (newVal) {
-    selectedUpstreamNodeId.value = defaultUpstreamNodeId.value;
-  }
-}, { immediate: true });
+// Schema | JSON switcher for the input panel
+const inputViewMode = ref<"schema" | "json">("schema");
 
-// Also update if execution result changes while open
-watch(defaultUpstreamNodeId, (newVal) => {
-  if (props.isOpen && !selectedUpstreamNodeId.value && newVal) {
-    selectedUpstreamNodeId.value = newVal;
-  }
-});
-
-// Dropdown options sorted by execution time if available
+// Executed upstream nodes sorted by execution time desc (most recent first).
+// Nodes without an execution result are omitted entirely.
 const dropdownOptions = computed(() => {
-  const options = upstreamNodes.value.map(node => {
+  const options = upstreamNodes.value.flatMap(node => {
     const result = props.executionResult?.nodeExecutionResults.find(r => r.nodeId === node.id);
+    if (!result) return [];
     let label = node.data.label;
     if (!label) {
       const nodeTypeName = node.data.nodeType;
       const key = `nodes.${nodeTypeName}.displayName`;
       label = te(key) ? t(key) : nodeTypeName;
     }
-    return {
+    return [{
       id: node.id,
       label,
-      endTime: result?.endTime || 0
+      nodeTypeName: node.data.nodeType as string,
+      endTime: result.endTime || 0
+    }];
+  });
+
+  return options.sort((a, b) => b.endTime - a.endTime);
+});
+
+// Default selection: most recent immediate predecessor if executed,
+// otherwise the most recently executed upstream node
+const initialUpstreamNodeId = computed(() => {
+  const id = defaultUpstreamNodeId.value;
+  if (id && dropdownOptions.value.some((o) => o.id === id)) return id;
+  return dropdownOptions.value[0]?.id ?? null;
+});
+
+// Initialize selected node and view mode
+watch(() => props.isOpen, (newVal) => {
+  if (newVal) {
+    inputViewMode.value = "schema";
+    selectedUpstreamNodeId.value = initialUpstreamNodeId.value;
+  }
+}, { immediate: true });
+
+// Also update if execution result changes while open
+watch(initialUpstreamNodeId, (newVal) => {
+  if (
+    props.isOpen &&
+    newVal &&
+    (!selectedUpstreamNodeId.value ||
+      !dropdownOptions.value.some((o) => o.id === selectedUpstreamNodeId.value))
+  ) {
+    selectedUpstreamNodeId.value = newVal;
+  }
+});
+
+// Entries for the Schema view: node identity plus the first output item as sample
+const schemaEntries = computed(() => {
+  return dropdownOptions.value.map((opt) => {
+    const result = props.executionResult?.nodeExecutionResults.find(
+      (r) => r.nodeId === opt.id,
+    );
+    return {
+      id: opt.id,
+      label: opt.label,
+      icon: Registry.get(opt.nodeTypeName)?.description.icon,
+      nodeTypeName: opt.nodeTypeName,
+      sample: result?.outputData[0]?.json ?? null,
     };
   });
-  
-  return options.sort((a, b) => b.endTime - a.endTime);
 });
 
 // Display data for selected upstream node
@@ -253,35 +290,72 @@ const outputData = computed(() => {
         >
           <div class="p-3 border-b flex items-center justify-between bg-muted/30 min-h-[49px]">
             <span class="font-medium text-sm">{{ t("workflowEditor.inputData") }}</span>
-            <Select v-if="dropdownOptions.length > 0" v-model="selectedUpstreamNodeId">
-              <SelectTrigger class="h-8 w-[160px] text-xs">
-                <SelectValue :placeholder="t('workflowEditor.selectNode')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem 
-                  v-for="opt in dropdownOptions" 
-                  :key="opt.id" 
-                  :value="opt.id"
-                >
-                  {{ opt.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div
+              v-if="dropdownOptions.length > 0"
+              class="flex items-center rounded-md bg-muted p-0.5 text-xs"
+            >
+              <button
+                class="px-2 py-1 rounded-sm transition-colors"
+                :class="
+                  inputViewMode === 'schema'
+                    ? 'bg-background shadow-sm font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                "
+                @click="inputViewMode = 'schema'"
+              >
+                {{ t("workflowEditor.schema") }}
+              </button>
+              <button
+                class="px-2 py-1 rounded-sm transition-colors"
+                :class="
+                  inputViewMode === 'json'
+                    ? 'bg-background shadow-sm font-medium'
+                    : 'text-muted-foreground hover:text-foreground'
+                "
+                @click="inputViewMode = 'json'"
+              >
+                {{ t("workflowEditor.jsonView") }}
+              </button>
+            </div>
           </div>
           <div class="flex-1 overflow-auto p-3">
-            <div v-if="displayData && displayData.length > 0">
-              <vue-json-pretty
-                :data="displayData"
-                :deep="3"
-                :show-length="true"
+            <template v-if="dropdownOptions.length > 0">
+              <NodeInputSchema
+                v-if="inputViewMode === 'schema'"
+                :entries="schemaEntries"
               />
-            </div>
-            <div v-else-if="!executionResult" class="text-sm text-muted-foreground italic p-2">
-              {{ t("workflowEditor.noInputData") }} <br />
-              {{ t("workflowEditor.executeToSeeData") }}
-            </div>
+              <div v-else class="flex flex-col gap-2">
+                <Select v-model="selectedUpstreamNodeId">
+                  <SelectTrigger class="h-8 w-full text-xs">
+                    <SelectValue :placeholder="t('workflowEditor.selectNode')" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      v-for="opt in dropdownOptions"
+                      :key="opt.id"
+                      :value="opt.id"
+                    >
+                      {{ opt.label }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <div v-if="displayData && displayData.length > 0">
+                  <vue-json-pretty
+                    :data="displayData"
+                    :deep="3"
+                    :show-length="true"
+                  />
+                </div>
+                <div v-else class="text-sm text-muted-foreground italic p-2">
+                  {{ t("workflowEditor.noOutputDataForNode") }}
+                </div>
+              </div>
+            </template>
             <div v-else class="text-sm text-muted-foreground italic p-2">
-              {{ t("workflowEditor.noOutputDataForNode") }}
+              {{ t("workflowEditor.noInputData") }} <br />
+              <template v-if="!executionResult">
+                {{ t("workflowEditor.executeToSeeData") }}
+              </template>
             </div>
           </div>
         </div>
