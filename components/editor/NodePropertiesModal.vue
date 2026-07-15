@@ -19,6 +19,8 @@ import { Input } from "@/components/ui/input";
 import type { Node, Edge } from "@vue-flow/core";
 import NodeInspector from "@/components/editor/NodeInspector.vue";
 import NodeInputSchema from "@/components/editor/NodeInputSchema.vue";
+import SchemaTreeItem from "@/components/editor/SchemaTreeItem.vue";
+import DataViewSwitch from "@/components/editor/DataViewSwitch.vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import type { IWorkflowExecutionResult } from "@/lib/types";
@@ -153,8 +155,9 @@ const defaultUpstreamNodeId = computed(() => {
 
 const selectedUpstreamNodeId = ref<string | null>(null);
 
-// Schema | JSON switcher for the input panel
+// Schema | JSON switchers for the input and output panels
 const inputViewMode = ref<"schema" | "json">("schema");
+const outputViewMode = ref<"schema" | "json">("schema");
 
 // Executed upstream nodes sorted by execution time desc (most recent first).
 // Nodes without an execution result are omitted entirely.
@@ -191,6 +194,7 @@ const initialUpstreamNodeId = computed(() => {
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     inputViewMode.value = "schema";
+    outputViewMode.value = "schema";
     selectedUpstreamNodeId.value = initialUpstreamNodeId.value;
   }
 }, { immediate: true });
@@ -247,6 +251,11 @@ const outputData = computed(() => {
   if (!nodeExecutionData.value) return null;
   return nodeExecutionData.value.outputData.map((d) => d.json);
 });
+
+// First output item of the current node as sample for the output Schema view
+const outputSample = computed(() => {
+  return nodeExecutionData.value?.outputData[0]?.json ?? null;
+});
 </script>
 
 <template>
@@ -290,33 +299,10 @@ const outputData = computed(() => {
         >
           <div class="p-3 border-b flex items-center justify-between bg-muted/30 min-h-[49px]">
             <span class="font-medium text-sm">{{ t("workflowEditor.inputData") }}</span>
-            <div
+            <DataViewSwitch
               v-if="dropdownOptions.length > 0"
-              class="flex items-center rounded-md bg-muted p-0.5 text-xs"
-            >
-              <button
-                class="px-2 py-1 rounded-sm transition-colors"
-                :class="
-                  inputViewMode === 'schema'
-                    ? 'bg-background shadow-sm font-medium'
-                    : 'text-muted-foreground hover:text-foreground'
-                "
-                @click="inputViewMode = 'schema'"
-              >
-                {{ t("workflowEditor.schema") }}
-              </button>
-              <button
-                class="px-2 py-1 rounded-sm transition-colors"
-                :class="
-                  inputViewMode === 'json'
-                    ? 'bg-background shadow-sm font-medium'
-                    : 'text-muted-foreground hover:text-foreground'
-                "
-                @click="inputViewMode = 'json'"
-              >
-                {{ t("workflowEditor.jsonView") }}
-              </button>
-            </div>
+              v-model="inputViewMode"
+            />
           </div>
           <div class="flex-1 overflow-auto p-3">
             <template v-if="dropdownOptions.length > 0">
@@ -388,17 +374,38 @@ const outputData = computed(() => {
         <div
           class="col-span-3 border-l flex flex-col bg-muted/10 h-full overflow-hidden"
         >
-          <div class="p-3 border-b font-medium text-sm bg-muted/30 min-h-[49px] flex items-center">
-            {{ t("workflowEditor.outputData") }}
+          <div class="p-3 border-b bg-muted/30 min-h-[49px] flex items-center justify-between">
+            <span class="font-medium text-sm">{{ t("workflowEditor.outputData") }}</span>
+            <DataViewSwitch
+              v-if="outputData && outputData.length > 0"
+              v-model="outputViewMode"
+            />
           </div>
           <div class="flex-1 overflow-auto p-3">
-            <div v-if="outputData && outputData.length > 0">
+            <template v-if="outputData && outputData.length > 0">
+              <template v-if="outputViewMode === 'schema'">
+                <template
+                  v-if="outputSample && Object.keys(outputSample).length > 0"
+                >
+                  <SchemaTreeItem
+                    v-for="(val, key) in outputSample"
+                    :key="key"
+                    :name="String(key)"
+                    :value="val"
+                    :depth="0"
+                  />
+                </template>
+                <div v-else class="text-xs text-muted-foreground italic p-2">
+                  {{ t("workflowEditor.emptyNodeOutput") }}
+                </div>
+              </template>
               <vue-json-pretty
+                v-else
                 :data="outputData"
                 :deep="3"
                 :show-length="true"
               />
-            </div>
+            </template>
             <div v-else class="text-sm text-muted-foreground italic p-2">
               {{ t("workflowEditor.noOutputData") }}
             </div>
