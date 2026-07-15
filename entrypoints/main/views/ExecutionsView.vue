@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/pagination";
 import ExecutionPanel from "@/components/editor/execution/ExecutionPanel.vue";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Eye, RefreshCcw } from "@lucide/vue";
 
 const { t } = useI18n();
@@ -45,8 +46,11 @@ const workflowFilter = ref("all");
 const currentPage = ref(1);
 const pageSize = 10;
 
+const selectedIds = ref<Set<string>>(new Set());
+
 const loadExecutions = async () => {
   executions.value = await ExecutionService.getExecutions();
+  selectedIds.value = new Set();
 };
 
 const loadWorkflows = async () => {
@@ -83,9 +87,58 @@ watch(totalPages, (total) => {
   }
 });
 
+// The visible page changes the set of rows a "select all" applies to,
+// so selection is scoped to the current page and cleared whenever the
+// visible set could change (page navigation or filtering).
+watch([currentPage, statusFilter, workflowFilter], () => {
+  selectedIds.value = new Set();
+});
+
+const isRowSelected = (id: string) => selectedIds.value.has(id);
+
+const toggleRowSelected = (id: string) => {
+  const next = new Set(selectedIds.value);
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+  }
+  selectedIds.value = next;
+};
+
+const isAllOnPageSelected = computed(() => {
+  return (
+    paginatedExecutions.value.length > 0 &&
+    paginatedExecutions.value.every((exec) => selectedIds.value.has(exec.id))
+  );
+});
+
+const toggleSelectAllOnPage = () => {
+  if (isAllOnPageSelected.value) {
+    selectedIds.value = new Set();
+  } else {
+    selectedIds.value = new Set(paginatedExecutions.value.map((e) => e.id));
+  }
+};
+
 const deleteExecution = async (id: string) => {
   if (confirm(t("executions.deleteConfirm"))) {
     await ExecutionService.deleteExecution(id);
+    await loadExecutions();
+  }
+};
+
+const deleteSelectedExecutions = async () => {
+  const ids = Array.from(selectedIds.value);
+  if (ids.length === 0) {
+    return;
+  }
+  if (
+    confirm(
+      t("executions.deleteSelectedConfirm", { count: ids.length }, ids.length),
+    )
+  ) {
+    await ExecutionService.deleteExecutions(ids);
     await loadExecutions();
   }
 };
@@ -113,10 +166,24 @@ onMounted(() => {
   <div class="h-full flex flex-col p-6 space-y-4 overflow-hidden">
     <div class="flex items-center justify-between shrink-0">
       <h1 class="text-2xl font-bold">{{ t("executions.title") }}</h1>
-      <Button variant="outline" size="sm" @click="loadExecutions">
-        <RefreshCcw class="w-4 h-4 mr-2" />
-        {{ t("common.refresh") }}
-      </Button>
+      <div class="flex items-center gap-2">
+        <span v-if="selectedIds.size > 0" class="text-sm text-muted-foreground">
+          {{ t("executions.selectedCount", { count: selectedIds.size }) }}
+        </span>
+        <Button
+          v-if="selectedIds.size > 0"
+          variant="destructive"
+          size="sm"
+          @click="deleteSelectedExecutions"
+        >
+          <Trash2 class="w-4 h-4 mr-2" />
+          {{ t("executions.deleteSelected") }}
+        </Button>
+        <Button variant="outline" size="sm" @click="loadExecutions">
+          <RefreshCcw class="w-4 h-4 mr-2" />
+          {{ t("common.refresh") }}
+        </Button>
+      </div>
     </div>
 
     <div class="flex items-center gap-3 shrink-0">
@@ -136,7 +203,9 @@ onMounted(() => {
           <SelectValue :placeholder="t('executions.workflow')" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">{{ t("executions.allWorkflows") }}</SelectItem>
+          <SelectItem value="all">{{
+            t("executions.allWorkflows")
+          }}</SelectItem>
           <SelectItem
             v-for="workflow in workflows"
             :key="workflow.id"
@@ -152,6 +221,13 @@ onMounted(() => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead class="w-10">
+              <Checkbox
+                :model-value="isAllOnPageSelected"
+                :aria-label="t('executions.selectAll')"
+                @update:model-value="toggleSelectAllOnPage"
+              />
+            </TableHead>
             <TableHead>{{ t("executions.status") }}</TableHead>
             <TableHead>{{ t("executions.workflow") }}</TableHead>
             <TableHead>{{ t("executions.startTime") }}</TableHead>
@@ -162,6 +238,13 @@ onMounted(() => {
         <TableBody>
           <TableRow v-for="exec in paginatedExecutions" :key="exec.id">
             <TableCell>
+              <Checkbox
+                :model-value="isRowSelected(exec.id)"
+                :aria-label="t('executions.selectRow')"
+                @update:model-value="toggleRowSelected(exec.id)"
+              />
+            </TableCell>
+            <TableCell>
               <div class="flex items-center gap-2">
                 <span
                   class="block w-2 h-2 rounded-full"
@@ -170,7 +253,9 @@ onMounted(() => {
                   "
                 ></span>
                 <span class="capitalize text-sm">{{
-                  exec.status === 'success' ? t('executions.success') : t('executions.error')
+                  exec.status === "success"
+                    ? t("executions.success")
+                    : t("executions.error")
                 }}</span>
               </div>
             </TableCell>
@@ -205,7 +290,7 @@ onMounted(() => {
           </TableRow>
           <TableRow v-if="filteredExecutions.length === 0">
             <TableCell
-              colspan="5"
+              colspan="6"
               class="text-center h-24 text-muted-foreground"
             >
               {{ t("executions.noExecutionsFound") }}
@@ -220,7 +305,9 @@ onMounted(() => {
       class="flex items-center justify-between shrink-0"
     >
       <span class="text-sm text-muted-foreground shrink-0 whitespace-nowrap">
-        {{ t("executions.pageInfo", { current: currentPage, total: totalPages }) }}
+        {{
+          t("executions.pageInfo", { current: currentPage, total: totalPages })
+        }}
       </span>
       <Pagination
         v-model:page="currentPage"

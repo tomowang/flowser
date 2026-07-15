@@ -32,4 +32,10 @@ export class ExecutionService {
     const db = await dbPromise;
     await db.delete("executions", id);
   }
+
+  static async deleteExecutions(ids: string[]): Promise<void> {
+    const db = await dbPromise;
+    const tx = db.transaction("executions", "readwrite");
+    await Promise.all([...ids.map((id) => tx.store.delete(id)), tx.done]);
+  }
 }
