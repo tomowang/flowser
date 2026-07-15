@@ -47,6 +47,11 @@
     "description": "应用程序设置。",
     "language": "语言",
     "languageDescription": "选择您偏好的显示语言。",
+    "theme": "主题",
+    "themeDescription": "选择应用程序的颜色主题。",
+    "themeSystem": "跟随系统",
+    "themeLight": "浅色",
+    "themeDark": "深色",
     "about": "关于",
     "version": "版本：{version}"
   },

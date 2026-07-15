@@ -47,6 +47,11 @@
     "description": "Application settings.",
     "language": "Language",
     "languageDescription": "Select your preferred display language.",
+    "theme": "Theme",
+    "themeDescription": "Select the color theme for the application.",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
     "about": "About",
     "version": "Version: {version}"
   },

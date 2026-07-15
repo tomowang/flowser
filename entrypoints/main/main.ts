@@ -2,9 +2,12 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import { i18n } from "@/lib/i18n";
+import { initTheme } from "@/lib/theme";
 import "@/assets/style.css";
 import "../../lib/nodes/register";
 import "vue-sonner/style.css";
+
+initTheme();
 
 const app = createApp(App);
 app.use(router);
