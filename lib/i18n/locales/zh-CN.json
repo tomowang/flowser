@@ -459,6 +459,56 @@
         }
       }
     },
+    "formAction": {
+      "displayName": "填写表单",
+      "description": "填写页面上的表单字段（文本、下拉选择、复选框、单选按钮）",
+      "properties": {
+        "tabId": {
+          "displayName": "标签页 ID",
+          "description": "包含该表单的标签页 ID。"
+        },
+        "fields": {
+          "displayName": "字段",
+          "description": "要填写的表单字段"
+        },
+        "values": {
+          "displayName": "字段",
+          "description": ""
+        },
+        "selectorType": {
+          "displayName": "选择器类型",
+          "description": "要使用的选择器类型",
+          "options": {
+            "css": "CSS 选择器",
+            "xpath": "XPath"
+          }
+        },
+        "selector": {
+          "displayName": "选择器",
+          "description": "要填写的表单元素选择器",
+          "placeholder": "例如 #email 或 //input[@name='email']"
+        },
+        "fieldType": {
+          "displayName": "字段类型",
+          "description": "要填写的表单字段类型",
+          "options": {
+            "text": "文本 / 多行文本 / 密码",
+            "select": "下拉选择",
+            "checkbox": "复选框",
+            "radio": "单选按钮"
+          }
+        },
+        "value": {
+          "displayName": "值",
+          "description": "",
+          "placeholder": "要填写的值、要选择的选项值（多选时用逗号分隔），或单选按钮的值"
+        },
+        "checked": {
+          "displayName": "是否勾选",
+          "description": "复选框是否应被勾选"
+        }
+      }
+    },
     "windowCreate": {
       "displayName": "创建窗口",
       "description": "创建一个新窗口",

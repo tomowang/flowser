@@ -11,6 +11,7 @@ export * from "./TabAction/TabAction";
 export * from "./TabCreated/TabCreated";
 export * from "./TabUpdated/TabUpdated";
 export * from "./ClickElement/ClickElement";
+export * from "./FormAction/FormAction";
 export * from "./WindowCreate/WindowCreate";
 export * from "./WindowQuery/WindowQuery";
 export * from "./WindowClose/WindowClose";

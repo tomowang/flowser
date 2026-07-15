@@ -459,6 +459,56 @@
         }
       }
     },
+    "formAction": {
+      "displayName": "Fill Form",
+      "description": "Fill in form fields (text, select, checkbox, radio) on a page",
+      "properties": {
+        "tabId": {
+          "displayName": "Tab ID",
+          "description": "The ID of the tab containing the form."
+        },
+        "fields": {
+          "displayName": "Fields",
+          "description": "The form fields to fill"
+        },
+        "values": {
+          "displayName": "Fields",
+          "description": ""
+        },
+        "selectorType": {
+          "displayName": "Selector Type",
+          "description": "The type of selector to use",
+          "options": {
+            "css": "CSS Selector",
+            "xpath": "XPath"
+          }
+        },
+        "selector": {
+          "displayName": "Selector",
+          "description": "The selector of the form element to fill",
+          "placeholder": "e.g. #email or //input[@name='email']"
+        },
+        "fieldType": {
+          "displayName": "Field Type",
+          "description": "The type of form field to fill",
+          "options": {
+            "text": "Text / Textarea / Password",
+            "select": "Select",
+            "checkbox": "Checkbox",
+            "radio": "Radio"
+          }
+        },
+        "value": {
+          "displayName": "Value",
+          "description": "",
+          "placeholder": "Value to fill, option value(s) to select (comma-separated for multi-select), or radio value"
+        },
+        "checked": {
+          "displayName": "Checked",
+          "description": "Whether the checkbox should be checked"
+        }
+      }
+    },
     "windowCreate": {
       "displayName": "Window Create",
       "description": "Create a new window",

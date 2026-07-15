@@ -15,6 +15,7 @@ import {
   TabCreated,
   TabUpdated,
   ClickElement,
+  FormAction,
   WindowCreate,
   WindowQuery,
   WindowClose,
@@ -43,6 +44,7 @@ Registry.register(TabGroupAction);
 Registry.register(TabCreated);
 Registry.register(TabUpdated);
 Registry.register(ClickElement);
+Registry.register(FormAction);
 Registry.register(WindowCreate);
 Registry.register(WindowQuery);
 Registry.register(WindowClose);

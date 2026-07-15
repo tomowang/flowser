@@ -16,7 +16,14 @@ export default defineConfig({
   },
   manifest: {
     host_permissions: ["<all_urls>"],
-    permissions: ["storage", "tabs", "activeTab", "tabGroups", "alarms"],
+    permissions: [
+      "storage",
+      "tabs",
+      "activeTab",
+      "tabGroups",
+      "alarms",
+      "scripting",
+    ],
     content_security_policy: {
       extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
     },
