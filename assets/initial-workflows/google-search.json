@@ -1,0 +1,118 @@
+{
+  "name": "Google Search",
+  "nodes": [
+    {
+      "id": "manualTrigger-1782570987289",
+      "type": "manualTrigger",
+      "position": {
+        "x": 448,
+        "y": 400
+      },
+      "data": {
+        "label": "Manually Trigger",
+        "nodeType": "manualTrigger",
+        "name": "Manual Trigger"
+      }
+    },
+    {
+      "id": "60b433f8-b81c-4cce-9394-dca1a360a217",
+      "type": "tabAction",
+      "position": {
+        "x": 704,
+        "y": 400
+      },
+      "data": {
+        "nodeType": "tabAction",
+        "label": "New tab",
+        "action": "create",
+        "url": "https://www.google.com",
+        "active": true,
+        "pinned": false,
+        "tabIds": ""
+      }
+    },
+    {
+      "id": "89fba0f2-644a-4686-b2ef-8db60e651076",
+      "type": "formAction",
+      "position": {
+        "x": 1216,
+        "y": 400
+      },
+      "data": {
+        "nodeType": "formAction",
+        "label": "Fill Form",
+        "fields": {
+          "values": [
+            {
+              "selectorType": "css",
+              "selector": "form textarea",
+              "fieldType": "text",
+              "value": "AI",
+              "checked": true
+            }
+          ]
+        },
+        "tabId": "={{$json.id}}"
+      }
+    },
+    {
+      "id": "4552ba89-a1e1-47ae-92d5-33041a9dfaa9",
+      "type": "clickElement",
+      "position": {
+        "x": 1472,
+        "y": 400
+      },
+      "data": {
+        "nodeType": "clickElement",
+        "label": "Click Element",
+        "selectorType": "css",
+        "selector": "form input[type=\"submit\"]",
+        "multiple": false,
+        "tabId": "={{$('New tab').item.json.id}}"
+      }
+    },
+    {
+      "id": "fdd0f561-939b-4080-97e8-cf2df6dd7234",
+      "type": "wait",
+      "position": {
+        "x": 960,
+        "y": 400
+      },
+      "data": {
+        "nodeType": "wait",
+        "label": "Wait",
+        "seconds": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-manualTrigger-1782570987289-60b433f8-b81c-4cce-9394-dca1a360a217-bda4b562",
+      "source": "manualTrigger-1782570987289",
+      "target": "60b433f8-b81c-4cce-9394-dca1a360a217",
+      "sourceHandle": "main",
+      "targetHandle": "main"
+    },
+    {
+      "id": "e-89fba0f2-644a-4686-b2ef-8db60e651076-4552ba89-a1e1-47ae-92d5-33041a9dfaa9-8157a17e",
+      "source": "89fba0f2-644a-4686-b2ef-8db60e651076",
+      "target": "4552ba89-a1e1-47ae-92d5-33041a9dfaa9",
+      "sourceHandle": "main",
+      "targetHandle": "main"
+    },
+    {
+      "id": "e-60b433f8-b81c-4cce-9394-dca1a360a217-fdd0f561-939b-4080-97e8-cf2df6dd7234-e6e3c358",
+      "source": "60b433f8-b81c-4cce-9394-dca1a360a217",
+      "target": "fdd0f561-939b-4080-97e8-cf2df6dd7234",
+      "sourceHandle": "main",
+      "targetHandle": "main"
+    },
+    {
+      "id": "e-1784085293431",
+      "source": "fdd0f561-939b-4080-97e8-cf2df6dd7234",
+      "target": "89fba0f2-644a-4686-b2ef-8db60e651076",
+      "sourceHandle": "main",
+      "targetHandle": "main"
+    }
+  ]
+}
