@@ -26,6 +26,7 @@ import {
   EditFields,
   DataTable,
   If,
+  Placeholder,
 } from "./index";
 
 Registry.register(ManualTrigger);
@@ -53,6 +54,7 @@ Registry.register(FetchContent);
 Registry.register(EditFields);
 Registry.register(DataTable);
 Registry.register(If);
+Registry.register(Placeholder);
 
 if (import.meta.env.DEV) {
   Registry.register(TestNode);

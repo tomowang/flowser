@@ -865,6 +865,10 @@
           "description": ""
         }
       }
+    },
+    "placeholder": {
+      "displayName": "占位符",
+      "description": "将输入数据原样传递到输出，不做任何修改。适合在构建或测试工作流时作为占位节点使用。"
     }
   },
   "credentialTypes": {

@@ -24,3 +24,4 @@ export * from "./DataTable/DataTable";
 export * from "./TabGroupQuery/TabGroupQuery";
 export * from "./TabGroupAction/TabGroupAction";
 export * from "./If/If";
+export * from "./Placeholder/Placeholder";

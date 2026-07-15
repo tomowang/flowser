@@ -865,6 +865,10 @@
           "description": ""
         }
       }
+    },
+    "placeholder": {
+      "displayName": "Placeholder",
+      "description": "Passes input data through to the output unchanged. Useful as a placeholder while building or testing a workflow."
     }
   },
   "credentialTypes": {
