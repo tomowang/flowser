@@ -23,8 +23,11 @@ import type {
 } from "@/lib/types";
 import "@vue-js-cron/light/dist/light.css";
 import NodeInput from "./NodeInput.vue";
+import { useEntityI18n } from "@/lib/composables/useEntityI18n";
 
-const { t, te } = useI18n();
+const { t } = useI18n();
+const nodeI18n = useEntityI18n("nodes");
+const credI18n = useEntityI18n("credentialTypes");
 
 const props = defineProps<{
   node: Node; // The selected node object from Vue Flow
@@ -305,10 +308,10 @@ const shouldShowProperty = (prop: INodeProperties) => {
   <div v-if="node && nodeType" class="space-y-4">
     <div>
       <h3 class="font-medium text-lg">
-        {{ te(`nodes.${nodeType.description.name}.displayName`) ? t(`nodes.${nodeType.description.name}.displayName`) : nodeType.description.displayName }}
+        {{ nodeI18n.label(nodeType.description.name, nodeType.description.displayName) }}
       </h3>
       <p class="text-xs text-muted-foreground">
-        {{ te(`nodes.${nodeType.description.name}.description`) ? t(`nodes.${nodeType.description.name}.description`) : nodeType.description.description }}
+        {{ nodeI18n.description(nodeType.description.name, nodeType.description.description) }}
       </p>
     </div>
 
@@ -320,7 +323,7 @@ const shouldShowProperty = (prop: INodeProperties) => {
         class="flex flex-col gap-1"
       >
         <label class="text-sm font-medium">{{
-          te(`credentialTypes.${cred.name}.displayName`) ? t(`credentialTypes.${cred.name}.displayName`) : (cred.displayName || cred.name)
+          credI18n.label(cred.name, cred.displayName || cred.name)
         }}</label>
         <div class="flex gap-2">
           <Select

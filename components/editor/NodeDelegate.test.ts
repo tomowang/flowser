@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import NodeDelegate from "./NodeDelegate.vue";
 import { i18n } from "@/lib/i18n";
 import { Registry } from "@/lib/nodes/registry";
@@ -174,5 +175,77 @@ describe("NodeDelegate Component", () => {
       expect.any(Object),
       expect.any(Object)
     );
+  });
+
+  describe("node display name localization", () => {
+    const i18nTestNode: INodeType = {
+      description: {
+        name: "i18nTestNode",
+        displayName: "I18n Test Node",
+        icon: "test",
+        group: ["test"],
+        version: 1,
+        description: "test",
+        defaults: { name: "i18nTestNode" },
+        inputs: [{ name: "in", type: "main" }],
+        outputs: [{ name: "out", type: "main" }],
+        properties: [],
+      },
+      execute: async () => [],
+    };
+
+    beforeEach(() => {
+      Registry.register(i18nTestNode);
+      const zhMessages = i18n.global.getLocaleMessage("zh-CN") as Record<
+        string,
+        unknown
+      >;
+      i18n.global.setLocaleMessage("zh-CN", {
+        ...zhMessages,
+        nodes: {
+          ...(zhMessages.nodes as Record<string, unknown>),
+          i18nTestNode: { displayName: "国际化测试节点" },
+        },
+      });
+    });
+
+    afterEach(() => {
+      i18n.global.locale.value = "en";
+    });
+
+    it("renders the hardcoded English displayName when no translation is active", () => {
+      const wrapper = mount(NodeDelegate, {
+        props: {
+          id: "node-5",
+          data: { nodeType: "i18nTestNode", label: "My Node" },
+        },
+        global: {
+          plugins: [i18n],
+          provide: { openQuickAdd: vi.fn() },
+          stubs: { NodeIcon: true },
+        },
+      });
+
+      expect(wrapper.text()).toContain("I18n Test Node");
+    });
+
+    it("renders the zh-CN translation once the locale is switched", async () => {
+      const wrapper = mount(NodeDelegate, {
+        props: {
+          id: "node-6",
+          data: { nodeType: "i18nTestNode", label: "My Node" },
+        },
+        global: {
+          plugins: [i18n],
+          provide: { openQuickAdd: vi.fn() },
+          stubs: { NodeIcon: true },
+        },
+      });
+
+      i18n.global.locale.value = "zh-CN";
+      await nextTick();
+
+      expect(wrapper.text()).toContain("国际化测试节点");
+    });
   });
 });

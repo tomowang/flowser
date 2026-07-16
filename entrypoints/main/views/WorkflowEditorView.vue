@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, provide } from "vue";
 import { useI18n } from "vue-i18n";
+import { useEntityI18n } from "@/lib/composables/useEntityI18n";
 import { VueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
@@ -74,7 +75,8 @@ import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
 import "@vue-flow/minimap/dist/style.css";
 
-const { t, te } = useI18n();
+const { t } = useI18n();
+const nodeI18n = useEntityI18n("nodes");
 const route = useRoute();
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -161,13 +163,13 @@ const groupedNodes = computed(() => {
   const allNodes = Registry.getAll();
   // Sort by displayName (localized if available)
   const sortedNodes = allNodes.sort((a, b) => {
-    const nameA = te(`nodes.${a.description.name}.displayName`) ? t(`nodes.${a.description.name}.displayName`) : a.description.displayName;
-    const nameB = te(`nodes.${b.description.name}.displayName`) ? t(`nodes.${b.description.name}.displayName`) : b.description.displayName;
+    const nameA = nodeI18n.label(a.description.name, a.description.displayName);
+    const nameB = nodeI18n.label(b.description.name, b.description.displayName);
     return nameA.localeCompare(nameB);
   });
 
   for (const node of sortedNodes) {
-    const displayName = te(`nodes.${node.description.name}.displayName`) ? t(`nodes.${node.description.name}.displayName`) : node.description.displayName;
+    const displayName = nodeI18n.label(node.description.name, node.description.displayName);
     if (query && !displayName.toLowerCase().includes(query)) {
       continue;
     }
@@ -266,9 +268,7 @@ const onQuickAddNode = (nodeType: INodeType) => {
     }
   }
 
-  const baseName = te(`nodes.${nodeType.description.name}.displayName`)
-    ? t(`nodes.${nodeType.description.name}.displayName`)
-    : nodeType.description.displayName;
+  const baseName = nodeI18n.label(nodeType.description.name, nodeType.description.displayName);
 
   const newNode: Node = {
     id: newNodeId,
@@ -770,9 +770,7 @@ const onDrop = (event: DragEvent) => {
     }
   }
 
-  const baseName = te(`nodes.${nodeType.description.name}.displayName`)
-    ? t(`nodes.${nodeType.description.name}.displayName`)
-    : nodeType.description.displayName;
+  const baseName = nodeI18n.label(nodeType.description.name, nodeType.description.displayName);
 
   const newNode: Node = {
     id: `${type}-${Date.now()}`,
@@ -1486,9 +1484,7 @@ const toggleExecutionPanel = () => {
                   </div>
                   <div class="flex flex-col text-left">
                     <span class="text-sm font-medium">{{
-                      te(`nodes.${node.description.name}.displayName`)
-                        ? t(`nodes.${node.description.name}.displayName`)
-                        : node.description.displayName
+                      nodeI18n.label(node.description.name, node.description.displayName)
                     }}</span>
                   </div>
                 </div>

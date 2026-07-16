@@ -19,13 +19,15 @@ import MasterKeyModal from "@/components/editor/MasterKeyModal.vue";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
 import CredentialIcon from "@/components/editor/CredentialIcon.vue";
 import { getCredentialType } from "@/lib/credentials";
+import { useEntityI18n } from "@/lib/composables/useEntityI18n";
 
 const credentials = ref<Omit<ICredential, "encryptedData" | "iv">[]>([]);
 const isMasterKeyModalOpen = ref(false);
 const isAddDialogOpen = ref(false);
 const editingCredentialId = ref<string | undefined>(undefined);
 
-const { t, te } = useI18n();
+const { t } = useI18n();
+const credI18n = useEntityI18n("credentialTypes");
 
 const loadCredentials = async () => {
   try {
@@ -103,8 +105,8 @@ const openAddDialog = () => {
         <TableBody>
           <TableRow v-for="cred in credentials" :key="cred.id">
             <TableCell class="font-medium">{{
-              te(`credentialTypes.${cred.type}.displayName`) && cred.name === getCredentialType(cred.type)?.displayName
-                ? t(`credentialTypes.${cred.type}.displayName`)
+              cred.name === getCredentialType(cred.type)?.displayName
+                ? credI18n.label(cred.type, cred.name)
                 : cred.name
             }}</TableCell>
             <TableCell>
@@ -114,10 +116,10 @@ const openAddDialog = () => {
                   class="w-4 h-4 shrink-0"
                 />
                 <span>{{
-                  getCredentialType(cred.type)?.name &&
-                  te(`credentialTypes.${getCredentialType(cred.type)?.name}.displayName`)
-                    ? t(`credentialTypes.${getCredentialType(cred.type)?.name}.displayName`)
-                    : getCredentialType(cred.type)?.displayName
+                  credI18n.label(
+                    getCredentialType(cred.type)?.name || '',
+                    getCredentialType(cred.type)?.displayName || ''
+                  )
                 }}</span>
               </div>
             </TableCell>

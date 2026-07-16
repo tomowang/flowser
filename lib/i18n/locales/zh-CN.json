@@ -477,11 +477,10 @@
         },
         "fields": {
           "displayName": "字段",
-          "description": "要填写的表单字段"
-        },
-        "values": {
-          "displayName": "字段",
-          "description": ""
+          "description": "要填写的表单字段",
+          "options": {
+            "values": "字段"
+          }
         },
         "selectorType": {
           "displayName": "选择器类型",
@@ -673,11 +672,6 @@
           "displayName": "字段列表",
           "description": ""
         },
-        "values": {
-          "displayName": "字段名称",
-          "description": "要设置的字段名称",
-          "placeholder": "字段名"
-        },
         "type": {
           "displayName": "类型",
           "description": "字段值的类型"
@@ -699,6 +693,11 @@
         "jsonValue": {
           "displayName": "值",
           "description": ""
+        },
+        "name": {
+          "displayName": "字段名称",
+          "description": "要设置的字段名称",
+          "placeholder": "字段名"
         }
       }
     },
@@ -789,83 +788,57 @@
         },
         "conditions": {
           "displayName": "条件列表",
-          "description": ""
-        },
-        "items": {
-          "displayName": "条件项",
-          "description": ""
+          "options": {
+            "items": "条件项"
+          }
         },
         "operator": {
           "displayName": "操作符",
-          "description": ""
-        },
-        "is not equal to": {
-          "displayName": "不等于",
-          "description": ""
-        },
-        "contains": {
-          "displayName": "包含",
-          "description": ""
-        },
-        "does not contain": {
-          "displayName": "不包含",
-          "description": ""
-        },
-        "starts with": {
-          "displayName": "以...开始",
-          "description": ""
-        },
-        "ends with": {
-          "displayName": "以...结束",
-          "description": ""
-        },
-        "matches regex": {
-          "displayName": "正则匹配",
-          "description": ""
-        },
-        "does not match regex": {
-          "displayName": "正则不匹配",
-          "description": ""
-        },
-        "is empty": {
-          "displayName": "为空",
-          "description": ""
-        },
-        "is not empty": {
-          "displayName": "不为空",
-          "description": ""
-        },
-        "is greater than": {
-          "displayName": "大于",
-          "description": ""
-        },
-        "is greater than or equal": {
-          "displayName": "大于等于",
-          "description": ""
-        },
-        "is less than": {
-          "displayName": "小于",
-          "description": ""
-        },
-        "is less than or equal": {
-          "displayName": "小于等于",
-          "description": ""
-        },
-        "is before": {
-          "displayName": "在...之前",
-          "description": ""
-        },
-        "is equal to": {
-          "displayName": "等于",
-          "description": ""
-        },
-        "is false": {
-          "displayName": "为假",
-          "description": ""
+          "options": {
+            "String": "字符串",
+            "Number": "数字",
+            "Date & Time": "日期时间",
+            "Boolean": "布尔值",
+            "Array": "数组",
+            "Object": "对象",
+            "string:equal": "等于",
+            "string:notEqual": "不等于",
+            "string:contains": "包含",
+            "string:notContains": "不包含",
+            "string:startsWith": "以...开始",
+            "string:endsWith": "以...结束",
+            "string:regex": "正则匹配",
+            "string:notRegex": "正则不匹配",
+            "string:isEmpty": "为空",
+            "string:isNotEmpty": "不为空",
+            "number:equal": "等于",
+            "number:notEqual": "不等于",
+            "number:larger": "大于",
+            "number:largerEqual": "大于等于",
+            "number:smaller": "小于",
+            "number:smallerEqual": "小于等于",
+            "number:isEmpty": "为空",
+            "number:isNotEmpty": "不为空",
+            "dateTime:after": "在...之后",
+            "dateTime:before": "在...之前",
+            "dateTime:equal": "等于",
+            "dateTime:notEqual": "不等于",
+            "dateTime:isEmpty": "为空",
+            "dateTime:isNotEmpty": "不为空",
+            "boolean:true": "为真",
+            "boolean:false": "为假",
+            "boolean:equal": "等于",
+            "boolean:notEqual": "不等于",
+            "array:contains": "包含",
+            "array:notContains": "不包含",
+            "array:isEmpty": "为空",
+            "array:isNotEmpty": "不为空",
+            "object:isEmpty": "为空",
+            "object:isNotEmpty": "不为空"
+          }
         },
         "targetValue": {
-          "displayName": "目标值",
-          "description": ""
+          "displayName": "目标值"
         }
       }
     },

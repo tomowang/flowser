@@ -37,6 +37,7 @@ import {
   Trash2,
   ChevronRight,
 } from "@lucide/vue";
+import { useEntityI18n } from "@/lib/composables/useEntityI18n";
 
 const props = defineProps<{
   modelValue: unknown;
@@ -47,7 +48,8 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue", "refresh"]);
 
-const { t, te, locale } = useI18n();
+const { t, locale } = useI18n();
+const nodeI18n = useEntityI18n("nodes");
 
 const isExpression = ref(false);
 
@@ -206,10 +208,15 @@ const getSelectedOption = computed(() => {
 
   // Try to translate option name
   if (props.nodeTypeName) {
-    const key = `nodes.${props.nodeTypeName}.properties.${props.property.name}.options.${option.value ?? option.name}`;
-    if (te(key)) {
-      return { ...option, name: t(key) };
-    }
+    return {
+      ...option,
+      name: nodeI18n.optionLabel(
+        props.nodeTypeName,
+        props.property.name,
+        option.value ?? option.name,
+        option.name,
+      ),
+    };
   }
   return option;
 });
@@ -219,8 +226,8 @@ const getSelectedOption = computed(() => {
   <div class="flex flex-col gap-1">
     <div class="flex items-center justify-between h-6">
       <label class="text-sm font-medium">{{
-        nodeTypeName && te(`nodes.${nodeTypeName}.properties.${property.name}.displayName`)
-          ? t(`nodes.${nodeTypeName}.properties.${property.name}.displayName`)
+        nodeTypeName
+          ? nodeI18n.propertyLabel(nodeTypeName, property.name, property.displayName)
           : property.displayName
       }}</label>
 
@@ -351,7 +358,11 @@ const getSelectedOption = computed(() => {
                       v-if="opt.icon"
                       class="h-4 w-4 opacity-70"
                     />
-                    <span>{{ opt.name }}</span>
+                    <span>{{
+                      nodeTypeName
+                        ? nodeI18n.optionLabel(nodeTypeName, property.name, opt.name, opt.name)
+                        : opt.name
+                    }}</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
                     <DropdownMenuItem
@@ -360,7 +371,11 @@ const getSelectedOption = computed(() => {
                       class="flex items-center gap-2"
                       @select="displayValue = child.value"
                     >
-                      <span>{{ child.name }}</span>
+                      <span>{{
+                        nodeTypeName
+                          ? nodeI18n.optionLabel(nodeTypeName, property.name, child.value, child.name)
+                          : child.name
+                      }}</span>
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
@@ -374,7 +389,11 @@ const getSelectedOption = computed(() => {
                     v-if="opt.icon"
                     class="h-4 w-4 opacity-70"
                   />
-                  <span>{{ opt.name }}</span>
+                  <span>{{
+                    nodeTypeName
+                      ? nodeI18n.optionLabel(nodeTypeName, property.name, opt.value ?? opt.name, opt.name)
+                      : opt.name
+                  }}</span>
                 </DropdownMenuItem>
               </template>
             </DropdownMenuContent>
@@ -396,7 +415,11 @@ const getSelectedOption = computed(() => {
                   v-if="opt.icon"
                   class="h-4 w-4 opacity-70"
                 />
-                <span>{{ opt.name }}</span>
+                <span>{{
+                  nodeTypeName
+                    ? nodeI18n.optionLabel(nodeTypeName, property.name, opt.value ?? opt.name, opt.name)
+                    : opt.name
+                }}</span>
               </div>
             </SelectItem>
           </SelectContent>
@@ -461,7 +484,9 @@ const getSelectedOption = computed(() => {
           class="flex flex-col gap-2"
         >
           <label class="text-sm font-medium">{{
-            option.displayName || option.name
+            nodeTypeName
+              ? nodeI18n.optionLabel(nodeTypeName, property.name, option.name, option.displayName || option.name)
+              : (option.displayName || option.name)
           }}</label>
 
           <div class="flex flex-col gap-2">
@@ -504,6 +529,7 @@ const getSelectedOption = computed(() => {
                     "
                     :model-value="(item as Record<string, unknown>)[subProp.name] ?? subProp.default"
                     :property="subProp"
+                    :node-type-name="nodeTypeName"
                     @update:model-value="
                       (val) => {
                         const newValue = { ...(displayValue as Record<string, unknown[]>) };
@@ -557,8 +583,8 @@ const getSelectedOption = computed(() => {
 
     <p v-if="property.description" class="text-[10px] text-muted-foreground">
       {{
-        nodeTypeName && te(`nodes.${nodeTypeName}.properties.${property.name}.description`)
-          ? t(`nodes.${nodeTypeName}.properties.${property.name}.description`)
+        nodeTypeName
+          ? nodeI18n.propertyDescription(nodeTypeName, property.name, property.description!)
           : property.description
       }}
     </p>

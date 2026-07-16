@@ -7,6 +7,7 @@ import { Trash2, AlertTriangle, Plus, Play } from "@lucide/vue";
 import { validateNode } from "@/lib/utils/validation";
 import { IWorkflowNode } from "@/lib/types";
 import NodeIcon from "./NodeIcon.vue";
+import { useEntityI18n } from "@/lib/composables/useEntityI18n";
 
 const props = defineProps<{
   id: string; // Add ID prop to identify the node for removal
@@ -14,7 +15,8 @@ const props = defineProps<{
   selected?: boolean;
 }>();
 
-const { t, te } = useI18n();
+const { t } = useI18n();
+const nodeI18n = useEntityI18n("nodes");
 const { removeNodes, getEdges, project, findNode } = useVueFlow();
 const isHovered = ref(false);
 
@@ -157,9 +159,9 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
       <div class="flex flex-col overflow-hidden">
         <span class="text-sm font-semibold truncate">{{ data.label }}</span>
         <span class="text-[10px] text-muted-foreground truncate">{{
-          nodeType?.description.name && te(`nodes.${nodeType.description.name}.displayName`)
-            ? t(`nodes.${nodeType.description.name}.displayName`)
-            : nodeType?.description.displayName
+          nodeType
+            ? nodeI18n.label(nodeType.description.name, nodeType.description.displayName)
+            : undefined
         }}</span>
       </div>
     </div>
