@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi } from "vitest";
 import { WorkflowRunner } from "../engine/WorkflowRunner";
 import { IWorkflow, INodeType } from "../types";
@@ -48,8 +47,6 @@ const TriggerNode: INodeType = {
     return [[{ json: { trigger: true } }]];
   },
 };
-
-
 
 // Mock Helper for QuickJS
 const mockContext = {
@@ -115,7 +112,9 @@ describe("Node Validation", () => {
       position: { x: 0, y: 0 },
     });
     expect(invalidResult.isValid).toBe(false);
-    expect(invalidResult.errors).toContain("Property 'Required Field' is required");
+    expect(invalidResult.errors).toContain(
+      "Property 'Required Field' is required",
+    );
   });
 
   it("should block execution for invalid node", async () => {
@@ -154,9 +153,13 @@ describe("Node Validation", () => {
     const result = await runner.run("trigger");
 
     expect(result.status).toBe("error");
-    const node1Result = result.nodeExecutionResults.find((n) => n.nodeId === "node-1");
+    const node1Result = result.nodeExecutionResults.find(
+      (n) => n.nodeId === "node-1",
+    );
     // Trigger should succeed
-    const triggerResult = result.nodeExecutionResults.find((n) => n.nodeId === "trigger");
+    const triggerResult = result.nodeExecutionResults.find(
+      (n) => n.nodeId === "trigger",
+    );
     expect(triggerResult?.status).toBe("success");
 
     // Node 1 should fail or not start if validation happens before execution log
@@ -167,6 +170,81 @@ describe("Node Validation", () => {
     expect(node1Result?.status).toBe("error");
     expect(node1Result?.errorMessage).toContain("Node validation failed");
   });
+  it("should not require a property that is hidden by displayOptions", () => {
+    const ModeNode: INodeType = {
+      description: {
+        displayName: "Mode Node",
+        name: "modeNode",
+        icon: "",
+        group: ["test"],
+        version: 1,
+        description: "Mode Node",
+        defaults: { name: "Mode Node" },
+        inputs: [{ name: "main", type: "main" }],
+        outputs: [{ name: "main", type: "main" }],
+        properties: [
+          {
+            displayName: "Mode",
+            name: "mode",
+            type: "options",
+            default: "a",
+            options: [
+              { name: "A", value: "a" },
+              { name: "B", value: "b" },
+            ],
+          },
+          {
+            displayName: "Field A",
+            name: "fieldA",
+            type: "string",
+            required: true,
+            displayOptions: { show: { mode: ["a"] } },
+          },
+          {
+            displayName: "Field B",
+            name: "fieldB",
+            type: "string",
+            required: true,
+            displayOptions: { show: { mode: ["b"] } },
+          },
+        ],
+      },
+      async execute() {
+        return [[{ json: {} }]];
+      },
+    };
+    Registry.register(ModeNode);
+
+    // mode "a" (the default): fieldA is required and present, fieldB is
+    // hidden so its emptiness shouldn't count against validation.
+    const validA = validateNode({
+      id: "1",
+      type: "modeNode",
+      data: { mode: "a", fieldA: "value", fieldB: "" },
+      position: { x: 0, y: 0 },
+    });
+    expect(validA.isValid).toBe(true);
+
+    // mode "a": fieldA missing should still fail.
+    const invalidA = validateNode({
+      id: "1",
+      type: "modeNode",
+      data: { mode: "a", fieldB: "" },
+      position: { x: 0, y: 0 },
+    });
+    expect(invalidA.isValid).toBe(false);
+    expect(invalidA.errors).toContain("Property 'Field A' is required");
+
+    // mode "b": fieldB is required and present, fieldA is now hidden.
+    const validB = validateNode({
+      id: "1",
+      type: "modeNode",
+      data: { mode: "b", fieldA: "", fieldB: "value" },
+      position: { x: 0, y: 0 },
+    });
+    expect(validB.isValid).toBe(true);
+  });
+
   it("should return invalid for missing required credential", () => {
     // Register a node with required credential
     const CredentialNode: INodeType = {

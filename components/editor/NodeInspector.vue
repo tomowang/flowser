@@ -9,6 +9,7 @@ import { Plus } from "@lucide/vue";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
 import CredentialIcon from "@/components/editor/CredentialIcon.vue";
 import { getCredentialType } from "@/lib/credentials";
+import { isPropertyVisible } from "@/lib/utils/displayOptions";
 import {
   Select,
   SelectContent,
@@ -36,9 +37,9 @@ const props = defineProps<{
 const emit = defineEmits(["update:data"]);
 
 // Credential options: keyed by credential type name
-const credentialOptions = ref<Record<string, { name: string; value: string }[]>>(
-  {},
-);
+const credentialOptions = ref<
+  Record<string, { name: string; value: string }[]>
+>({});
 
 // Get node type definition
 const nodeType = computed(() => {
@@ -263,55 +264,32 @@ const getCredentialValue = (credType: string): string => {
   );
 };
 
-const shouldShowProperty = (prop: INodeProperties) => {
-  if (!prop.displayOptions) return true;
-
-  const { show, hide } = prop.displayOptions;
-
-  // Helper to check conditions
-  const checkConditions = (conditions: Record<string, unknown>) => {
-    return Object.entries(conditions).every(([key, validValues]) => {
-      const propertyDef = properties.value.find((p) => p.name === key);
-      const currentValue =
-        (props.node.data as Record<string, unknown>)[key] ??
-        propertyDef?.default;
-
-      if (Array.isArray(validValues)) {
-        return (validValues as unknown[]).some((val) => {
-          if (typeof val === "object" && val !== null) {
-            // TODO: Handle DisplayCondition object if needed (complex conditions)
-            // For now assuming simple values or simple object match?
-            return false;
-          }
-          return val === currentValue;
-        });
-      }
-      return validValues === currentValue;
-    });
-  };
-
-  let isVisible = true;
-
-  if (show) {
-    isVisible = isVisible && checkConditions(show as Record<string, unknown>);
-  }
-
-  if (hide) {
-    isVisible = isVisible && !checkConditions(hide as Record<string, unknown>);
-  }
-
-  return isVisible;
-};
+const shouldShowProperty = (prop: INodeProperties) =>
+  isPropertyVisible(
+    prop,
+    props.node.data as Record<string, unknown>,
+    properties.value,
+  );
 </script>
 
 <template>
   <div v-if="node && nodeType" class="space-y-4">
     <div>
       <h3 class="font-medium text-lg">
-        {{ nodeI18n.label(nodeType.description.name, nodeType.description.displayName) }}
+        {{
+          nodeI18n.label(
+            nodeType.description.name,
+            nodeType.description.displayName,
+          )
+        }}
       </h3>
       <p class="text-xs text-muted-foreground">
-        {{ nodeI18n.description(nodeType.description.name, nodeType.description.description) }}
+        {{
+          nodeI18n.description(
+            nodeType.description.name,
+            nodeType.description.description,
+          )
+        }}
       </p>
     </div>
 
@@ -334,12 +312,19 @@ const shouldShowProperty = (prop: INodeProperties) => {
           >
             <SelectTrigger class="w-full">
               <SelectValue :placeholder="t('credentials.selectCredential')">
-                <div v-if="getCredentialValue(cred.name)" class="flex items-center gap-2">
+                <div
+                  v-if="getCredentialValue(cred.name)"
+                  class="flex items-center gap-2"
+                >
                   <CredentialIcon
                     :icon="getCredentialType(cred.name)?.icon"
                     class="w-4 h-4 shrink-0"
                   />
-                  <span>{{ credentialOptions[cred.name]?.find(opt => opt.value === getCredentialValue(cred.name))?.name }}</span>
+                  <span>{{
+                    credentialOptions[cred.name]?.find(
+                      (opt) => opt.value === getCredentialValue(cred.name),
+                    )?.name
+                  }}</span>
                 </div>
               </SelectValue>
             </SelectTrigger>
@@ -360,7 +345,7 @@ const shouldShowProperty = (prop: INodeProperties) => {
                 </SelectItem>
               </template>
               <SelectItem v-else value="no-credentials" disabled>
-                {{ t('credentials.noCredentialsFound') }}
+                {{ t("credentials.noCredentialsFound") }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -398,7 +383,7 @@ const shouldShowProperty = (prop: INodeProperties) => {
     </div>
   </div>
   <div v-else class="text-muted-foreground text-sm">
-    {{ t('workflowEditor.selectNodeToEdit') }}
+    {{ t("workflowEditor.selectNodeToEdit") }}
   </div>
 
   <CreateCredentialModal

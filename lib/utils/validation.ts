@@ -1,5 +1,6 @@
 import { IWorkflowNode } from "../types";
 import { Registry } from "../nodes/registry";
+import { isPropertyVisible } from "./displayOptions";
 
 export interface IValidationResult {
   isValid: boolean;
@@ -18,9 +19,10 @@ export function validateNode(node: IWorkflowNode): IValidationResult {
   const errors: string[] = [];
   const properties = nodeType.description.properties || [];
 
+  const data = (node.data || {}) as Record<string, unknown>;
   for (const prop of properties) {
-    if (prop.required) {
-      const value = node.data?.[prop.name];
+    if (prop.required && isPropertyVisible(prop, data, properties)) {
+      const value = data[prop.name];
       if (value === undefined || value === null || value === "") {
         errors.push(`Property '${prop.displayName}' is required`);
       }
@@ -32,7 +34,9 @@ export function validateNode(node: IWorkflowNode): IValidationResult {
     if (cred.required) {
       const value = node.data?.credentials?.[cred.name];
       if (!value) {
-        errors.push(`Credential '${cred.displayName || cred.name}' is required`);
+        errors.push(
+          `Credential '${cred.displayName || cred.name}' is required`,
+        );
       }
     }
   }
