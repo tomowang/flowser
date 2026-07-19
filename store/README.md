@@ -85,6 +85,8 @@ AI-assisted Web Workflow Automation
 - **tabGroups**: Required to programmatically organize, group, ungroup, and label browser tabs within automated workflows according to user-configured rules.
 - **alarms**: Required to schedule and execute background workflows automatically at specific times or recurring intervals (using cron expressions).
 - **Host Permission (`<all_urls>`)**: Required to interact with page elements (injecting content scripts to scrape text/HTML or click selectors) on any target website configured by the user, and to make API requests to configured AI model providers (e.g., Google Gemini, OpenAI, Anthropic, DeepSeek).
+- **scripting**: Required to run user-configured workflow steps that interact with the active page's DOM — clicking elements, filling in form fields, reading page text/HTML for scraping, and polling for an element's appearance. Each workflow node injects a short-lived script into the target tab only while that step is executing.
+- **webRequest**: Required by the "Wait For Resource" workflow node to pause a workflow until a specific network request the page makes (matched by URL and method, as configured by the user) has completed, before continuing to the next step. Only request metadata (URL, method, timing) is inspected; no request or response bodies are read or modified.
 
 ## Data usage
 
