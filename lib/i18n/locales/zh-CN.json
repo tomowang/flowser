@@ -588,7 +588,7 @@
     },
     "wait": {
       "displayName": "等待",
-      "description": "等待特定时间或等待元素出现",
+      "description": "等待特定时间",
       "properties": {
         "seconds": {
           "displayName": "等待时长 (秒)",
@@ -642,6 +642,60 @@
         "multiple": {
           "displayName": "获取多个",
           "description": "获取所有匹配元素的内容"
+        }
+      }
+    },
+    "waitForResource": {
+      "displayName": "等待资源",
+      "description": "等待元素出现、HTTP 请求完成或元素进入视口后再继续工作流",
+      "properties": {
+        "waitFor": {
+          "displayName": "等待类型",
+          "description": "在继续工作流之前要等待的内容",
+          "options": {
+            "element": "元素",
+            "httpRequest": "HTTP 请求",
+            "viewport": "视口"
+          }
+        },
+        "tabId": {
+          "displayName": "标签页 ID",
+          "description": "要等待的标签页 ID"
+        },
+        "selectorType": {
+          "displayName": "选择器类型",
+          "description": "要使用的选择器类型",
+          "options": {
+            "css": "CSS 选择器",
+            "xpath": "XPath"
+          }
+        },
+        "selector": {
+          "displayName": "选择器",
+          "description": "要等待的元素选择器",
+          "placeholder": "例如 .banner 或 //div[@id='banner']"
+        },
+        "urlContains": {
+          "displayName": "URL 包含",
+          "description": "等待 URL 包含此子字符串的请求",
+          "placeholder": "例如 /api/checkout"
+        },
+        "method": {
+          "displayName": "请求方法",
+          "description": "仅匹配使用此 HTTP 方法的请求",
+          "options": {
+            "any": "任意",
+            "GET": "GET",
+            "POST": "POST",
+            "PUT": "PUT",
+            "DELETE": "DELETE",
+            "PATCH": "PATCH",
+            "HEAD": "HEAD"
+          }
+        },
+        "timeoutSeconds": {
+          "displayName": "超时时间 (秒)",
+          "description": "在节点失败前等待的时长"
         }
       }
     },

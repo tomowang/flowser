@@ -20,6 +20,7 @@ import {
   WindowQuery,
   WindowClose,
   Wait,
+  WaitForResource,
   TestNode,
   FetchContent,
   ScheduleTrigger,
@@ -50,6 +51,7 @@ Registry.register(WindowCreate);
 Registry.register(WindowQuery);
 Registry.register(WindowClose);
 Registry.register(Wait);
+Registry.register(WaitForResource);
 Registry.register(FetchContent);
 Registry.register(EditFields);
 Registry.register(DataTable);

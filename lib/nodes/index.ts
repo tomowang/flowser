@@ -18,6 +18,7 @@ export * from "./WindowClose/WindowClose";
 export * from "./Wait/Wait";
 export * from "./TestNode/TestNode";
 export * from "./FetchContent/FetchContent";
+export * from "./WaitForResource/WaitForResource";
 export * from "./ScheduleTrigger/ScheduleTrigger";
 export * from "./EditFields/EditFields";
 export * from "./DataTable/DataTable";
