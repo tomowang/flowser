@@ -72,16 +72,23 @@
       }
     },
     {
-      "id": "fdd0f561-939b-4080-97e8-cf2df6dd7234",
-      "type": "wait",
+      "id": "waitForResource-1784466945819",
+      "type": "waitForResource",
       "position": {
         "x": 960,
         "y": 400
       },
       "data": {
-        "nodeType": "wait",
-        "label": "Wait",
-        "seconds": 1
+        "label": "Wait For Resource",
+        "nodeType": "waitForResource",
+        "name": "Wait For Resource",
+        "waitFor": "element",
+        "selectorType": "css",
+        "selector": "form textarea",
+        "urlContains": "",
+        "method": "any",
+        "timeoutSeconds": 30,
+        "tabId": "={{$json.id}}"
       }
     }
   ],
@@ -101,15 +108,15 @@
       "targetHandle": "main"
     },
     {
-      "id": "e-60b433f8-b81c-4cce-9394-dca1a360a217-fdd0f561-939b-4080-97e8-cf2df6dd7234-e6e3c358",
+      "id": "e-1784466948549",
       "source": "60b433f8-b81c-4cce-9394-dca1a360a217",
-      "target": "fdd0f561-939b-4080-97e8-cf2df6dd7234",
+      "target": "waitForResource-1784466945819",
       "sourceHandle": "main",
       "targetHandle": "main"
     },
     {
-      "id": "e-1784085293431",
-      "source": "fdd0f561-939b-4080-97e8-cf2df6dd7234",
+      "id": "e-1784466951684",
+      "source": "waitForResource-1784466945819",
       "target": "89fba0f2-644a-4686-b2ef-8db60e651076",
       "sourceHandle": "main",
       "targetHandle": "main"
