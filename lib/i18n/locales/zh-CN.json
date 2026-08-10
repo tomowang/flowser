@@ -42,6 +42,9 @@
     "toggle": "切换侧边栏",
     "mobileDesc": "显示移动端侧边栏。"
   },
+  "popup": {
+    "dashboard": "仪表盘"
+  },
   "settings": {
     "title": "设置",
     "description": "应用程序设置。",

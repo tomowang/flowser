@@ -42,6 +42,9 @@
     "toggle": "Toggle Sidebar",
     "mobileDesc": "Displays the mobile sidebar."
   },
+  "popup": {
+    "dashboard": "Dashboard"
+  },
   "settings": {
     "title": "Settings",
     "description": "Application settings.",

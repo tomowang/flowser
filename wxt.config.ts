@@ -19,6 +19,7 @@ export default defineConfig({
     permissions: [
       "storage",
       "tabs",
+      "windows",
       "activeTab",
       "tabGroups",
       "alarms",

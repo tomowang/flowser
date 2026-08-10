@@ -135,8 +135,9 @@ const handleToggle = async (id: string, active: boolean) => {
 };
 
 const openDashboard = () => {
-  browser.tabs.create({
+  browser.windows.create({
     url: browser.runtime.getURL("/main.html"),
+    type: "popup",
   });
 };
 
@@ -162,7 +163,7 @@ onMounted(async () => {
         class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 flex items-center gap-1"
         @click="openDashboard"
       >
-        {{ t("sidebar.settings") }}
+        {{ t("popup.dashboard") }}
         <ExternalLink class="w-3 h-3" />
       </button>
     </div>
