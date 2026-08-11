@@ -1,3 +1,4 @@
+import Gemini from "@thesvg/vue/gemini";
 import {
   INodeType,
   IExecuteFunctions,
@@ -15,7 +16,7 @@ export const GeminiModel: INodeType = {
   description: {
     displayName: "Gemini Chat Model",
     name: "geminiModel",
-    icon: "file:gemini.svg",
+    icon: Gemini,
     group: ["ai"],
     version: 1,
     description: "Google Gemini LLM Model",

@@ -1,9 +1,10 @@
+import Claude from "@thesvg/vue/claude";
 import type { ICredentialType } from "../types";
 
 export const AnthropicApiCredential: ICredentialType = {
   name: "anthropic_api",
   displayName: "Anthropic API",
-  icon: "file:anthropic.svg",
+  icon: Claude,
   properties: [
     {
       displayName: "API Key",

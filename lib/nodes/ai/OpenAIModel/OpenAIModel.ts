@@ -1,3 +1,4 @@
+import Openai from "@thesvg/vue/openai-chatgpt";
 import {
   INodeType,
   IExecuteFunctions,
@@ -13,7 +14,7 @@ export const OpenAIModel: INodeType = {
   description: {
     displayName: "OpenAI Chat Model",
     name: "openAIModel",
-    icon: "file:openai.svg",
+    icon: Openai,
     group: ["ai"],
     version: 1,
     description: "OpenAI LLM Model",

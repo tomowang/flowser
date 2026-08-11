@@ -1,9 +1,10 @@
+import Deepseek from "@thesvg/vue/deepseek";
 import type { ICredentialType } from "../types";
 
 export const DeepSeekApiCredential: ICredentialType = {
   name: "deepseek_api",
   displayName: "DeepSeek API",
-  icon: "file:deepseek.svg",
+  icon: Deepseek,
   properties: [
     {
       displayName: "API Key",

@@ -1,9 +1,10 @@
+import Gemini from "@thesvg/vue/gemini";
 import type { ICredentialType } from "../types";
 
 export const GeminiApiCredential: ICredentialType = {
   name: "gemini_api",
   displayName: "Gemini API",
-  icon: "file:gemini.svg",
+  icon: Gemini,
   properties: [
     {
       displayName: "API Key",

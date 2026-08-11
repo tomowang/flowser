@@ -1,3 +1,4 @@
+import Deepseek from "@thesvg/vue/deepseek";
 import {
   INodeType,
   IExecuteFunctions,
@@ -13,7 +14,7 @@ export const DeepSeekModel: INodeType = {
   description: {
     displayName: "DeepSeek Chat Model",
     name: "deepSeekModel",
-    icon: "file:deepseek.svg",
+    icon: Deepseek,
     group: ["ai"],
     version: 1,
     description: "DeepSeek LLM Model",

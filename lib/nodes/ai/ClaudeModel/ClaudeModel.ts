@@ -1,3 +1,4 @@
+import Claude from "@thesvg/vue/claude";
 import {
   INodeType,
   IExecuteFunctions,
@@ -14,7 +15,7 @@ export const ClaudeModel: INodeType = {
   description: {
     displayName: "Claude Chat Model",
     name: "claudeModel",
-    icon: "file:anthropic.svg",
+    icon: Claude,
     group: ["ai"],
     version: 1,
     description: "Anthropic Claude LLM Model",

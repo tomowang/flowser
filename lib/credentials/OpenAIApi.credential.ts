@@ -1,9 +1,10 @@
+import Openai from "@thesvg/vue/openai-chatgpt";
 import type { ICredentialType } from "../types";
 
 export const OpenAIApiCredential: ICredentialType = {
   name: "openai_api",
   displayName: "OpenAI API",
-  icon: "file:openai.svg",
+  icon: Openai,
   properties: [
     {
       displayName: "API Key",
