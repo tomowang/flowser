@@ -56,7 +56,10 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "about": "About",
-    "version": "Version: {version}"
+    "version": "Version: {version}",
+    "github": "View source on GitHub",
+    "chromeWebStore": "Chrome Web Store",
+    "firefoxAddons": "Firefox Add-ons"
   },
   "workflows": {
     "title": "Workflows",
