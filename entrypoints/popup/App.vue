@@ -149,18 +149,18 @@ onMounted(async () => {
 
 <template>
   <div
-    class="w-[400px] bg-white dark:bg-gray-900 border-x border-b min-h-[300px] flex flex-col"
+    class="w-[400px] bg-background border-x border-b min-h-[300px] flex flex-col"
   >
     <!-- Header -->
     <div
-      class="flex items-center justify-between px-4 py-3 border-b bg-white dark:bg-gray-900 sticky top-0 z-10"
+      class="flex items-center justify-between px-4 py-3 border-b bg-background sticky top-0 z-10"
     >
-      <div class="font-semibold text-lg flex items-center gap-2">
+      <div class="font-display font-bold text-lg flex items-center gap-2">
         <img :src="logo" class="w-6 h-6" alt="Flowser" />
         Flowser
       </div>
       <button
-        class="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 flex items-center gap-1"
+        class="text-sm font-mono text-muted-foreground hover:text-foreground flex items-center gap-1"
         @click="openDashboard"
       >
         {{ t("popup.dashboard") }}
@@ -169,28 +169,28 @@ onMounted(async () => {
     </div>
 
     <!-- Search -->
-    <div class="p-3 border-b bg-gray-50 dark:bg-gray-800/50">
+    <div class="p-3 border-b bg-muted/30">
       <div class="relative">
         <Search
-          class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400"
+          class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
         />
         <Input
           v-model="searchQuery"
           type="search"
           :placeholder="t('workflows.searchPlaceholder')"
-          class="w-full bg-white dark:bg-gray-900 pl-9"
+          class="w-full bg-background pl-9"
         />
       </div>
     </div>
 
     <!-- List -->
     <div class="flex-1 overflow-y-auto max-h-[400px]">
-      <div v-if="loading" class="p-8 text-center text-gray-500">
+      <div v-if="loading" class="p-8 text-center text-muted-foreground">
         {{ t("common.loading") }}
       </div>
       <div
         v-else-if="filteredWorkflows.length === 0"
-        class="p-8 text-center text-gray-500"
+        class="p-8 text-center text-muted-foreground"
       >
         {{ t("workflows.noWorkflowsFound") }}
       </div>

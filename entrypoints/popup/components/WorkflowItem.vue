@@ -25,22 +25,22 @@ const formatDate = (timestamp: number) => {
 
 <template>
   <div
-    class="flex items-center justify-between p-3 border-b hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+    class="flex items-center justify-between p-3 border-b hover:bg-accent transition-colors"
   >
     <div class="flex-1 min-w-0 mr-3">
       <div
-        class="font-medium truncate text-sm text-gray-900 dark:text-gray-100"
+        class="font-display font-medium truncate text-sm text-foreground"
       >
         {{ workflow.name }}
       </div>
-      <div class="text-xs text-gray-500 truncate">
+      <div class="text-xs font-mono text-muted-foreground truncate">
         {{ formatDate(workflow.updatedAt) }}
       </div>
     </div>
 
     <div class="flex items-center gap-1">
       <button
-        class="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 hover:text-green-600 transition-colors"
+        class="p-1.5 rounded-sm hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
         title="Run Workflow"
         @click="emit('run', workflow.id)"
       >
@@ -50,7 +50,7 @@ const formatDate = (timestamp: number) => {
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <button
-            class="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 transition-colors"
+            class="p-1.5 rounded-sm hover:bg-accent text-muted-foreground transition-colors"
           >
             <MoreVertical class="w-4 h-4" />
           </button>
@@ -63,7 +63,7 @@ const formatDate = (timestamp: number) => {
             {{ workflow.active ? "Deactivate" : "Activate" }}
           </DropdownMenuItem>
           <DropdownMenuItem
-            class="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10"
+            class="text-destructive focus:text-destructive focus:bg-destructive/10"
             @select="emit('delete', workflow.id)"
           >
             <Trash2 class="w-4 h-4 mr-2" />
