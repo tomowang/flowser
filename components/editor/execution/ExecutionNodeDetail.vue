@@ -18,7 +18,7 @@ const { t } = useI18n();
       <div
         class="flex items-center justify-between px-4 h-10 bg-muted/20 border-b shrink-0"
       >
-        <span class="text-xs font-semibold uppercase text-muted-foreground">
+        <span class="text-xs font-mono font-semibold uppercase text-muted-foreground">
           {{ t("executions.input") }}
         </span>
         <span
@@ -64,7 +64,7 @@ const { t } = useI18n();
       <div
         class="flex items-center justify-between px-4 h-10 bg-muted/20 border-b shrink-0"
       >
-        <span class="text-xs font-semibold uppercase text-muted-foreground">
+        <span class="text-xs font-mono font-semibold uppercase text-muted-foreground">
           {{ t("executions.output") }}
         </span>
         <span

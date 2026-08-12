@@ -52,8 +52,8 @@ const formatDuration = (start: number, end: number) => {
       </div>
 
       <div class="flex flex-col min-w-0 flex-1">
-        <span class="text-xs font-medium truncate">{{ result.nodeName }}</span>
-        <span class="text-[10px] text-muted-foreground flex items-center gap-1">
+        <span class="text-xs font-display font-medium truncate">{{ result.nodeName }}</span>
+        <span class="text-[10px] font-mono text-muted-foreground flex items-center gap-1">
           <Clock class="h-3 w-3" />
           {{ formatDuration(result.startTime, result.endTime) }}
         </span>

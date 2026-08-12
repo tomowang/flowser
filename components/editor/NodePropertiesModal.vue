@@ -277,7 +277,7 @@ const outputSample = computed(() => {
           <div class="flex flex-col gap-0.5">
             <Input
               :model-value="localName"
-              class="h-7 font-semibold px-1 -ml-1 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[300px]"
+              class="h-7 font-display font-semibold px-1 -ml-1 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[300px]"
               :class="{ 'border-destructive hover:border-destructive focus:border-destructive text-destructive': nameError }"
               @input="(e: Event) => updateName((e.target as HTMLInputElement).value)"
               @blur="validateNameOnBlur"

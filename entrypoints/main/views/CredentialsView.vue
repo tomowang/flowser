@@ -123,7 +123,7 @@ const openAddDialog = () => {
                 }}</span>
               </div>
             </TableCell>
-            <TableCell>{{
+            <TableCell class="font-mono text-xs">{{
               new Date(cred.createdAt).toLocaleDateString()
             }}</TableCell>
             <TableCell class="text-right">

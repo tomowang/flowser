@@ -1231,7 +1231,7 @@ const toggleExecutionPanel = () => {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink as-child>
-              <RouterLink to="/workflows">
+              <RouterLink to="/workflows" class="font-mono">
                 {{ t("workflows.title") }}
               </RouterLink>
             </BreadcrumbLink>
@@ -1241,7 +1241,7 @@ const toggleExecutionPanel = () => {
       </Breadcrumb>
       <Input
         v-model="currentWorkflowName"
-        class="h-8 font-semibold px-2 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[200px]"
+        class="h-8 font-display font-semibold px-2 bg-transparent border-transparent shadow-none hover:border-input focus:border-input w-[200px]"
         @blur="onNameBlur"
       />
       <div class="h-4 w-px bg-border mx-2"></div>
@@ -1422,7 +1422,7 @@ const toggleExecutionPanel = () => {
           class="absolute top-20 right-4 z-10 w-80 bg-card border rounded-lg shadow-lg flex flex-col max-h-[calc(100%-8rem)]"
         >
           <div class="p-4 border-b">
-            <h3 class="font-semibold mb-2">
+            <h3 class="font-display font-semibold mb-2">
               {{ t("workflowEditor.addNode") }}
             </h3>
             <div class="relative">
@@ -1447,7 +1447,7 @@ const toggleExecutionPanel = () => {
             >
               <!-- Group Header -->
               <div
-                class="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-muted/50 cursor-pointer select-none text-sm font-semibold text-muted-foreground"
+                class="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-muted/50 cursor-pointer select-none text-sm font-mono font-semibold text-muted-foreground"
                 @click="toggleGroup(groupName)"
               >
                 <ChevronRight
@@ -1492,7 +1492,7 @@ const toggleExecutionPanel = () => {
                     />
                   </div>
                   <div class="flex flex-col text-left">
-                    <span class="text-sm font-medium">{{
+                    <span class="text-sm font-display font-medium">{{
                       nodeI18n.label(node.description.name, node.description.displayName)
                     }}</span>
                   </div>

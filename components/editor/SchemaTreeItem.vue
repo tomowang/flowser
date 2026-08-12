@@ -95,7 +95,7 @@ const preview = computed(() => {
         :is="typeIcon"
         class="h-3.5 w-3.5 shrink-0 text-muted-foreground"
       />
-      <span class="shrink-0 font-medium">{{ name }}</span>
+      <span class="shrink-0 font-mono font-medium">{{ name }}</span>
       <span v-if="preview !== null" class="truncate text-muted-foreground">
         {{ preview }}
       </span>

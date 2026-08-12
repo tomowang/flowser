@@ -74,7 +74,7 @@ const onNodeSelect = (id: string) => {
       @click="emit('toggle-collapse')"
     >
       <div class="flex items-center gap-2">
-        <span class="font-semibold text-sm">{{ t("executions.results") }}</span>
+        <span class="font-display font-semibold text-sm">{{ t("executions.results") }}</span>
         <span
           class="text-xs px-2 py-0.5 rounded-full capitalize"
           :class="{

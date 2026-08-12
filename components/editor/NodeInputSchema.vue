@@ -62,7 +62,7 @@ const toggle = (id: string) => {
             class="h-full w-full"
           />
         </div>
-        <span class="text-xs font-medium truncate">{{ entry.label }}</span>
+        <span class="text-xs font-mono font-medium truncate">{{ entry.label }}</span>
       </div>
       <div v-if="expandedIds.has(entry.id)" class="pl-4 pb-1">
         <template v-if="entry.sample && Object.keys(entry.sample).length > 0">

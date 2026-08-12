@@ -275,7 +275,7 @@ const shouldShowProperty = (prop: INodeProperties) =>
 <template>
   <div v-if="node && nodeType" class="space-y-4">
     <div>
-      <h3 class="font-medium text-lg">
+      <h3 class="font-display font-medium text-lg">
         {{
           nodeI18n.label(
             nodeType.description.name,

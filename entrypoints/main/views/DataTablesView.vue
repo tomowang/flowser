@@ -96,7 +96,7 @@ const confirmDelete = async () => {
       <Card
         v-for="table in tables"
         :key="table.id"
-        class="h-full py-4 pt-0 gap-2 hover:shadow-lg hover:border-primary/20 transition-all duration-200 overflow-hidden flex flex-col"
+        class="h-full py-4 pt-0 gap-2 hover:border-primary/20 transition-all duration-200 overflow-hidden flex flex-col"
       >
         <RouterLink
           :to="`/datatables/${table.id}`"
@@ -109,7 +109,7 @@ const confirmDelete = async () => {
           </div>
           <CardHeader class="group relative">
             <CardTitle
-              class="text-lg line-clamp-1 group-hover:text-primary transition-colors"
+              class="text-lg font-display line-clamp-1 group-hover:text-primary transition-colors"
               >{{ table.name }}</CardTitle
             >
             <CardAction

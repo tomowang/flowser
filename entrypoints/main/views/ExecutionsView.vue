@@ -264,8 +264,10 @@ onMounted(() => {
             <TableCell class="font-medium">{{
               exec.workflowName || exec.workflowId
             }}</TableCell>
-            <TableCell>{{ formatDate(exec.startTime) }}</TableCell>
-            <TableCell>{{
+            <TableCell class="font-mono text-xs">{{
+              formatDate(exec.startTime)
+            }}</TableCell>
+            <TableCell class="font-mono text-xs">{{
               formatDuration(exec.startTime, exec.endTime)
             }}</TableCell>
             <TableCell class="text-right">
