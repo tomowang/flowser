@@ -170,7 +170,9 @@ const deleteRow = async (rowId: number) => {
         <ArrowLeft class="h-4 w-4" />
       </Button>
       <div v-if="table">
-        <h1 class="text-3xl font-bold tracking-tight mb-1">{{ table.name }}</h1>
+        <h1 class="text-3xl font-bold tracking-tight font-display mb-1">
+          {{ table.name }}
+        </h1>
         <div class="flex items-center gap-2 text-muted-foreground text-sm">
           <Database class="h-3.5 w-3.5" />
           <span>{{

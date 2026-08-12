@@ -29,7 +29,9 @@ watch(currentTheme, (newTheme) => {
 
 <template>
   <div class="p-6">
-    <h1 class="text-2xl font-bold mb-2">{{ t("settings.title") }}</h1>
+    <h1 class="text-3xl font-bold tracking-tight font-display mb-2">
+      {{ t("settings.title") }}
+    </h1>
     <p class="text-muted-foreground mb-6">{{ t("settings.description") }}</p>
 
     <div class="space-y-6">

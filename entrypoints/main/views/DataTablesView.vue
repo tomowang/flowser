@@ -79,7 +79,7 @@ const confirmDelete = async () => {
   <div class="p-8 w-full mx-auto">
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-3xl font-bold tracking-tight mb-2">
+        <h1 class="text-3xl font-bold tracking-tight font-display mb-2">
           {{ t("datatables.title") }}
         </h1>
         <p class="text-muted-foreground">{{ t("datatables.description") }}</p>

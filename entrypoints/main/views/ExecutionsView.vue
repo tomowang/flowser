@@ -165,7 +165,9 @@ onMounted(() => {
 <template>
   <div class="h-full flex flex-col p-6 space-y-4 overflow-hidden">
     <div class="flex items-center justify-between shrink-0">
-      <h1 class="text-2xl font-bold">{{ t("executions.title") }}</h1>
+      <h1 class="text-3xl font-bold tracking-tight font-display">
+        {{ t("executions.title") }}
+      </h1>
       <div class="flex items-center gap-2">
         <span v-if="selectedIds.size > 0" class="text-sm text-muted-foreground">
           {{ t("executions.selectedCount", { count: selectedIds.size }) }}
