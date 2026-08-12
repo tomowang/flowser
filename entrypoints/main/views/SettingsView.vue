@@ -28,7 +28,7 @@ watch(currentTheme, (newTheme) => {
 </script>
 
 <template>
-  <div class="p-6">
+  <div class="p-8">
     <h1 class="text-3xl font-bold tracking-tight font-display mb-2">
       {{ t("settings.title") }}
     </h1>

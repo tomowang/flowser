@@ -165,7 +165,7 @@ const deleteRow = async (rowId: number) => {
 
 <template>
   <div class="p-8 w-full mx-auto max-w-[1920px]">
-    <div class="flex items-center gap-4 mb-8">
+    <div class="flex items-start gap-4 mb-8">
       <Button variant="ghost" size="icon" @click="router.push('/datatables')">
         <ArrowLeft class="h-4 w-4" />
       </Button>

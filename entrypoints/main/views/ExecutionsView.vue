@@ -163,8 +163,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col p-6 space-y-4 overflow-hidden">
-    <div class="flex items-center justify-between shrink-0">
+  <div class="h-full flex flex-col p-8 space-y-4 overflow-hidden">
+    <div class="flex items-start justify-between shrink-0">
       <h1 class="text-3xl font-bold tracking-tight font-display">
         {{ t("executions.title") }}
       </h1>

@@ -48,6 +48,8 @@ First lightness value = dark mode, second = light mode. Success/active green is 
 ## 4. Component patterns
 
 - **Page title**: `text-3xl font-bold tracking-tight font-display` (30px, Space Grotesk 700) — used for the top-level `<h1>` on Workflows, Data Tables, Credentials, Executions, Settings, and the Data Table detail view.
+- **Page container**: `p-8` outer padding with `mb-8` below the title/header row before the page's main content — used on Workflows, Data Tables, Credentials, Executions, Settings, and the Data Table detail view.
+- **Page header row**: `flex items-start justify-between` (never `items-center`) — the title's line-height (36px) matches the default `Button` height (36px), so top-aligning keeps the action button's position identical whether or not the title has a subtitle underneath it.
 - **Primary button**: accent fill, dark text (#180d02 on orange), 700 weight, 3px radius, no shadow.
 - **Outline button**: 1px border, transparent/surface bg, 600 weight text.
 - **Switch (Active toggle)**: flat 2–3px-radius track (not pill), 38×20 or 32×18, thumb inset 2px, on-color = accent (sidebar) or #1db954 (Active state).

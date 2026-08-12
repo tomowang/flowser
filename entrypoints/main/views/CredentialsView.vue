@@ -75,8 +75,8 @@ const openAddDialog = () => {
 </script>
 
 <template>
-  <div class="p-6">
-    <div class="flex items-center justify-between mb-6">
+  <div class="p-8">
+    <div class="flex items-start justify-between mb-8">
       <h1 class="text-3xl font-bold tracking-tight font-display">
         {{ t("credentials.title") }}
       </h1>
