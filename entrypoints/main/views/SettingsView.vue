@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { browser } from "wxt/browser";
 import Github from "@thesvg/vue/github";
@@ -20,6 +20,13 @@ import {
   getCurrentTheme,
   type ThemeMode,
 } from "@/lib/theme";
+import {
+  supportedExecutionRetentions,
+  getExecutionRetention,
+  setExecutionRetention,
+  type ExecutionRetention,
+} from "@/lib/execution-retention";
+import { MessageType } from "@/lib/messages";
 
 const GITHUB_REPO_URL = "https://github.com/tomowang/flowser";
 const CHROME_STORE_URL =
@@ -43,8 +50,29 @@ watch(currentLocale, (newLocale) => {
   setLocale(newLocale);
 });
 
+const currentRetention = ref<string>("forever");
+
+onMounted(async () => {
+  currentRetention.value = String(await getExecutionRetention());
+});
+
 watch(currentTheme, (newTheme) => {
   setTheme(newTheme);
+});
+
+watch(currentRetention, async (newVal) => {
+  const parsed: ExecutionRetention =
+    newVal === "forever" ? "forever" : (Number(newVal) as ExecutionRetention);
+  await setExecutionRetention(parsed);
+  browser.runtime
+    .sendMessage({
+      type: MessageType.EXECUTION_RETENTION_UPDATED,
+      payload: parsed,
+    })
+    .catch(() => {
+      // Background service worker may be asleep; the setting is already
+      // persisted to storage, and the next alarm/startup purge will apply it.
+    });
 });
 </script>
 
@@ -93,6 +121,33 @@ watch(currentTheme, (newTheme) => {
               :value="theme.code"
             >
               {{ t(theme.labelKey) }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <Label for="execution-retention">{{
+          t("settings.executionRetention")
+        }}</Label>
+        <p class="text-sm text-muted-foreground">
+          {{ t("settings.executionRetentionDescription") }}
+        </p>
+        <Select v-model="currentRetention">
+          <SelectTrigger class="w-[200px]">
+            <SelectValue :placeholder="t('settings.executionRetention')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem
+              v-for="opt in supportedExecutionRetentions"
+              :key="String(opt.code)"
+              :value="String(opt.code)"
+            >
+              {{
+                opt.code === "forever"
+                  ? t(opt.labelKey)
+                  : t(opt.labelKey, { count: opt.code })
+              }}
             </SelectItem>
           </SelectContent>
         </Select>

@@ -1,5 +1,6 @@
 import { dbPromise } from "../db";
 import { IWorkflowExecutionResult } from "../types";
+import { ExecutionRetention } from "../execution-retention";
 
 export class ExecutionService {
   static async saveExecution(
@@ -37,5 +38,19 @@ export class ExecutionService {
     const db = await dbPromise;
     const tx = db.transaction("executions", "readwrite");
     await Promise.all([...ids.map((id) => tx.store.delete(id)), tx.done]);
+  }
+
+  static async purgeExecutions(retention: ExecutionRetention): Promise<number> {
+    if (retention === "forever") return 0;
+
+    const db = await dbPromise;
+    const all = await db.getAll("executions");
+    if (all.length <= retention) return 0;
+
+    const sorted = all.sort((a, b) => b.endTime - a.endTime);
+    const idsToDelete = sorted.slice(retention).map((e) => e.id);
+
+    await this.deleteExecutions(idsToDelete);
+    return idsToDelete.length;
   }
 }

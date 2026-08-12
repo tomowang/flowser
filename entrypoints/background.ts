@@ -9,12 +9,13 @@ import { dbPromise } from "../lib/db";
 import { WorkflowRunner } from "../lib/engine/WorkflowRunner";
 import { ExecutionService } from "../lib/services/execution-service";
 import { SecurityService } from "../lib/services/security-service";
+import { getExecutionRetention } from "../lib/execution-retention";
 import parser from "cron-parser";
 import { IWorkflow, IDataObject } from "../lib/types";
 
 // Transient session encryption key (memory-only)
 // This key encrypts the Master Key when it's saved in session storage
-// If the background script is completely killed, we lose this key and 
+// If the background script is completely killed, we lose this key and
 // the user will need to re-enter their password (secure-by-default)
 let transientSessionKey: CryptoKey | null = null;
 
@@ -22,7 +23,9 @@ async function getTransientKey() {
   if (transientSessionKey) return transientSessionKey;
 
   // Try to load from session storage to survive Service Worker restarts
-  const storedKey = await storage.getItem<string>("session:flowser_transient_key");
+  const storedKey = await storage.getItem<string>(
+    "session:flowser_transient_key",
+  );
   if (storedKey) {
     try {
       transientSessionKey = await crypto.subtle.importKey(
@@ -30,7 +33,7 @@ async function getTransientKey() {
         JSON.parse(storedKey),
         { name: "AES-GCM", length: 256 },
         true,
-        ["encrypt", "decrypt"]
+        ["encrypt", "decrypt"],
       );
       return transientSessionKey;
     } catch (e) {
@@ -47,7 +50,10 @@ async function getTransientKey() {
 
   // Save to session storage for next SW wake-up
   const exported = await crypto.subtle.exportKey("jwk", transientSessionKey);
-  await storage.setItem("session:flowser_transient_key", JSON.stringify(exported));
+  await storage.setItem(
+    "session:flowser_transient_key",
+    JSON.stringify(exported),
+  );
 
   return transientSessionKey;
 }
@@ -59,16 +65,18 @@ async function wrapMasterKey(jwk: JsonWebKey): Promise<string> {
   const key = await getTransientKey();
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encoded = new TextEncoder().encode(JSON.stringify(jwk));
-  
+
   const encrypted = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv },
     key,
-    encoded
+    encoded,
   );
 
   // Return formatted blob: iv:encryptedData (base64)
   const ivBase64 = btoa(String.fromCharCode(...iv));
-  const encryptedBase64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+  const encryptedBase64 = btoa(
+    String.fromCharCode(...new Uint8Array(encrypted)),
+  );
   return `${ivBase64}:${encryptedBase64}`;
 }
 
@@ -79,16 +87,24 @@ async function unwrapMasterKey(blob: string): Promise<JsonWebKey | null> {
   try {
     const key = await getTransientKey();
     const [ivBase64, encryptedBase64] = blob.split(":");
-    
-    const iv = new Uint8Array(atob(ivBase64).split("").map(c => c.charCodeAt(0)));
-    const encrypted = new Uint8Array(atob(encryptedBase64).split("").map(c => c.charCodeAt(0)));
-    
+
+    const iv = new Uint8Array(
+      atob(ivBase64)
+        .split("")
+        .map((c) => c.charCodeAt(0)),
+    );
+    const encrypted = new Uint8Array(
+      atob(encryptedBase64)
+        .split("")
+        .map((c) => c.charCodeAt(0)),
+    );
+
     const decrypted = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv },
       key,
-      encrypted
+      encrypted,
     );
-    
+
     return JSON.parse(new TextDecoder().decode(decrypted));
   } catch (e) {
     console.error("Failed to unwrap master key", e);
@@ -110,7 +126,7 @@ async function restoreMasterKey() {
       jwk,
       { name: "AES-GCM", length: 256 },
       true,
-      ["encrypt", "decrypt"]
+      ["encrypt", "decrypt"],
     );
     SecurityService.setMasterKey(key);
     console.log("Master key restored from session storage");
@@ -155,6 +171,29 @@ async function scheduleWorkflow(workflow: IWorkflow) {
   }
 }
 
+const PURGE_ALARM_NAME = "flowser:log-retention-purge";
+const PURGE_INTERVAL_MINUTES = 60;
+
+async function ensurePurgeAlarmScheduled() {
+  const existing = await browser.alarms.get(PURGE_ALARM_NAME);
+  if (!existing) {
+    await browser.alarms.create(PURGE_ALARM_NAME, {
+      delayInMinutes: PURGE_INTERVAL_MINUTES,
+      periodInMinutes: PURGE_INTERVAL_MINUTES,
+    });
+  }
+}
+
+async function purgeExecutionLogs() {
+  const retention = await getExecutionRetention();
+  const purged = await ExecutionService.purgeExecutions(retention);
+  if (purged > 0) {
+    console.log(
+      `Purged ${purged} execution log(s) per retention setting (${retention})`,
+    );
+  }
+}
+
 async function importInitialWorkflows() {
   try {
     const db = await dbPromise;
@@ -167,14 +206,16 @@ async function importInitialWorkflows() {
       const mod = initialWorkflows[path] as Record<string, unknown>;
       const workflowJson = (mod.default || mod) as Partial<IWorkflow>;
 
-      const filename = path.split("/").pop()?.replace(".json", "") || "workflow";
+      const filename =
+        path.split("/").pop()?.replace(".json", "") || "workflow";
       const id = workflowJson.id || filename;
       const name = workflowJson.name || filename;
       const nodes = workflowJson.nodes || [];
       const edges = workflowJson.edges || [];
       const createdAt = workflowJson.createdAt || Date.now();
       const updatedAt = workflowJson.updatedAt || Date.now();
-      const active = workflowJson.active !== undefined ? workflowJson.active : false;
+      const active =
+        workflowJson.active !== undefined ? workflowJson.active : false;
       const previewSvg = workflowJson.previewSvg || "";
 
       const workflowToSave: IWorkflow = {
@@ -214,7 +255,9 @@ export default defineBackground(() => {
   // 1. Set storage session access level to TRUSTED_CONTEXTS (prevents content script access)
   // This is a browser-native security hardening.
   const browserStorage = browser.storage as typeof browser.storage & {
-    session?: { setAccessLevel?: (arg: { accessLevel: string }) => Promise<void> };
+    session?: {
+      setAccessLevel?: (arg: { accessLevel: string }) => Promise<void>;
+    };
   };
   if (typeof browserStorage.session?.setAccessLevel === "function") {
     browserStorage.session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
@@ -231,11 +274,17 @@ export default defineBackground(() => {
     }
   });
 
+  // Ensure the log-retention purge alarm exists and purge once on startup/wake
+  ensurePurgeAlarmScheduled();
+  purgeExecutionLogs();
+
   browser.runtime.onMessage.addListener(
     (message: RuntimeMessage, sender, sendResponse) => {
       // 1. Security check: Only allow requests from our extension's pages
       const extensionUrl = browser.runtime.getURL("");
-      const isInternal = sender.url?.startsWith(extensionUrl) || sender.id === browser.runtime.id;
+      const isInternal =
+        sender.url?.startsWith(extensionUrl) ||
+        sender.id === browser.runtime.id;
 
       if (!isInternal) {
         console.warn("Blocked message from untrusted sender:", sender.url);
@@ -269,7 +318,7 @@ export default defineBackground(() => {
               message.payload as JsonWebKey,
               { name: "AES-GCM", length: 256 },
               true,
-              ["encrypt", "decrypt"]
+              ["encrypt", "decrypt"],
             );
             SecurityService.setMasterKey(key);
             sendResponse({ success: true });
@@ -277,7 +326,8 @@ export default defineBackground(() => {
           .catch((err) => sendResponse({ success: false, error: err.message }));
         return true;
       } else if (message.type === MessageType.SECURITY_GET_MK) {
-        storage.getItem<string>("session:flowser_wrapped_mk")
+        storage
+          .getItem<string>("session:flowser_wrapped_mk")
           .then(async (wrapped) => {
             if (!wrapped) return sendResponse({ success: true, data: null });
             const jwk = await unwrapMasterKey(wrapped);
@@ -292,30 +342,48 @@ export default defineBackground(() => {
         sendResponse({ success: true });
       } else if (message.type === MessageType.WORKFLOW_EXECUTE) {
         const { workflowId } = message.payload as { workflowId: string };
-        dbPromise.then(async (db) => {
-          const workflow = await db.get("workflows", workflowId);
-          if (!workflow) {
-            console.error("Workflow not found to execute in background:", workflowId);
-            return;
-          }
-          console.log("Executing workflow in background:", workflow.name);
-          const runner = new WorkflowRunner(workflow);
-          try {
-            const result = await runner.run();
-            await ExecutionService.saveExecution(result);
-            console.log("Workflow execution saved in background:", workflow.name);
-          } catch (e) {
-            console.error("Error executing workflow in background:", e);
-          }
-        }).catch((err) => {
-          console.error("Failed to fetch workflow in background:", err);
-        });
+        dbPromise
+          .then(async (db) => {
+            const workflow = await db.get("workflows", workflowId);
+            if (!workflow) {
+              console.error(
+                "Workflow not found to execute in background:",
+                workflowId,
+              );
+              return;
+            }
+            console.log("Executing workflow in background:", workflow.name);
+            const runner = new WorkflowRunner(workflow);
+            try {
+              const result = await runner.run();
+              await ExecutionService.saveExecution(result);
+              console.log(
+                "Workflow execution saved in background:",
+                workflow.name,
+              );
+            } catch (e) {
+              console.error("Error executing workflow in background:", e);
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to fetch workflow in background:", err);
+          });
         sendResponse({ success: true });
+      } else if (message.type === MessageType.EXECUTION_RETENTION_UPDATED) {
+        purgeExecutionLogs()
+          .then(() => sendResponse({ success: true }))
+          .catch((err) => sendResponse({ success: false, error: err.message }));
+        return true; // async response
       }
     },
   );
 
   browser.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name === PURGE_ALARM_NAME) {
+      await purgeExecutionLogs();
+      return;
+    }
+
     const db = await dbPromise;
     const workflow = await db.get("workflows", alarm.name);
 
