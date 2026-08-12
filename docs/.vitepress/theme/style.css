@@ -49,10 +49,10 @@
   --vp-c-default-3: var(--vp-c-gray-3);
   --vp-c-default-soft: var(--vp-c-gray-soft);
 
-  --vp-c-brand-1: var(--vp-c-indigo-1);
-  --vp-c-brand-2: var(--vp-c-indigo-2);
-  --vp-c-brand-3: var(--vp-c-indigo-3);
-  --vp-c-brand-soft: var(--vp-c-indigo-soft);
+  --vp-c-brand-1: #f4741f;
+  --vp-c-brand-2: #d8630f;
+  --vp-c-brand-3: #f4741f;
+  --vp-c-brand-soft: rgba(244, 116, 31, 0.14);
 
   --vp-c-tip-1: var(--vp-c-brand-1);
   --vp-c-tip-2: var(--vp-c-brand-2);
@@ -71,18 +71,85 @@
 }
 
 /**
+ * Flowser brand tokens
+ *
+ * Warm OKLCH neutrals + fixed orange accent, mirrored from the extension's
+ * `assets/style.css` (--background/--card/--border/--foreground/--muted-foreground
+ * and their `.dark` counterparts) so the docs site and the extension UI share
+ * the exact same values.
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-c-bg: oklch(0.975 0.006 60);
+  --vp-c-bg-alt: oklch(0.93 0.006 60);
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #ffffff;
+
+  --vp-c-border: oklch(0.9 0.006 60);
+  --vp-c-divider: oklch(0.93 0.006 60);
+  --vp-c-gutter: oklch(0.9 0.006 60);
+
+  --vp-c-text-1: oklch(0.19 0.01 60);
+  --vp-c-text-2: oklch(0.52 0.012 60);
+  --vp-c-text-3: oklch(0.68 0.01 60);
+}
+
+.dark {
+  --vp-c-bg: oklch(0.17 0.014 45);
+  --vp-c-bg-alt: oklch(0.245 0.015 45);
+  --vp-c-bg-elv: oklch(0.245 0.015 45);
+  --vp-c-bg-soft: oklch(0.215 0.014 45);
+
+  --vp-c-border: oklch(0.33 0.015 45);
+  --vp-c-divider: oklch(0.28 0.014 45);
+  --vp-c-gutter: oklch(0.14 0.012 45);
+
+  --vp-c-text-1: oklch(0.95 0.008 60);
+  --vp-c-text-2: oklch(0.62 0.015 60);
+  --vp-c-text-3: oklch(0.45 0.015 45);
+
+  --vp-c-brand-1: #ff9142;
+  --vp-c-brand-2: #f4741f;
+  --vp-c-brand-3: #f4741f;
+  --vp-c-brand-soft: rgba(244, 116, 31, 0.16);
+}
+
+/**
+ * Typography
+ *
+ * Inter is already the base font (self-hosted by VitePress's default theme).
+ * Layer Flowser's display/mono families on top for headings, the hero, the
+ * nav wordmark, and code/mono text.
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-font-family-mono:
+    'IBM Plex Mono', ui-monospace, 'Menlo', 'Monaco', 'Consolas',
+    'Liberation Mono', 'Courier New', monospace;
+}
+
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.VPHero .name,
+.VPHero .text,
+.VPNavBarTitle .title {
+  font-family: 'Space Grotesk', var(--vp-font-family-base);
+}
+
+/**
  * Component: Button
  * -------------------------------------------------------------------------- */
 
 :root {
   --vp-button-brand-border: transparent;
-  --vp-button-brand-text: var(--vp-c-white);
+  --vp-button-brand-text: #180d02;
   --vp-button-brand-bg: var(--vp-c-brand-3);
   --vp-button-brand-hover-border: transparent;
-  --vp-button-brand-hover-text: var(--vp-c-white);
+  --vp-button-brand-hover-text: #180d02;
   --vp-button-brand-hover-bg: var(--vp-c-brand-2);
   --vp-button-brand-active-border: transparent;
-  --vp-button-brand-active-text: var(--vp-c-white);
+  --vp-button-brand-active-text: #180d02;
   --vp-button-brand-active-bg: var(--vp-c-brand-1);
 }
 
@@ -94,14 +161,14 @@
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: -webkit-linear-gradient(
     120deg,
-    #bd34fe 30%,
-    #41d1ff
+    #f4741f 30%,
+    #ffb066
   );
 
   --vp-home-hero-image-background-image: linear-gradient(
     -45deg,
-    #bd34fe 50%,
-    #47caff 50%
+    #f4741f 50%,
+    #ffb066 50%
   );
   --vp-home-hero-image-filter: blur(44px);
 }
