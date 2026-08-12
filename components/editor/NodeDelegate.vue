@@ -3,6 +3,7 @@ import { computed, ref, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import { Handle, Position, useVueFlow } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
+import { getNodeCategory } from "@/lib/nodes/nodeCategory";
 import { Trash2, AlertTriangle, Plus, Play } from "@lucide/vue";
 import { validateNode } from "@/lib/utils/validation";
 import { IWorkflowNode } from "@/lib/types";
@@ -36,6 +37,9 @@ const isHandleConnected = (handleId: string, type: "source" | "target") => {
 const nodeType = computed(() => {
   return Registry.get(props.data.nodeType as string);
 });
+
+const categoryClass = computed(() => `node-${getNodeCategory(props.data.nodeType as string)}`);
+const isBrandIcon = computed(() => nodeType.value?.description.brandIcon === true);
 
 // Construct a temporary IWorkflowNode object for validation
 // We only need type and data for validation
@@ -129,25 +133,36 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
 
 <template>
   <div
-    class="relative group min-w-[180px] rounded-lg border bg-card p-3 shadow-md hover:shadow-lg transition-all node-hover-area"
-    :class="{
-      '!ring-2 !ring-gray-400 !shadow-[0_0_10px_2px_rgba(156,163,175,0.5)]':
-        selected,
-      'status-running': data.executionStatus === 'running',
-      '!border-green-500 ring-2 ring-green-500/20':
-        data.executionStatus === 'success',
-      '!border-red-500 ring-2 ring-red-500/20':
-        data.executionStatus === 'error',
-      'hover:border-primary/50': !data.executionStatus,
-    }"
+    class="relative group min-w-[180px] rounded-lg border bg-[var(--surface-raised)] p-3 transition-all node-hover-area"
+    :class="[
+      categoryClass,
+      {
+        '!ring-2 !ring-gray-400 !shadow-[0_0_10px_2px_rgba(156,163,175,0.5)]':
+          selected,
+        'status-running': data.executionStatus === 'running',
+        '!border-green-500 ring-2 ring-green-500/20':
+          data.executionStatus === 'success',
+        '!border-red-500 ring-2 ring-red-500/20':
+          data.executionStatus === 'error',
+        'hover:border-primary/50': !data.executionStatus,
+      },
+    ]"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
   >
+    <!-- Category accent stripe -->
+    <div
+      class="absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-[2px]"
+      :style="{ background: 'var(--node-accent)' }"
+    />
+
     <!-- Header -->
     <div class="flex items-center gap-3 mb-2">
       <!-- Icon placeholder (could be dynamic based on node type) -->
       <div
-        class="flex h-8 w-8 items-center justify-center rounded bg-muted text-muted-foreground p-1.5"
+        class="flex h-[34px] w-[34px] items-center justify-center rounded-sm p-1.5"
+        :class="isBrandIcon ? 'bg-white border border-border text-neutral-800' : 'text-white'"
+        :style="isBrandIcon ? undefined : { background: 'var(--node-accent)' }"
       >
         <NodeIcon
           :icon="nodeType?.description.icon"
@@ -157,8 +172,8 @@ const onPlusClick = (handleId: string, handleType: "source" | "target", event: M
       </div>
 
       <div class="flex flex-col overflow-hidden">
-        <span class="text-sm font-semibold truncate">{{ data.label }}</span>
-        <span class="text-[10px] text-muted-foreground truncate">{{
+        <span class="text-sm font-display font-semibold truncate">{{ data.label }}</span>
+        <span class="text-[10px] font-mono text-muted-foreground truncate">{{
           nodeType
             ? nodeI18n.label(nodeType.description.name, nodeType.description.displayName)
             : undefined

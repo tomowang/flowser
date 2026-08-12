@@ -16,6 +16,7 @@ export const ClaudeModel: INodeType = {
     displayName: "Claude Chat Model",
     name: "claudeModel",
     icon: Claude,
+    brandIcon: true,
     group: ["ai"],
     version: 1,
     description: "Anthropic Claude LLM Model",

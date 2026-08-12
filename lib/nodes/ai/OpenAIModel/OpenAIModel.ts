@@ -15,6 +15,7 @@ export const OpenAIModel: INodeType = {
     displayName: "OpenAI Chat Model",
     name: "openAIModel",
     icon: Openai,
+    brandIcon: true,
     group: ["ai"],
     version: 1,
     description: "OpenAI LLM Model",

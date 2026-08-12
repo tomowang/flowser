@@ -18,6 +18,7 @@ import {
 } from "@vue-flow/core";
 import { useRoute, RouterLink } from "vue-router";
 import { Registry } from "@/lib/nodes/registry";
+import { getNodeCategory } from "@/lib/nodes/nodeCategory";
 import { validateNode } from "@/lib/utils/validation";
 import NodeDelegate from "@/components/editor/NodeDelegate.vue";
 import CustomEdge from "@/components/editor/CustomEdge.vue";
@@ -1409,7 +1410,7 @@ const toggleExecutionPanel = () => {
               <CustomEdge v-bind="props" />
             </template>
 
-            <Background pattern-color="#aaa" :gap="16" />
+            <Background pattern-color="var(--canvas-dot)" :gap="16" />
             <Controls position="bottom-left" />
             <MiniMap position="bottom-left" />
           </VueFlow>
@@ -1454,6 +1455,11 @@ const toggleExecutionPanel = () => {
                   class="h-4 w-4"
                 />
                 <ChevronDown v-else class="h-4 w-4" />
+                <span
+                  class="h-2 w-2 rounded-full shrink-0"
+                  :class="`node-${getNodeCategory(groupNodes[0]?.description.name)}`"
+                  :style="{ background: 'var(--node-accent)' }"
+                />
                 <span>{{ t(`workflowEditor.groups.${groupName}`) }}</span>
               </div>
 
@@ -1463,6 +1469,7 @@ const toggleExecutionPanel = () => {
                   v-for="node in groupNodes"
                   :key="node.description.name"
                   class="cursor-grab flex items-center gap-3 rounded-md border bg-popover p-3 hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm"
+                  :class="`node-${getNodeCategory(node.description.name)}`"
                   draggable="true"
                   @dragstart="
                     (event) =>
@@ -1474,12 +1481,14 @@ const toggleExecutionPanel = () => {
                   @click="onQuickAddNode(node)"
                 >
                   <div
-                    class="flex h-8 w-8 items-center justify-center rounded bg-muted p-1.5"
+                    class="flex h-8 w-8 items-center justify-center rounded-sm p-1.5 shrink-0"
+                    :class="node.description.brandIcon ? 'bg-white border border-border text-neutral-800' : 'text-white'"
+                    :style="node.description.brandIcon ? undefined : { background: 'var(--node-accent)' }"
                   >
                     <NodeIcon
                       :icon="node.description.icon"
                       :node-name="node.description.name"
-                      class="h-full w-full text-foreground/70"
+                      class="h-full w-full"
                     />
                   </div>
                   <div class="flex flex-col text-left">
@@ -1539,6 +1548,16 @@ const toggleExecutionPanel = () => {
 </template>
 
 <style scoped>
+.vue-flow {
+  background: var(--canvas-bg);
+}
+
+:deep(.vue-flow__handle) {
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--canvas-bg);
+}
+
 /* Adjustments for controls position if needed */
 .vue-flow__controls {
   display: flex;

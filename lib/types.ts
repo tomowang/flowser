@@ -139,6 +139,9 @@ export interface INodeTypeDescription {
   displayName: string;
   name: string;
   icon: string | object | ((...args: unknown[]) => unknown); // Icon name e.g. 'f7:bolt' or svg string or Component
+  // Set when `icon` renders with its own fixed brand colors (e.g. a third-party logo)
+  // rather than a single-color glyph that can be tinted via currentColor.
+  brandIcon?: boolean;
   group: string[];
   version: number;
   description: string;

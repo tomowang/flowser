@@ -10,16 +10,22 @@ import {
   Position,
 } from "@vue-flow/core";
 import { Trash2 } from "@lucide/vue";
+import { getNodeCategory } from "@/lib/nodes/nodeCategory";
 
 const props = defineProps<EdgeProps>();
 
 const { removeEdges, findNode } = useVueFlow();
 
-const label = computed(() => {
+const sourceNodeType = computed(() => {
   const sourceNode = props.sourceNode || findNode(props.source);
-  const nodeType = sourceNode?.data?.nodeType;
-  
-  if (nodeType === "if") {
+  return sourceNode?.data?.nodeType as string | undefined;
+});
+
+const sourceCategory = computed(() => getNodeCategory(sourceNodeType.value));
+const sourceCategoryVar = computed(() => `var(--node-${sourceCategory.value})`);
+
+const label = computed(() => {
+  if (sourceNodeType.value === "if") {
     if (props.sourceHandleId === "true") return "True";
     if (props.sourceHandleId === "false") return "False";
   }
@@ -55,10 +61,11 @@ const path = computed(() => {
 });
 
 const edgeStyle = computed(() => {
+  const style = { ...props.style, stroke: sourceCategoryVar.value, strokeWidth: 2 };
   if (!isMainConnection.value) {
-    return { ...props.style, strokeDasharray: "5, 6" };
+    return { ...style, strokeDasharray: "5, 6" };
   }
-  return props.style;
+  return style;
 });
 
 const onEdgeClick = (e: MouseEvent) => {
@@ -87,8 +94,11 @@ const onEdgeClick = (e: MouseEvent) => {
       <div
         :style="{
           transform: `translate(-50%, -50%) translate(${sourceX + 24}px, ${sourceY}px)`,
+          background: `color-mix(in oklch, ${sourceCategoryVar} 15%, transparent)`,
+          borderColor: `color-mix(in oklch, ${sourceCategoryVar} 30%, transparent)`,
+          color: sourceCategoryVar,
         }"
-        class="nodrag nopan absolute text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/70 z-10 pointer-events-none"
+        class="nodrag nopan absolute text-[9px] font-mono font-semibold uppercase tracking-wider border rounded-sm px-1.5 py-0.5 z-10 pointer-events-none"
       >
         {{ label }}
       </div>
