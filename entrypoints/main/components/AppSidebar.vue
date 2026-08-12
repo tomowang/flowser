@@ -76,7 +76,7 @@ const items = computed(() => [
                   v-if="state === 'expanded'"
                   class="grid flex-1 text-left text-sm leading-tight"
                 >
-                  <span class="truncate font-semibold">Flowser</span>
+                  <span class="truncate font-display font-bold text-lg">Flowser</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -97,7 +97,7 @@ const items = computed(() => [
                   active-class="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                 >
                   <component :is="item.icon" />
-                  <span>{{ item.title }}</span>
+                  <span class="font-mono">{{ item.title }}</span>
                 </RouterLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -114,7 +114,7 @@ const items = computed(() => [
               active-class="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
             >
               <Settings />
-              <span>{{ t("sidebar.settings") }}</span>
+              <span class="font-mono">{{ t("sidebar.settings") }}</span>
             </RouterLink>
           </SidebarMenuButton>
         </SidebarMenuItem>

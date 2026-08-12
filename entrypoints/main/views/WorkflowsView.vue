@@ -223,7 +223,7 @@ const runWorkflow = async (e: Event, wf: IWorkflow) => {
       <Card
         v-for="wf in filteredWorkflows"
         :key="wf.id"
-        class="h-full py-4 pt-0 gap-2 hover:shadow-lg hover:border-primary/20 transition-all duration-200 overflow-hidden flex flex-col"
+        class="h-full py-4 pt-0 gap-2 hover:border-primary/20 transition-all duration-200 overflow-hidden flex flex-col"
       >
         <RouterLink
           :to="`/workflows/${wf.id}`"
@@ -242,6 +242,7 @@ const runWorkflow = async (e: Event, wf: IWorkflow) => {
             <div
               v-else
               class="w-full h-full flex items-center justify-center text-muted-foreground/30"
+              style="background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1px); background-size: 16px 16px;"
             >
               <img :src="logoUrl" class="h-12 w-12 opacity-60" />
             </div>
@@ -249,7 +250,7 @@ const runWorkflow = async (e: Event, wf: IWorkflow) => {
 
           <CardHeader class="group">
             <CardTitle
-              class="text-lg line-clamp-1 group-hover:text-primary transition-colors"
+              class="text-lg font-display line-clamp-1 group-hover:text-primary transition-colors"
               >{{ wf.name }}</CardTitle
             >
             <CardAction
@@ -261,7 +262,7 @@ const runWorkflow = async (e: Event, wf: IWorkflow) => {
             </CardAction>
           </CardHeader>
 
-          <CardContent class="flex flex-col gap-2">
+          <CardContent class="flex flex-col gap-2 font-mono">
             <div class="flex items-center gap-1.5">
               <GitCommitHorizontal class="h-3.5 w-3.5" />
               <span>{{
@@ -296,6 +297,7 @@ const runWorkflow = async (e: Event, wf: IWorkflow) => {
           <div class="flex items-center gap-2">
             <Switch
               v-model="wf.active"
+              class="data-[state=checked]:bg-[#1db954]"
               @update:model-value="() => onToggleActive(wf.active, wf)"
             />
             <span
