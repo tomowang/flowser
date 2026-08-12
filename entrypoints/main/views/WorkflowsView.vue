@@ -196,12 +196,12 @@ const runWorkflow = async (e: Event, wf: IWorkflow) => {
         />
         <Button variant="outline" @click="triggerImport">
           <FileUp class="mr-2 h-4 w-4" />
-          {{ t("workflows.importWorkflow") }}
+          <span class="h-4 leading-4">{{ t("workflows.importWorkflow") }}</span>
         </Button>
         <RouterLink to="/workflows/new">
           <Button>
             <Plus class="mr-2 h-4 w-4" />
-            {{ t("workflows.newWorkflow") }}
+            <span class="h-4 leading-4">{{ t("workflows.newWorkflow") }}</span>
           </Button>
         </RouterLink>
       </div>

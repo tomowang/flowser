@@ -86,7 +86,7 @@ const confirmDelete = async () => {
       </div>
       <Button @click="isCreateDialogOpen = true">
         <Plus class="mr-2 h-4 w-4" />
-        {{ t("datatables.newTable") }}
+        <span class="h-4 leading-4">{{ t("datatables.newTable") }}</span>
       </Button>
     </div>
 

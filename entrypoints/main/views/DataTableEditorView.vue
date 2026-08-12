@@ -183,11 +183,11 @@ const deleteRow = async (rowId: number) => {
       <div class="ml-auto flex gap-2">
         <Button variant="outline" @click="openColumnsDialog">
           <Settings class="mr-2 h-4 w-4" />
-          {{ t("datatables.columns") }}
+          <span class="h-4 leading-4">{{ t("datatables.columns") }}</span>
         </Button>
         <Button @click="openAddRowDialog">
           <Plus class="mr-2 h-4 w-4" />
-          {{ t("datatables.addRow") }}
+          <span class="h-4 leading-4">{{ t("datatables.addRow") }}</span>
         </Button>
       </div>
     </div>

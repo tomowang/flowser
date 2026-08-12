@@ -82,7 +82,7 @@ const openAddDialog = () => {
       </h1>
       <Button @click="openAddDialog">
         <Plus class="mr-2 h-4 w-4" />
-        {{ t("credentials.addCredential") }}
+        <span class="h-4 leading-4">{{ t("credentials.addCredential") }}</span>
       </Button>
 
       <CreateCredentialModal
