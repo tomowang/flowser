@@ -1,6 +1,9 @@
 [changelog]
-header = ""
+header = "# Changelog\n\n"
 body = """
+{% if version %}## [{{ version }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}## [Unreleased]
+{% endif %}
 {% for group, commits in commits | group_by(attribute="group") %}
 ### {{ group | upper_first }}
 {% for commit in commits %}
@@ -28,6 +31,7 @@ commit_parsers = [
   { message = "^chore", group = "Miscellaneous" },
   { message = "^ci", group = "CI/CD" },
   { message = "^revert", group = "Revert" },
+  { message = "^security", group = "Security" },
 ]
 protect_breaking_commits = false
 filter_commits = false
