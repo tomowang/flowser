@@ -1,5 +1,10 @@
 import { browser } from "#imports";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+} from "../../types";
 import { AppWindow } from "@lucide/vue";
 
 export const TabGroupQuery: INodeType = {
@@ -38,6 +43,6 @@ export const TabGroupQuery: INodeType = {
 
     const groups = await browser.tabGroups.query(queryInfo as unknown as Parameters<typeof browser.tabGroups.query>[0]);
 
-    return [groups.map((group) => ({ json: group as unknown as Record<string, unknown> }))];
+    return [groups.map((group) => ({ json: group as unknown as IDataObject }))];
   },
 };

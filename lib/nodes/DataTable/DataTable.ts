@@ -1,5 +1,10 @@
 import { Database } from "@lucide/vue";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+} from "../../types";
 import { DataTableService } from "../../services/data-table-service";
 
 export const DataTable: INodeType = {
@@ -77,6 +82,6 @@ export const DataTable: INodeType = {
       resultRows = rows.slice(0, limit);
     }
 
-    return [resultRows.map((row) => ({ json: row.data }))];
+    return [resultRows.map((row) => ({ json: row.data as IDataObject }))];
   },
 };

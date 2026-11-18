@@ -1,5 +1,10 @@
 import { browser } from "#imports";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+} from "../../types";
 import { AppWindow } from "@lucide/vue";
 
 export const WindowQuery: INodeType = {
@@ -55,6 +60,6 @@ export const WindowQuery: INodeType = {
 
     const windows = await browser.windows.getAll(queryOptions as unknown as Parameters<typeof browser.windows.getAll>[0]);
 
-    return [windows.map((window) => ({ json: window as unknown as Record<string, unknown> }))];
+    return [windows.map((window) => ({ json: window as unknown as IDataObject }))];
   },
 };

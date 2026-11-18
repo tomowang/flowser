@@ -20,12 +20,13 @@ export async function getQuickJS(): Promise<QuickJSWASMModule> {
       ...ReleaseSync,
       importModuleLoader: async () => {
         const moduleLoader = await ReleaseSync.importModuleLoader();
-        const defaultFactory =
-          "default" in moduleLoader
-            ? (moduleLoader.default as (options?: unknown) => Promise<unknown>)
-            : (moduleLoader as (options?: unknown) => Promise<unknown>);
+        const defaultFactory = (
+          typeof moduleLoader === "function"
+            ? moduleLoader
+            : moduleLoader.default
+        ) as Exclude<typeof moduleLoader, { default: unknown }>;
 
-        return async (options: Record<string, unknown> = {}) => {
+        return async (options = {}) => {
           // Robust URL resolution for both dev and production
           let url = wasmUrl;
           if (
@@ -36,7 +37,7 @@ export async function getQuickJS(): Promise<QuickJSWASMModule> {
           ) {
             // Ensure path starts with / for getURL
             const path = url.startsWith("/") ? url : `/${url}`;
-            url = browser.runtime.getURL(path);
+            url = (browser.runtime.getURL as (p: string) => string)(path);
           }
 
           try {

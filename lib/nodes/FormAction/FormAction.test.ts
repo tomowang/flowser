@@ -26,8 +26,16 @@ describe('FormAction Node', () => {
     return FormAction.execute!.call(context);
   };
 
+  const executeScriptMock = () =>
+    vi.mocked(
+      browser.scripting.executeScript as unknown as (arg: {
+        target: unknown;
+        args?: unknown[];
+      }) => Promise<unknown>,
+    );
+
   it('should fill a text field', async () => {
-    vi.mocked(browser.scripting.executeScript).mockResolvedValue([{ result: { ok: true } }] as unknown as { result: unknown }[]);
+    executeScriptMock().mockResolvedValue([{ result: { ok: true } }]);
 
     const result = await executeNode([{ json: {} }], {
       tabId: 1,
@@ -39,7 +47,7 @@ describe('FormAction Node', () => {
     });
 
     expect(browser.scripting.executeScript).toHaveBeenCalledTimes(1);
-    const call = vi.mocked(browser.scripting.executeScript).mock.calls[0][0];
+    const call = executeScriptMock().mock.calls[0][0];
     expect(call.target).toEqual({ tabId: 1 });
     expect(call.args).toEqual(['css', '#email', 'text', 'a@b.com', true]);
     expect(result[0][0].json.results).toEqual([
@@ -48,7 +56,7 @@ describe('FormAction Node', () => {
   });
 
   it('should pass comma-separated values for a multi-select field', async () => {
-    vi.mocked(browser.scripting.executeScript).mockResolvedValue([{ result: { ok: true } }] as unknown as { result: unknown }[]);
+    executeScriptMock().mockResolvedValue([{ result: { ok: true } }]);
 
     await executeNode([{ json: {} }], {
       tabId: 1,
@@ -59,12 +67,12 @@ describe('FormAction Node', () => {
       },
     });
 
-    const call = vi.mocked(browser.scripting.executeScript).mock.calls[0][0];
+    const call = executeScriptMock().mock.calls[0][0];
     expect(call.args).toEqual(['css', '#colors', 'select', 'red, blue', true]);
   });
 
   it('should default checked to true for checkbox fields when unspecified', async () => {
-    vi.mocked(browser.scripting.executeScript).mockResolvedValue([{ result: { ok: true } }] as unknown as { result: unknown }[]);
+    executeScriptMock().mockResolvedValue([{ result: { ok: true } }]);
 
     await executeNode([{ json: {} }], {
       tabId: 1,
@@ -73,12 +81,12 @@ describe('FormAction Node', () => {
       },
     });
 
-    const call = vi.mocked(browser.scripting.executeScript).mock.calls[0][0];
+    const call = executeScriptMock().mock.calls[0][0];
     expect(call.args).toEqual(['css', '#agree', 'checkbox', '', true]);
   });
 
   it('should select a radio option by value', async () => {
-    vi.mocked(browser.scripting.executeScript).mockResolvedValue([{ result: { ok: true } }] as unknown as { result: unknown }[]);
+    executeScriptMock().mockResolvedValue([{ result: { ok: true } }]);
 
     await executeNode([{ json: {} }], {
       tabId: 1,
@@ -89,14 +97,14 @@ describe('FormAction Node', () => {
       },
     });
 
-    const call = vi.mocked(browser.scripting.executeScript).mock.calls[0][0];
+    const call = executeScriptMock().mock.calls[0][0];
     expect(call.args).toEqual(['css', "input[name='plan']", 'radio', 'pro', true]);
   });
 
   it('should report a field-level error without throwing', async () => {
-    vi.mocked(browser.scripting.executeScript).mockResolvedValue([
+    executeScriptMock().mockResolvedValue([
       { result: { ok: false, error: 'Element not found' } },
-    ] as unknown as { result: unknown }[]);
+    ]);
 
     const result = await executeNode([{ json: {} }], {
       tabId: 1,

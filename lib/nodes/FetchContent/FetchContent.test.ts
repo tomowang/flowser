@@ -26,8 +26,15 @@ describe('FetchContent Node', () => {
     return FetchContent.execute!.call(context);
   };
 
+  const executeScriptMock = () =>
+    vi.mocked(
+      browser.scripting.executeScript as unknown as (
+        ...args: unknown[]
+      ) => Promise<unknown>,
+    );
+
   it('should fetch content from tab and return data', async () => {
-    vi.mocked(browser.scripting.executeScript).mockResolvedValue([{ result: 'some text' }] as unknown as { result: unknown }[]);
+    executeScriptMock().mockResolvedValue([{ result: 'some text' }]);
     const inputs = [{ json: {} }];
     const params = { tabId: 123, selector: '.test', selectorType: 'css', contentType: 'text', multiple: false };
     const result = await executeNode(inputs, params);
@@ -35,13 +42,13 @@ describe('FetchContent Node', () => {
   });
 
   it('should handle HTML content type', async () => {
-    vi.mocked(browser.scripting.executeScript).mockResolvedValue([{ result: '<div>html</div>' }] as unknown as { result: unknown }[]);
+    executeScriptMock().mockResolvedValue([{ result: '<div>html</div>' }]);
     const result = await executeNode([{ json: {} }], { tabId: 1, selector: 'div', contentType: 'html' });
     expect(result[0][0].json.content).toBe('<div>html</div>');
   });
 
   it('should handle multiple elements if specified', async () => {
-    vi.mocked(browser.scripting.executeScript).mockResolvedValue([{ result: ['a', 'b'] }] as unknown as { result: unknown }[]);
+    executeScriptMock().mockResolvedValue([{ result: ['a', 'b'] }]);
     const result = await executeNode([{ json: {} }], { tabId: 1, selector: 'p', multiple: true });
     expect(result[0][0].json.content).toEqual(['a', 'b']);
   });

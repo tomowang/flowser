@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { ref, type Ref } from "vue";
 import { useManualRefHistory, useDebounceFn } from "@vueuse/core";
 import { type Node, type Edge } from "@vue-flow/core";
 
@@ -13,7 +13,7 @@ export interface WorkflowState {
  */
 export function useWorkflowHistory() {
   // The combined state that holds both nodes and edges
-  const state = ref<WorkflowState>({
+  const state: Ref<WorkflowState> = ref({
     nodes: [],
     edges: [],
   });

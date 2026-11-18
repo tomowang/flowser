@@ -29,7 +29,7 @@ describe('TabAction Node', () => {
   };
 
   it('should create a tab', async () => {
-    vi.mocked(browser.tabs.create).mockResolvedValue({ id: 1, url: 'http://test.com' } as unknown as { id: number; url: string });
+    vi.mocked(browser.tabs.create as unknown as (...args: unknown[]) => Promise<unknown>).mockResolvedValue({ id: 1, url: 'http://test.com' });
     const result = await executeNode([{ json: {} }], { action: 'create', url: 'http://test.com', active: true });
     
     expect(browser.tabs.create).toHaveBeenCalledWith({ url: 'http://test.com', active: true, pinned: undefined });
@@ -37,7 +37,7 @@ describe('TabAction Node', () => {
   });
 
   it('should close a tab', async () => {
-    vi.mocked(browser.tabs.remove).mockResolvedValue(undefined as unknown as void);
+    vi.mocked(browser.tabs.remove as unknown as (...args: unknown[]) => Promise<void>).mockResolvedValue(undefined);
     const result = await executeNode([{ json: {} }], { action: 'close', tabId: 123 });
     
     expect(browser.tabs.remove).toHaveBeenCalledWith(123);
@@ -45,7 +45,7 @@ describe('TabAction Node', () => {
   });
 
   it('should group tabs', async () => {
-    vi.mocked(browser.tabs.group).mockResolvedValue(10 as unknown as number);
+    vi.mocked(browser.tabs.group as unknown as (...args: unknown[]) => Promise<number>).mockResolvedValue(10);
     const result = await executeNode([{ json: {} }], { action: 'group', tabIds: '1, 2', groupId: 5 });
     
     expect(browser.tabs.group).toHaveBeenCalledWith({ tabIds: [1, 2], groupId: 5 });

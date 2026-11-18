@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { WorkflowRunner } from "../lib/engine/WorkflowRunner";
-import { IWorkflow, INodeType } from "../lib/types";
+import { IWorkflow, INodeType, IDataValue } from "../lib/types";
 import { Registry } from "../lib/nodes/registry";
 
 // ── Minimal node stubs ────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ const PerItemParamNode: INodeType = {
       items.map((_, i) => ({
         json: {
           // getNodeParameter with index i — this is the code path that was buggy
-          captured: this.getNodeParameter("captured", i),
+          captured: this.getNodeParameter("captured", i) as IDataValue,
         },
       })),
     ];

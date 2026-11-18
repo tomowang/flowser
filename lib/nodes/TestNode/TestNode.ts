@@ -1,4 +1,9 @@
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataValue,
+} from "../../types";
 import { Info } from "@lucide/vue";
 
 export const TestNode: INodeType = {
@@ -60,7 +65,7 @@ export const TestNode: INodeType = {
             json: {
                 message: "Test Node executed successfully",
                 receivedRequiredProp: requiredProp,
-                credential: credentialData ? { username: credentialData.username } : "No credential loaded",
+                credential: credentialData ? { username: credentialData.username as IDataValue } : "No credential loaded",
             },
         });
     }

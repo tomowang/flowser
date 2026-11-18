@@ -30,7 +30,7 @@ describe('TabGroupAction Node', () => {
   };
 
   it('should create a tab group', async () => {
-    vi.mocked(browser.tabs.group).mockResolvedValue(10 as unknown as number);
+    vi.mocked(browser.tabs.group as unknown as (...args: unknown[]) => Promise<number>).mockResolvedValue(10);
     vi.mocked(browser.tabGroups.update).mockResolvedValue({
       id: 10,
       title: 'Work',

@@ -73,7 +73,7 @@ describe("NodeDelegate Component", () => {
     expect(plusButton.exists()).toBe(true);
 
     // Get the parent of the button
-    const button = plusButton.element.closest("button");
+    const button = (plusButton.element as Element).closest("button");
     expect(button).not.toBeNull();
 
     // Find all Handle components (vue-flow__handle class in our mock)
@@ -160,7 +160,7 @@ describe("NodeDelegate Component", () => {
 
     // Find the plus button
     const plusButton = wrapper.findComponent(Plus);
-    const button = plusButton.element.closest("button");
+    const button = (plusButton.element as Element).closest("button");
     expect(button).not.toBeNull();
 
     // Click the button
@@ -206,7 +206,7 @@ describe("NodeDelegate Component", () => {
           ...(zhMessages.nodes as Record<string, unknown>),
           i18nTestNode: { displayName: "国际化测试节点" },
         },
-      });
+      } as unknown as Parameters<typeof i18n.global.setLocaleMessage>[1]);
     });
 
     afterEach(() => {

@@ -1,5 +1,10 @@
 import { browser } from "#imports";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataValue,
+} from "../../types";
 import { AppWindow } from "@lucide/vue";
 
 export const WindowClose: INodeType = {
@@ -56,7 +61,7 @@ export const WindowClose: INodeType = {
         returnData.push({
           json: {
             closed: false,
-            windowIdInput,
+            windowIdInput: windowIdInput as IDataValue,
           },
         });
       }

@@ -428,7 +428,7 @@ export class WorkflowRunner {
     return result.value;
   }
 
-  private evaluateStringWithExpressions(
+  evaluateStringWithExpressions(
     text: string,
     itemIndex: number,
     inputData: INodeExecutionData[],

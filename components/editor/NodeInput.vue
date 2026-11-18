@@ -191,9 +191,14 @@ const getSelectedOption = computed(() => {
   if (props.property.type !== "options" && props.property.type !== "action") return null;
   const val = props.modelValue;
 
-  const findInOptions = (options: unknown[]) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const opt of options as any[]) {
+  type OptionEntry = NonNullable<INodeProperties["options"]>[number] & {
+    parentIcon?: string | object | ((...args: unknown[]) => unknown);
+  };
+
+  const findInOptions = (
+    options: NonNullable<INodeProperties["options"]>,
+  ): OptionEntry | null => {
+    for (const opt of options) {
       if (opt.value === val) return opt;
       if (opt.children) {
         const found = findInOptions(opt.children);

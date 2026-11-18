@@ -17,7 +17,7 @@ describe('CredentialService', () => {
   });
   it('should get decrypted credential', async () => {
     const db = await dbPromise;
-    vi.mocked(db.get).mockResolvedValue({ id: '1', encryptedData: '...', iv: '...' });
+    vi.mocked(db.get).mockResolvedValue({ id: '1', name: 'Test', type: 'type', encryptedData: '...', iv: '...', createdAt: 0 });
     vi.mocked(SecurityService.decrypt).mockResolvedValue(JSON.stringify({ apiKey: 'secret' }));
     const result = await CredentialService.getDecryptedCredential('1');
     expect(result).toEqual({ apiKey: 'secret' });

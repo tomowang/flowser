@@ -41,7 +41,7 @@ export class SecurityService {
     );
   }
 
-  private static async getOrCreateSalt(): Promise<Uint8Array> {
+  private static async getOrCreateSalt(): Promise<Uint8Array<ArrayBuffer>> {
     let saltBase64 = await storage.getItem<string>("local:flowser_salt");
     if (!saltBase64) {
       const newSalt = crypto.getRandomValues(new Uint8Array(16));
@@ -237,7 +237,7 @@ export class SecurityService {
     return window.btoa(binary);
   }
 
-  private static base64ToBuffer(base64: string): Uint8Array {
+  private static base64ToBuffer(base64: string): Uint8Array<ArrayBuffer> {
     const binaryStr = window.atob(base64);
     const len = binaryStr.length;
     const bytes = new Uint8Array(len);

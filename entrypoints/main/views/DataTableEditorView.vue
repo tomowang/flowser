@@ -394,11 +394,11 @@ const deleteRow = async (rowId: number) => {
 
             <Input
               v-if="col.type === 'string'"
-              v-model="localRowData[col.name]"
+              v-model="localRowData[col.name] as string"
             />
             <Input
               v-else-if="col.type === 'number'"
-              v-model="localRowData[col.name]"
+              v-model="localRowData[col.name] as number"
               type="number"
             />
             <select
@@ -411,7 +411,7 @@ const deleteRow = async (rowId: number) => {
             </select>
             <textarea
               v-else-if="col.type === 'json'"
-              v-model="localRowData[col.name]"
+              v-model="localRowData[col.name] as string"
               class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
             ></textarea>
           </div>

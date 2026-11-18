@@ -26,8 +26,15 @@ describe('HttpRequest Node', () => {
     return HttpRequest.execute!.call(context);
   };
 
+  const sendMessageMock = () =>
+    vi.mocked(
+      browser.runtime.sendMessage as unknown as (
+        ...args: unknown[]
+      ) => Promise<unknown>,
+    );
+
   it('should send correct parameters to browser.runtime.sendMessage', async () => {
-    vi.mocked(browser.runtime.sendMessage).mockResolvedValue({ success: true, data: { result: 'ok' } } as unknown as { success: boolean; data: unknown });
+    sendMessageMock().mockResolvedValue({ success: true, data: { result: 'ok' } });
     
     const inputs = [{ json: {} }];
     const params = {
@@ -53,7 +60,7 @@ describe('HttpRequest Node', () => {
   });
 
   it('should handle error response from sendMessage', async () => {
-    vi.mocked(browser.runtime.sendMessage).mockResolvedValue({ success: false, error: 'Network Error' } as unknown as { success: boolean; error: string });
+    sendMessageMock().mockResolvedValue({ success: false, error: 'Network Error' });
     const inputs = [{ json: {} }];
     const result = await executeNode(inputs, { url: 'http://fail.com', method: 'GET' });
 

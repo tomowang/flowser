@@ -1,5 +1,10 @@
 import { browser } from "#imports";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+} from "../../types";
 import { Layers } from "@lucide/vue";
 
 export const TabAction: INodeType = {
@@ -152,7 +157,7 @@ export const TabAction: INodeType = {
           const tab = await browser.tabs.create(createProperties as unknown as Parameters<typeof browser.tabs.create>[0]);
           returnData.push({
             json: {
-              ...(tab as unknown as Record<string, unknown>),
+              ...(tab as unknown as IDataObject),
             },
           });
         } catch (error) {

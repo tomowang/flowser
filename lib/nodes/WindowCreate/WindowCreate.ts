@@ -1,5 +1,10 @@
 import { browser } from "#imports";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+} from "../../types";
 import { AppWindow } from "@lucide/vue";
 
 export const WindowCreate: INodeType = {
@@ -97,7 +102,7 @@ export const WindowCreate: INodeType = {
         const window = await browser.windows.create(createData as unknown as Parameters<typeof browser.windows.create>[0]);
         returnData.push({
           json: {
-            ...(window as unknown as Record<string, unknown>),
+            ...(window as unknown as IDataObject),
           },
         });
       } catch (error) {

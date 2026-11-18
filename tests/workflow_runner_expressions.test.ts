@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { WorkflowRunner } from '../lib/engine/WorkflowRunner';
-import { IWorkflow, INodeType } from '../lib/types';
+import { IWorkflow, INodeType, IDataValue } from '../lib/types';
 import { Registry } from '../lib/nodes/registry';
 const ParamNode: INodeType = {
   description: { displayName: 'Param Node', name: 'paramNode', icon: '', group: ['test'], version: 1, description: 'Returns its params', defaults: { name: 'Param Node' }, inputs: [{ name: 'main', type: 'main' }], outputs: [{ name: 'main', type: 'main' }], properties: [{ displayName: 'Value', name: 'value', type: 'string' }] },
-  async execute() { const value = this.getNodeParameter('value', ''); return [[{ json: { value } }]]; }
+  async execute() { const value = this.getNodeParameter('value', '') as IDataValue; return [[{ json: { value } }]]; }
 };
 const ManualTriggerNode: INodeType = {
   description: { displayName: 'Manual Trigger', name: 'manualTrigger', icon: '', group: ['trigger'], version: 1, description: 'Manual Trigger', defaults: { name: 'Manual Trigger' }, inputs: [], outputs: [{ name: 'main', type: 'main' }], properties: [] },

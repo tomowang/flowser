@@ -1,5 +1,10 @@
 import { browser } from "#imports";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+} from "../../types";
 import { MessageType } from "../../messages";
 import { Globe } from "@lucide/vue";
 
@@ -176,7 +181,7 @@ export const HttpRequest: INodeType = {
             headers,
             body,
           },
-        })) as { success: boolean; data: Record<string, unknown>; error?: string };
+        })) as { success: boolean; data: IDataObject; error?: string };
 
         if (!response.success) {
           throw new Error(response.error);

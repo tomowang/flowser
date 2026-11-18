@@ -149,8 +149,12 @@ async function scheduleWorkflow(workflow: IWorkflow) {
 
   console.log("Schedule node", scheduleNode);
 
-  const cronExpression =
-    scheduleNode.data.cron || scheduleNode.data.defaults?.cron || "0 * * * *";
+  const defaults = scheduleNode.data.defaults as
+    | Record<string, unknown>
+    | undefined;
+  const cronExpression = String(
+    scheduleNode.data.cron || defaults?.cron || "0 * * * *",
+  );
 
   try {
     const interval = parser.parse(cronExpression);
@@ -450,7 +454,7 @@ export default defineBackground(() => {
           {
             json: {
               tabId,
-              changeInfo,
+              changeInfo: changeInfo as unknown as IDataObject,
               tab: tab as unknown as IDataObject,
             },
           },

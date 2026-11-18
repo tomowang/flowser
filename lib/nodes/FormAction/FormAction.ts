@@ -1,5 +1,10 @@
 import { browser } from "#imports";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+} from "../../types";
 import { TextCursorInput } from "@lucide/vue";
 
 interface IFormFieldDefinition {
@@ -127,7 +132,7 @@ export const FormAction: INodeType = {
         continue;
       }
 
-      const results: Record<string, unknown>[] = [];
+      const results: IDataObject[] = [];
 
       for (const field of fieldsArr) {
         const selectorType = field.selectorType || "css";

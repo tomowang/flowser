@@ -7,7 +7,7 @@ const mockContext = {
   newObject: vi.fn(() => ({ dispose: () => {} })),
   setProp: vi.fn(),
   newString: vi.fn((s: string) => ({ value: s, dispose: () => {} })),
-  getProp: vi.fn(() => ({ dispose: () => {} })),
+  getProp: vi.fn<(_obj: unknown, prop: string) => { type?: string; dispose: () => void }>(() => ({ dispose: () => {} })),
   callFunction: vi.fn((fn: { type: string }) => {
     if (fn.type === 'parse') {
       return { value: { type: 'itemsObj', dispose: () => {} }, error: undefined };
@@ -16,7 +16,7 @@ const mockContext = {
     return { value: { type: 'result', dispose: () => {} }, error: undefined };
   }),
   evalCode: vi.fn(() => ({ value: { type: 'func', dispose: () => {} }, error: undefined })),
-  dump: vi.fn((h: { type?: string }) => {
+  dump: vi.fn((h: { type?: string }): unknown => {
     if (h.type === 'result') return [{ json: { transformed: true } }];
     return h;
   }),

@@ -1,4 +1,10 @@
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+  IDataValue,
+} from "../../types";
 import { Calculator } from "@lucide/vue";
 
 interface IFieldDefinition {
@@ -137,7 +143,7 @@ export const EditFields: INodeType = {
       };
       const fieldsArr = fieldsConfig.values;
 
-      const fields: Record<string, unknown> = {};
+      const fields: IDataObject = {};
 
       if (fieldsArr) {
         for (const field of fieldsArr) {
@@ -154,7 +160,7 @@ export const EditFields: INodeType = {
             try {
               fields[name] = JSON.parse(
                 field.jsonValue || "{}",
-              ) as Record<string, unknown>;
+              ) as IDataValue;
             } catch {
               console.warn("Invalid JSON in Edit Fields node", field.jsonValue);
               fields[name] = field.jsonValue;
@@ -164,12 +170,12 @@ export const EditFields: INodeType = {
       }
 
       const existingJson = item.json;
-      let newJson: Record<string, unknown>;
+      let newJson: IDataObject;
 
       if (mode === "keepOnlySet") {
         newJson = { ...fields };
       } else {
-        newJson = { ...existingJson, ...fields } as Record<string, unknown>;
+        newJson = { ...existingJson, ...fields };
       }
 
       returnData.push({

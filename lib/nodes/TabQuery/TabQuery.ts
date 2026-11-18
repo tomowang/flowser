@@ -1,5 +1,10 @@
 import { browser } from "#imports";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+} from "../../types";
 import { AppWindow } from "@lucide/vue";
 
 export const TabQuery: INodeType = {
@@ -89,6 +94,6 @@ export const TabQuery: INodeType = {
 
     const tabs = await browser.tabs.query(queryInfo as unknown as Parameters<typeof browser.tabs.query>[0]);
 
-    return [tabs.map((tab) => ({ json: tab as unknown as Record<string, unknown> }))];
+    return [tabs.map((tab) => ({ json: tab as unknown as IDataObject }))];
   },
 };

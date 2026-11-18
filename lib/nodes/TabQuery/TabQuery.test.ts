@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TabQuery } from './TabQuery';
 import { IExecuteFunctions } from '../../types';
-import { browser, type Tabs } from 'wxt/browser';
+import { browser, type Browser } from 'wxt/browser';
 
 vi.mock('wxt/browser', () => ({
   browser: {
@@ -32,9 +32,16 @@ describe('TabQuery Node', () => {
     return TabQuery.execute!.call(context);
   };
 
+  const queryTabsMock = () =>
+    vi.mocked(
+      browser.tabs.query as unknown as (
+        ...args: unknown[]
+      ) => Promise<Browser.tabs.Tab[]>,
+    );
+
   it('should query tabs with correct parameters', async () => {
     const mockTabs = [{ id: 1, title: 'Google' }];
-    vi.mocked(browser.tabs.query).mockResolvedValue(mockTabs as unknown as Tabs.Tab[]);
+    queryTabsMock().mockResolvedValue(mockTabs as unknown as Browser.tabs.Tab[]);
     
     const params = {
       title: '*Google*',
@@ -55,7 +62,7 @@ describe('TabQuery Node', () => {
   });
 
   it('should handle any active status', async () => {
-    vi.mocked(browser.tabs.query).mockResolvedValue([] as unknown as Tabs.Tab[]);
+    queryTabsMock().mockResolvedValue([]);
     await executeNode([], { active: 'any' });
     expect(browser.tabs.query).toHaveBeenCalledWith({});
   });

@@ -1,5 +1,10 @@
 import { browser } from "#imports";
-import { INodeType, IExecuteFunctions, INodeExecutionData } from "../../types";
+import {
+  INodeType,
+  IExecuteFunctions,
+  INodeExecutionData,
+  IDataObject,
+} from "../../types";
 import { Group } from "@lucide/vue";
 
 export const TabGroupAction: INodeType = {
@@ -169,7 +174,7 @@ export const TabGroupAction: INodeType = {
 
           returnData.push({
             json: {
-              ...(group as unknown as Record<string, unknown>),
+              ...(group as unknown as IDataObject),
             },
           });
         } catch (error) {

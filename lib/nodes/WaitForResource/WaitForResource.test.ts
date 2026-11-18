@@ -35,11 +35,18 @@ describe("WaitForResource Node", () => {
     return WaitForResource.execute!.call(context);
   };
 
+  const executeScriptMock = () =>
+    vi.mocked(
+      browser.scripting.executeScript as unknown as (
+        ...args: unknown[]
+      ) => Promise<unknown>,
+    );
+
   describe("element mode", () => {
     it("passes input through when the element is found on the first poll", async () => {
-      vi.mocked(browser.scripting.executeScript).mockResolvedValue([
+      executeScriptMock().mockResolvedValue([
         { result: true },
-      ] as unknown as { result: unknown }[]);
+      ]);
       const inputs = [{ json: { val: 1 } }];
       const result = await executeNode(inputs, {
         waitFor: "element",
@@ -55,9 +62,9 @@ describe("WaitForResource Node", () => {
     it("throws a descriptive error on timeout", async () => {
       vi.useFakeTimers();
       try {
-        vi.mocked(browser.scripting.executeScript).mockResolvedValue([
+        executeScriptMock().mockResolvedValue([
           { result: false },
-        ] as unknown as { result: unknown }[]);
+        ]);
 
         const promise = executeNode([{ json: {} }], {
           waitFor: "element",
@@ -100,16 +107,14 @@ describe("WaitForResource Node", () => {
     it("recovers from transient executeScript failures (e.g. the tab still navigating) and finds the element on a later poll", async () => {
       vi.useFakeTimers();
       try {
-        vi.mocked(browser.scripting.executeScript)
+        executeScriptMock()
           .mockRejectedValueOnce(
             new Error("Cannot access contents of the page"),
           )
           .mockRejectedValueOnce(
             new Error("Cannot access contents of the page"),
           )
-          .mockResolvedValueOnce([{ result: true }] as unknown as {
-            result: unknown;
-          }[]);
+          .mockResolvedValueOnce([{ result: true }]);
 
         const promise = executeNode([{ json: { val: 5 } }], {
           waitFor: "element",
@@ -131,7 +136,7 @@ describe("WaitForResource Node", () => {
     it("reports the underlying error when every poll attempt fails (e.g. an invalid tab)", async () => {
       vi.useFakeTimers();
       try {
-        vi.mocked(browser.scripting.executeScript).mockRejectedValue(
+        executeScriptMock().mockRejectedValue(
           new Error("No tab with id: 123"),
         );
 
@@ -155,9 +160,9 @@ describe("WaitForResource Node", () => {
 
   describe("viewport mode", () => {
     it("passes input through when the element is visible", async () => {
-      vi.mocked(browser.scripting.executeScript).mockResolvedValue([
+      executeScriptMock().mockResolvedValue([
         { result: true },
-      ] as unknown as { result: unknown }[]);
+      ]);
       const result = await executeNode([{ json: { val: 2 } }], {
         waitFor: "viewport",
         tabId: 123,
@@ -169,9 +174,9 @@ describe("WaitForResource Node", () => {
     it("throws a descriptive error on timeout", async () => {
       vi.useFakeTimers();
       try {
-        vi.mocked(browser.scripting.executeScript).mockResolvedValue([
+        executeScriptMock().mockResolvedValue([
           { result: false },
-        ] as unknown as { result: unknown }[]);
+        ]);
 
         const promise = executeNode([{ json: {} }], {
           waitFor: "viewport",
