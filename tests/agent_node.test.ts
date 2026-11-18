@@ -47,7 +47,10 @@ vi.mock("ai", () => ({
   generateText: async (params: { prompt: string }) => {
     return {
       text: `Mock response for prompt: ${params.prompt}`,
-      usage: { totalTokens: 10 },
+      usage: {
+        totalTokens: 10,
+        raw: { input_tokens: 6, output_tokens: 4, details: [null, { cached: false }] },
+      },
     };
   },
 }));
@@ -174,6 +177,9 @@ describe("Agent Node Execution", () => {
     expect(output).toBe("Mock response for prompt: Hello world");
 
     const tokenUsage = agentResult?.outputData[0]?.json?.tokenUsage;
-    expect(tokenUsage).toEqual({ totalTokens: 10 });
+    expect(tokenUsage).toEqual({
+      totalTokens: 10,
+      raw: { input_tokens: 6, output_tokens: 4, details: [null, { cached: false }] },
+    });
   });
 });

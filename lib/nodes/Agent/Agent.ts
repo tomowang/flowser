@@ -2,6 +2,7 @@ import {
   INodeType,
   IExecuteFunctions,
   INodeExecutionData,
+  IDataObject,
   ISupplyDataFunctions,
 } from "../../types";
 import { Bot } from "@lucide/vue";
@@ -129,7 +130,7 @@ export const AgentNode: INodeType = {
         {
           json: {
             output: result.text,
-            tokenUsage: result.usage,
+            tokenUsage: JSON.parse(JSON.stringify(result.usage)) as IDataObject,
           },
         },
       ],
