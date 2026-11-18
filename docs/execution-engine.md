@@ -34,6 +34,12 @@ export interface INodeExecutionData {
 
 When a node completes, its output (an array of `INodeExecutionData`) is stored in a map indexed by the node's ID. This data is then provided as input to any subsequent nodes connected via edges.
 
+In a full run, an output with no items does not trigger connected nodes. This also prevents unused branches of an If node from running.
+
+Enable **Always Output Data** in a node's properties when following nodes should run even if a query finds no matches. The setting is off by default and is saved with the node. If all outputs are empty, the runner emits one item (`{ json: {} }`) on the first output. Other outputs stay empty, and existing items are preserved. The empty item is recorded in execution history and is available to expressions and single-node runs just like a normal output item. Execution errors still stop the workflow.
+
+For example, enable this setting on **Tab Group Query**, then connect an **If** node that checks whether `id` is empty. The empty branch can create a group; the other branch can use the existing group. An empty item has no group ID or other fields, so check for missing values before using them.
+
 ### Secure Expression Evaluation
 
 Flowser uses **QuickJS** (via `quickjs-emscripten`) to provide a secure, isolated sandbox for evaluating JavaScript expressions within workflow parameters. This ensures that user-defined expressions cannot access the browser's global scope or perform unauthorized actions.

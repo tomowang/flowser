@@ -207,6 +207,7 @@ export interface IWorkflowNode {
   position: { x: number; y: number };
   data: {
     label?: string; // User defined name
+    alwaysOutputData?: boolean; // Emit an empty item when execution returns no items
   } & Record<string, unknown>; // Parameter values
   parameters?: Record<string, unknown>; // Store actual param values here to separate from UI state?
   // For simplicity, let's keep everything in 'data' or a specific 'parameters' field.

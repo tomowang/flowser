@@ -8,6 +8,8 @@ Query browser windows matching specific criteria.
 ## Outputs
 - **Main**: Matching window objects
 
+When no windows match, this node returns no items and following nodes do not run by default. Enable **Always Output Data** in the node's properties to emit one empty item instead. A following **If** node can check whether `id` is empty before using a window ID.
+
 ## Parameters
 
 | Display Name | Name | Type | Default | Description |

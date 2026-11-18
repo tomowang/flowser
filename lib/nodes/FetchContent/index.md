@@ -8,6 +8,8 @@ Fetch text or HTML content from a web page using selectors.
 ## Outputs
 - **Main**: Fetched content items
 
+When no elements match a selector, this node returns an item with `content: null` for that input. Following nodes already run in this case, and **Always Output Data** does not replace that item. Check `content` in a following **If** node to handle missing content.
+
 ## Parameters
 
 | Display Name | Name | Type | Default | Description |

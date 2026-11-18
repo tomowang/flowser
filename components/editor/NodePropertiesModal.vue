@@ -408,6 +408,12 @@ const outputSample = computed(() => {
             </template>
             <div v-else class="text-sm text-muted-foreground italic p-2">
               {{ t("workflowEditor.noOutputData") }}
+              <p
+                v-if="nodeExecutionData?.status === 'success' && nodeType?.execute && nodeType.description.outputs.length === 1 && nodeType.description.outputs[0]?.type === 'main' && !node.data.alwaysOutputData"
+                class="mt-2"
+              >
+                {{ t("workflowEditor.emptyOutputHint") }}
+              </p>
             </div>
           </div>
         </div>

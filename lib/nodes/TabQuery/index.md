@@ -8,6 +8,8 @@ Query browser tabs matching specific criteria.
 ## Outputs
 - **Main**: Matching tab objects
 
+When no tabs match, this node returns no items and following nodes do not run by default. Enable **Always Output Data** in the node's properties to emit one empty item instead. A following **If** node can check whether `id` is empty before using a tab ID.
+
 ## Parameters
 
 | Display Name | Name | Type | Default | Description |

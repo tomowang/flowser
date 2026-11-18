@@ -5,6 +5,7 @@ import { type Node } from "@vue-flow/core";
 import { Registry } from "@/lib/nodes/registry";
 import { CredentialService } from "@/lib/services/credential-service";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Plus } from "@lucide/vue";
 import CreateCredentialModal from "@/components/editor/CreateCredentialModal.vue";
 import CredentialIcon from "@/components/editor/CredentialIcon.vue";
@@ -380,6 +381,24 @@ const shouldShowProperty = (prop: INodeProperties) =>
           @refresh="loadNodeOptions(prop.name)"
         />
       </div>
+    </div>
+    <div
+      v-if="nodeType.execute && nodeType.description.outputs[0]?.type === 'main'"
+      class="space-y-2 border-t pt-4"
+    >
+      <div class="flex items-center justify-between gap-3">
+        <label :for="`always-output-${node.id}`" class="text-sm font-medium">
+          {{ t("workflowEditor.alwaysOutputData") }}
+        </label>
+        <Switch
+          :id="`always-output-${node.id}`"
+          :model-value="node.data.alwaysOutputData === true"
+          @update:model-value="(value) => updateValue('alwaysOutputData', value)"
+        />
+      </div>
+      <p class="text-xs text-muted-foreground">
+        {{ t("workflowEditor.alwaysOutputDataDescription") }}
+      </p>
     </div>
   </div>
   <div v-else class="text-muted-foreground text-sm">

@@ -280,6 +280,16 @@ export class WorkflowRunner {
       } else {
         outputData = [[{ json: {} }]];
       }
+
+      // Only synthesize data when every branch is empty. Filling each empty
+      // branch would incorrectly activate unselected If outputs.
+      if (
+        node.data.alwaysOutputData === true &&
+        nodeType.description.outputs[0]?.type === "main" &&
+        outputData.every((items) => items.length === 0)
+      ) {
+        outputData[0] = [{ json: {} }];
+      }
     } catch (e) {
       console.error("Node execution error", e);
       const errorMessage = e instanceof Error ? e.message : String(e);
@@ -299,14 +309,14 @@ export class WorkflowRunner {
         status: executeError ? "error" : "success",
         errorMessage: executeError?.message,
         inputData,
-        outputData: outputData[0],
+        outputData: outputData[0] ?? [],
       };
       this.nodeExecutionResults.push(nodeResult);
       this.onStatusChange?.(node.id, executeError ? "error" : "success");
       this.onNodeCompleted?.(nodeResult);
     }
 
-    const finalOutput = outputData[0];
+    const finalOutput = outputData[0] ?? [];
     this.executionData.set(node.id, finalOutput);
 
     // If in single node mode, only execute if it's a prerequisite (handled by ensureNodeExecuted)

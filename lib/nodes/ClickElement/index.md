@@ -6,7 +6,9 @@ Simulates a click on an element on a web page.
 - **Main**: Input items
 
 ## Outputs
-- **Main**: Result information
+- **Main**: Input items for valid Tab IDs, passed through unchanged
+
+If every input item has a missing or invalid Tab ID, this node returns no items and following nodes do not run by default. **Always Output Data** can emit one empty item so the branch continues, but it does not click anything or restore the input fields. If a valid tab has no matching elements, the input item is still passed through.
 
 ## Parameters
 
