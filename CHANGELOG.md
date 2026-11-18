@@ -1,5 +1,17 @@
 # Changelog
 
+## [v2.1.1] - 2026-11-18
+
+
+### Bug Fixes
+
+- Remove incompatible rolldown override causing syntax errors in build output (Tomo Wang)
+
+
+### CI/CD
+
+- Upgrade GitHub Actions versions and use Node 24 (Tomo Wang)
+
 ## [v2.1.0] - 2026-11-18
 
 
@@ -18,6 +30,8 @@
 - Upgrade dependencies and update compatibility settings (Tomo Wang)
 
 - Add web-ext dev dependency to launch browser in dev mode (Tomo Wang)
+
+- Update pnpm-lock.yaml (Tomo Wang)
 
 ## [v2.0.0] - 2026-08-15
 
