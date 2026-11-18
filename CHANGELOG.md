@@ -1,5 +1,24 @@
 # Changelog
 
+## [v2.1.0] - 2026-11-18
+
+
+### Bug Fixes
+
+- Resolve TypeScript strict mode and dependency upgrade type errors (Tomo Wang)
+
+
+### Features
+
+- Add always output data setting for empty results (Tomo Wang)
+
+
+### Miscellaneous
+
+- Upgrade dependencies and update compatibility settings (Tomo Wang)
+
+- Add web-ext dev dependency to launch browser in dev mode (Tomo Wang)
+
 ## [v2.0.0] - 2026-08-15
 
 
