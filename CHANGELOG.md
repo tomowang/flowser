@@ -1,5 +1,12 @@
 # Changelog
 
+## [v2.1.2] - 2026-11-21
+
+
+### Bug Fixes
+
+- Ship readable extension bundles (Tomo Wang)
+
 ## [v2.1.1] - 2026-11-18
 
 
