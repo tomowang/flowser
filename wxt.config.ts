@@ -1,13 +1,24 @@
+import { createRequire } from "node:module";
 import { defineConfig } from "wxt";
 import tailwindcss from "@tailwindcss/vite";
+
+const require = createRequire(import.meta.url);
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ["@wxt-dev/module-vue"],
   imports: false,
-  vite: () => ({
+  vite: (env) => ({
+    build: {
+      target: env.browser === "firefox" ? "firefox121" : "chrome120",
+      minify: false,
+    },
     plugins: [tailwindcss()],
     resolve: {
+      alias: {
+        // The UMD bundle includes a legacy core-js iframe fallback.
+        vuedraggable: require.resolve("vuedraggable/src/vuedraggable.js"),
+      },
       dedupe: ["@codemirror/state", "@codemirror/view"],
     },
   }),
